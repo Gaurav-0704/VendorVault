@@ -1,134 +1,128 @@
 # Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
-# VendorVault — WhatsApp Integration Routes
 
 import re
-import json
 from flask import Blueprint, request, jsonify
 from database import get_db
 
-bp = Blueprint('whatsapp', __name__)
+whatsapp_bp = Blueprint('whatsapp', __name__)
 
 
-# ── Config ───────────────────────────────────────────────────────────────────
-
-@bp.route('/api/whatsapp/config')
+@whatsapp_bp.route('/api/whatsapp/config', methods=['GET'])
 def get_config():
-    db     = get_db()
-    config = db.execute(
-        "SELECT * FROM whatsapp_config WHERE id = 1"
-    ).fetchone()
-    return jsonify(dict(config) if config else {})
+    """Get WhatsApp integration configuration."""
+    db = get_db()
+    config = db.execute("SELECT * FROM whatsapp_config WHERE id = 1").fetchone()
+    db.close()
+    if not config:
+        return jsonify({'enabled': False})
+    return jsonify({
+        'phone_number_id': config['phone_number_id'] or '',
+        'business_account_id': config['business_account_id'] or '',
+        'access_token': '***' if config['access_token'] else '',
+        'verify_token': config['verify_token'] or '',
+        'enabled': bool(config['enabled'])
+    })
 
 
-@bp.route('/api/whatsapp/config', methods=['POST'])
+@whatsapp_bp.route('/api/whatsapp/config', methods=['PUT'])
 def update_config():
-    db   = get_db()
+    """Update WhatsApp configuration."""
     data = request.json
-    db.execute('''
-        INSERT OR REPLACE INTO whatsapp_config
-            (id, phone_number, api_token, webhook_secret,
-             is_enabled, auto_confirm)
-        VALUES (1, ?, ?, ?, ?, ?)
-    ''', (
-        data.get('phone_number', ''),
-        data.get('api_token', ''),
-        data.get('webhook_secret', ''),
-        data.get('is_enabled', 0),
-        data.get('auto_confirm', 0),
-    ))
+    db = get_db()
+    existing = db.execute("SELECT * FROM whatsapp_config WHERE id = 1").fetchone()
+
+    access_token = data.get('access_token', '')
+    if access_token == '***' and existing:
+        access_token = existing['access_token']
+
+    if existing:
+        db.execute("""
+            UPDATE whatsapp_config SET phone_number_id = ?, business_account_id = ?,
+                   access_token = ?, verify_token = ?, enabled = ? WHERE id = 1
+        """, (data.get('phone_number_id', ''), data.get('business_account_id', ''),
+              access_token, data.get('verify_token', ''), int(data.get('enabled', False))))
+    else:
+        db.execute("""
+            INSERT INTO whatsapp_config (id, phone_number_id, business_account_id, access_token, verify_token, enabled)
+            VALUES (1, ?, ?, ?, ?, ?)
+        """, (data.get('phone_number_id', ''), data.get('business_account_id', ''),
+              access_token, data.get('verify_token', ''), int(data.get('enabled', False))))
+
     db.commit()
+    db.close()
     return jsonify({'success': True})
 
 
-# ── Webhook ──────────────────────────────────────────────────────────────────
+@whatsapp_bp.route('/api/whatsapp/webhook', methods=['GET'])
+def verify_webhook():
+    """Meta webhook verification endpoint."""
+    db = get_db()
+    config = db.execute("SELECT verify_token FROM whatsapp_config WHERE id = 1").fetchone()
+    db.close()
 
-@bp.route('/api/whatsapp/webhook', methods=['GET'])
-def webhook_verify():
-    mode      = request.args.get('hub.mode')
-    token     = request.args.get('hub.verify_token')
-    challenge = request.args.get('hub.challenge')
+    mode = request.args.get('hub.mode', '')
+    token = request.args.get('hub.verify_token', '')
+    challenge = request.args.get('hub.challenge', '')
 
-    db     = get_db()
-    config = db.execute(
-        "SELECT webhook_secret FROM whatsapp_config WHERE id=1"
-    ).fetchone()
-    secret = config['webhook_secret'] if config else ''
-
-    if mode == 'subscribe' and token == secret:
+    if mode == 'subscribe' and config and token == config['verify_token']:
         return challenge, 200
     return 'Forbidden', 403
 
 
-@bp.route('/api/whatsapp/webhook', methods=['POST'])
-def webhook_receive():
+@whatsapp_bp.route('/api/whatsapp/webhook', methods=['POST'])
+def receive_message():
+    """Receive and parse incoming WhatsApp messages."""
     data = request.json
-    db   = get_db()
+    db = get_db()
 
     try:
-        for entry in data.get('entry', []):
-            for change in entry.get('changes', []):
-                messages = change.get('value', {}).get('messages', [])
-                for msg in messages:
-                    from_number = msg.get('from', '')
-                    text        = msg.get('text', {}).get('body', '')
+        entry = data.get('entry', [{}])[0]
+        changes = entry.get('changes', [{}])[0]
+        value = changes.get('value', {})
+        messages = value.get('messages', [])
 
-                    db.execute('''
-                        INSERT INTO whatsapp_messages
-                            (message_id, from_number, message_text)
-                        VALUES (?, ?, ?)
-                    ''', (msg.get('id', ''), from_number, text))
+        for msg in messages:
+            sender = msg.get('from', '')
+            text = msg.get('text', {}).get('body', '')
+            parsed = _parse_order_text(text)
 
-                    parsed = _parse_order(text, db)
-                    if parsed:
-                        db.execute('''
-                            UPDATE whatsapp_messages
-                            SET parsed_order = ?, is_processed = 1
-                            WHERE message_id = ?
-                        ''', (json.dumps(parsed), msg.get('id', '')))
+            db.execute(
+                "INSERT INTO whatsapp_messages (sender, message, parsed_order, status) VALUES (?, ?, ?, ?)",
+                (sender, text, str(parsed), 'received')
+            )
+    except (KeyError, IndexError):
+        pass
 
-        db.commit()
-    except Exception as e:
-        print(f"WhatsApp webhook error: {e}")
-
+    db.commit()
+    db.close()
     return jsonify({'status': 'ok'})
 
 
-# ── Message Log ──────────────────────────────────────────────────────────────
-
-@bp.route('/api/whatsapp/messages')
-def get_messages():
-    db   = get_db()
-    rows = db.execute(
-        "SELECT * FROM whatsapp_messages ORDER BY received_at DESC LIMIT 50"
+@whatsapp_bp.route('/api/whatsapp/messages', methods=['GET'])
+def list_messages():
+    """List recent WhatsApp messages."""
+    db = get_db()
+    messages = db.execute(
+        "SELECT * FROM whatsapp_messages ORDER BY created_at DESC LIMIT 50"
     ).fetchall()
-    return jsonify([dict(r) for r in rows])
+    db.close()
+    return jsonify([{
+        'id': m['id'], 'sender': m['sender'], 'message': m['message'],
+        'parsed_order': m['parsed_order'], 'status': m['status'],
+        'created_at': m['created_at']
+    } for m in messages])
 
 
-# ── Simple Order Parser ─────────────────────────────────────────────────────
-
-def _parse_order(text, db):
-    text_lower  = text.lower()
-    menu_items  = db.execute(
-        "SELECT id, name FROM menu_items WHERE is_available = 1"
-    ).fetchall()
-
-    found = []
-    for item in menu_items:
-        name_lower = item['name'].lower()
-        if name_lower in text_lower:
-            qty = 1
-            for pattern in [
-                rf'(\d+)\s*(?:x\s*)?{re.escape(name_lower)}',
-                rf'{re.escape(name_lower)}\s*(?:x\s*)?(\d+)',
-            ]:
-                match = re.search(pattern, text_lower)
-                if match:
-                    qty = int(match.group(1))
-                    break
-            found.append({
-                'menu_item_id': item['id'],
-                'name':         item['name'],
-                'quantity':     qty,
-            })
-
-    return found if found else None
+def _parse_order_text(text):
+    """Simple regex-based order parser for common patterns."""
+    items = []
+    patterns = [
+        r'(\d+)\s*x?\s*(veg\s*noodles?|egg\s*noodles?|chicken\s*noodles?|double\s*egg\s*noodles?)',
+        r'(\d+)\s*x?\s*(veg\s*fried\s*rice|egg\s*fried\s*rice|chicken\s*fried\s*rice|double\s*egg\s*fried\s*rice)',
+        r'(\d+)\s*x?\s*(chicken\s*65)',
+    ]
+    for pattern in patterns:
+        matches = re.finditer(pattern, text.lower())
+        for match in matches:
+            items.append({'qty': int(match.group(1)), 'item': match.group(2).strip().title()})
+    return items

@@ -3,889 +3,2641 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VendorVault — Smart Sales & Profit Tracker</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <title>VendorVault</title>
     <style>
         :root {
             --bg-primary: #0f172a;
             --bg-secondary: #1e293b;
-            --bg-card: #1e293b;
-            --bg-card-hover: #334155;
-            --bg-input: #0f172a;
+            --bg-tertiary: #334155;
+            --accent: #6366f1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --accent-light: rgba(59,130,246,0.15);
-            --green: #22c55e;
-            --green-light: rgba(34,197,94,0.15);
-            --red: #ef4444;
-            --red-light: rgba(239,68,68,0.15);
-            --yellow: #eab308;
-            --yellow-light: rgba(234,179,8,0.15);
-            --purple: #a855f7;
-            --purple-light: rgba(168,85,247,0.15);
-            --orange: #f97316;
             --border: #334155;
-            --radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            touch-action: manipulation;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
+        }
+
+        #root {
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-primary); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-        .app-container { display: flex; min-height: 100vh; }
+        .app-container {
+            display: flex;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
 
-        /* ── Sidebar ────────────────────────────────────────────── */
+        .page-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-secondary);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .menu-toggle {
+            width: 48px;
+            height: 48px;
+            min-height: 44px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.2s;
+        }
+
+        .menu-toggle:active {
+            background: #5558e3;
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
         .sidebar {
-            width: 260px; background: var(--bg-secondary);
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-secondary);
             border-right: 1px solid var(--border);
-            padding: 24px 16px; position: fixed;
-            height: 100vh; overflow-y: auto; z-index: 100;
+            z-index: 1000;
+            transform: translateX(-100%);
             transition: transform 0.3s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
-        .sidebar-logo {
-            display: flex; align-items: center; gap: 12px;
-            padding: 0 8px 24px; border-bottom: 1px solid var(--border);
-            margin-bottom: 24px;
-        }
-        .sidebar-logo .logo-icon {
-            width: 40px; height: 40px;
-            background: linear-gradient(135deg, var(--accent), var(--purple));
-            border-radius: 10px; display: flex;
-            align-items: center; justify-content: center; font-size: 20px;
-        }
-        .sidebar-logo h1 {
-            font-size: 20px; font-weight: 700;
-            background: linear-gradient(135deg, var(--accent), var(--purple));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        .sidebar-logo span { font-size: 11px; color: var(--text-muted); display: block; }
 
-        .nav-section { margin-bottom: 24px; }
-        .nav-section-title {
-            font-size: 11px; font-weight: 600; text-transform: uppercase;
-            letter-spacing: 1px; color: var(--text-muted);
-            padding: 0 12px; margin-bottom: 8px;
+        .sidebar.open {
+            transform: translateX(0);
         }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+            display: none;
+        }
+
+        .sidebar-overlay.open {
+            display: block;
+        }
+
+        .sidebar-header {
+            padding: 20px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 8px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
         .nav-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 10px 12px; border-radius: 8px; cursor: pointer;
-            color: var(--text-secondary); font-size: 14px; font-weight: 500;
-            transition: all 0.2s; margin-bottom: 2px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            text-align: left;
+            font-size: 16px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
         }
-        .nav-item:hover { background: var(--bg-card-hover); color: var(--text-primary); }
-        .nav-item.active { background: var(--accent-light); color: var(--accent); }
-        .nav-item .nav-icon { font-size: 18px; width: 24px; text-align: center; }
 
-        /* ── Main ───────────────────────────────────────────────── */
-        .main-content { flex: 1; margin-left: 260px; padding: 24px 32px; min-height: 100vh; }
-
-        .page-header {
-            display: flex; justify-content: space-between;
-            align-items: center; margin-bottom: 28px;
+        .nav-item:active {
+            background: var(--bg-tertiary);
         }
-        .page-header h2 { font-size: 26px; font-weight: 700; }
-        .page-header p { color: var(--text-secondary); margin-top: 4px; font-size: 14px; }
 
-        /* ── Stat Cards ─────────────────────────────────────────── */
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px; margin-bottom: 28px;
+        .nav-item.active {
+            background: var(--accent);
+            color: white;
         }
+
+        .main-content {
+            padding: 16px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
         .stat-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 20px 24px; transition: all 0.2s;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            border-left: 4px solid var(--accent);
         }
-        .stat-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
-        .stat-card .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .stat-card .stat-label { font-size: 13px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
-        .stat-card .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-        .stat-card .stat-value { font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 6px; }
-        .stat-card .stat-change { font-size: 12px; font-weight: 500; }
-        .stat-change.positive { color: var(--green); }
 
-        /* ── Tables ─────────────────────────────────────────────── */
-        .data-table { width: 100%; border-collapse: collapse; }
-        .data-table th { text-align: left; padding: 12px 16px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border); }
-        .data-table td { padding: 14px 16px; font-size: 14px; border-bottom: 1px solid var(--border); }
-        .data-table tr:hover td { background: rgba(255,255,255,0.02); }
-
-        /* ── Buttons ────────────────────────────────────────────── */
-        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
-        .btn-success { background: var(--green); color: white; }
-        .btn-success:hover { background: #16a34a; }
-        .btn-danger { background: var(--red); color: white; }
-        .btn-outline { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
-        .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-        .btn-sm { padding: 6px 14px; font-size: 12px; }
-        .btn-icon { width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 8px; }
-
-        /* ── Forms ──────────────────────────────────────────────── */
-        .form-group { margin-bottom: 16px; }
-        .form-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
-        .form-input, .form-select { width: 100%; padding: 10px 14px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 14px; font-family: inherit; transition: border-color 0.2s; }
-        .form-input:focus, .form-select:focus { outline: none; border-color: var(--accent); }
-        .form-input::placeholder { color: var(--text-muted); }
-        .form-row { display: flex; gap: 16px; }
-        .form-row > * { flex: 1; }
-
-        /* ── Cards ──────────────────────────────────────────────── */
-        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-        .card-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .card-header h3 { font-size: 16px; font-weight: 600; }
-        .card-body { padding: 24px; }
-
-        /* ── Badges ─────────────────────────────────────────────── */
-        .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
-        .badge-green  { background: var(--green-light);  color: var(--green); }
-        .badge-red    { background: var(--red-light);    color: var(--red); }
-        .badge-yellow { background: var(--yellow-light); color: var(--yellow); }
-        .badge-blue   { background: var(--accent-light); color: var(--accent); }
-        .badge-purple { background: var(--purple-light); color: var(--purple); }
-
-        /* ── Modal ──────────────────────────────────────────────── */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-        .modal { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 16px; width: 95%; max-width: 600px; max-height: 85vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
-        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h3 { font-size: 18px; font-weight: 600; }
-        .modal-body { padding: 24px; }
-        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; }
-
-        /* ── Tabs ───────────────────────────────────────────────── */
-        .tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--bg-input); padding: 4px; border-radius: 10px; }
-        .tab { padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; border: none; background: none; font-family: inherit; }
-        .tab.active { background: var(--accent); color: white; }
-        .tab:hover:not(.active) { color: var(--text-primary); }
-
-        /* ── Order Builder ──────────────────────────────────────── */
-        .order-builder { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-        .menu-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; cursor: pointer; transition: all 0.2s; }
-        .menu-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-        .menu-card.selected { border-color: var(--green); background: var(--green-light); }
-        .menu-card .item-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-        .menu-card .item-price { font-size: 18px; font-weight: 700; color: var(--green); }
-        .menu-card .item-profit { font-size: 11px; color: var(--text-muted); }
-
-        /* ── Cart ───────────────────────────────────────────────── */
-        .cart { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); height: fit-content; position: sticky; top: 24px; }
-        .cart-header { padding: 18px 20px; border-bottom: 1px solid var(--border); font-weight: 600; }
-        .cart-items { padding: 16px 20px; max-height: 400px; overflow-y: auto; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
-        .cart-item:last-child { border-bottom: none; }
-        .cart-item .item-info { flex: 1; }
-        .cart-item .item-info .name { font-size: 14px; font-weight: 500; }
-        .cart-item .item-info .meta { font-size: 12px; color: var(--text-muted); }
-        .cart-qty { display: flex; align-items: center; gap: 8px; }
-        .cart-qty button { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-primary); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-        .cart-qty button:hover { border-color: var(--accent); }
-        .cart-qty span { font-weight: 600; min-width: 20px; text-align: center; }
-        .cart-total { padding: 16px 20px; border-top: 1px solid var(--border); }
-        .cart-total-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; }
-        .cart-total-row.grand { font-size: 18px; font-weight: 700; padding: 8px 0; border-top: 1px solid var(--border); margin-top: 8px; }
-        .cart-total-row .profit { color: var(--green); }
-        .cart-actions { padding: 16px 20px; border-top: 1px solid var(--border); }
-        .cart-actions .btn { width: 100%; justify-content: center; }
-
-        /* ── Charts ─────────────────────────────────────────────── */
-        .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 200px; padding: 20px 0; width: 100%; }
-        .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .bar { width: 100%; max-width: 60px; border-radius: 6px 6px 0 0; transition: height 0.5s ease; min-height: 4px; }
-        .bar-label { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
-        .bar-value { font-size: 12px; font-weight: 600; }
-
-        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-        .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
-        .empty-state h3 { color: var(--text-secondary); margin-bottom: 8px; }
-
-        /* ── Toast ──────────────────────────────────────────────── */
-        .toast-container { position: fixed; top: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
-        .toast { padding: 14px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; animation: slideIn 0.3s ease; display: flex; align-items: center; gap: 10px; min-width: 300px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .toast-success { background: var(--green); color: white; }
-        .toast-error { background: var(--red); color: white; }
-        .toast-info { background: var(--accent); color: white; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-        /* ── Profit Cards ───────────────────────────────────────── */
-        .profit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-        .profit-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
-        .profit-card .item-name { font-weight: 600; margin-bottom: 12px; }
-        .profit-bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin: 10px 0; }
-        .profit-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
-        .profit-detail { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; color: var(--text-secondary); }
-        .profit-detail .value { font-weight: 600; color: var(--text-primary); }
-
-        /* ── Purchase Cards ─────────────────────────────────────── */
-        .purchase-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; }
-        .purchase-card-header { padding: 16px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); cursor: pointer; }
-        .purchase-card-header .cat-icon { font-size: 24px; }
-        .purchase-card-header h4 { font-weight: 600; flex: 1; }
-        .purchase-card-body { padding: 16px 20px; }
-        .purchase-item-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 2fr; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
-        .purchase-item-row:last-child { border-bottom: none; }
-        .purchase-item-row input { padding: 8px 12px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: 14px; font-family: inherit; }
-        .purchase-item-row input:focus { outline: none; border-color: var(--accent); }
-
-        /* ── WhatsApp ───────────────────────────────────────────── */
-        .wa-status { display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: var(--bg-input); border-radius: 10px; margin-bottom: 20px; }
-        .wa-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .wa-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
-        .wa-dot.offline { background: var(--red); }
-
-        /* ── Responsive ─────────────────────────────────────────── */
-        @media (max-width: 1024px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
-            .main-content { margin-left: 0; }
-            .order-builder { grid-template-columns: 1fr; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .stat-card.success {
+            border-left-color: var(--success);
         }
-        @media (max-width: 640px) {
-            .main-content { padding: 16px; }
-            .stats-grid { grid-template-columns: 1fr; }
-            .purchase-item-row { grid-template-columns: 1fr 1fr; }
+
+        .stat-card.warning {
+            border-left-color: var(--warning);
+        }
+
+        .stat-card.danger {
+            border-left-color: var(--danger);
+        }
+
+        .stat-card.info {
+            border-left-color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-value.large {
+            font-size: 40px;
+        }
+
+        .stat-subtext {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .grid-1 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            min-height: 44px;
+            transition: background 0.2s;
+            font-size: 16px;
+        }
+
+        button:active {
+            background: #5558e3;
+        }
+
+        button.secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        button.secondary:active {
+            background: #475569;
+        }
+
+        button.danger {
+            background: var(--danger);
+        }
+
+        button.danger:active {
+            background: #dc2626;
+        }
+
+        button.success {
+            background: var(--success);
+        }
+
+        button.success:active {
+            background: #059669;
+        }
+
+        input, select, textarea {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            min-height: 44px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1001;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal-content {
+            width: 100%;
+            max-width: 600px;
+            background: var(--bg-secondary);
+            border-radius: 16px 16px 0 0;
+            padding: 24px 16px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        @media (min-width: 600px) {
+            .modal-overlay {
+                align-items: center;
+                justify-content: center;
+            }
+
+            .modal-content {
+                max-width: 500px;
+                width: auto;
+                border-radius: 12px;
+            }
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:active {
+            color: var(--text-primary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge.blue {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .badge.green {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .badge.emerald {
+            background: rgba(5, 150, 105, 0.2);
+            color: #059669;
+        }
+
+        .badge.yellow {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .badge.red {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .quantity-control button {
+            width: 36px;
+            height: 36px;
+            min-height: auto;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        .quantity-control input {
+            width: 60px;
+            text-align: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons button {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+
+        .tab-button {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            min-height: auto;
+        }
+
+        .tab-button.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 150px;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 8px 0;
+        }
+
+        .bar {
+            flex: 1;
+            background: var(--accent);
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .bar:hover {
+            background: #5558e3;
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 16px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            margin-top: 24px;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .category-header {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        .category-header:active {
+            background: #475569;
+        }
+
+        .category-items {
+            margin-left: 8px;
+            margin-bottom: 16px;
+        }
+
+        .category-item {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-item-info {
+            flex: 1;
+        }
+
+        .category-item-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .category-item-details {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .category-item-price {
+            font-weight: 700;
+            margin-right: 12px;
+        }
+
+        .emoji-picker {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .emoji-button {
+            aspect-ratio: 1;
+            font-size: 24px;
+            border: 2px solid var(--border);
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            min-height: auto;
+            padding: 0;
+        }
+
+        .emoji-button:active {
+            border-color: var(--accent);
+            background: var(--accent);
+        }
+
+        .emoji-button.selected {
+            border-color: var(--accent);
+            background: var(--accent);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .radio-button {
+            flex: 1;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.2s;
+            min-height: 44px;
+        }
+
+        .radio-button:active {
+            border-color: var(--accent);
+        }
+
+        .radio-button.selected {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .per-unit-price {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .margin-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .margin-good {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .margin-fair {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .margin-poor {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .wifi-panel {
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .wifi-url {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 16px 0;
+            word-break: break-all;
+            font-family: monospace;
+        }
+
+        .wifi-instructions {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 12px;
+        }
+
+        .accordion {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .accordion-header {
+            background: var(--bg-tertiary);
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            user-select: none;
+            border: none;
+            width: 100%;
+            color: var(--text-primary);
+            text-align: left;
+        }
+
+        .accordion-header:active {
+            background: #475569;
+        }
+
+        .accordion-body {
+            background: var(--bg-secondary);
+            padding: 0 16px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .accordion-body.open {
+            max-height: 2000px;
+            padding: 16px;
+        }
+
+        .add-button {
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 16px;
+            color: var(--text-secondary);
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            color: var(--danger);
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            color: var(--success);
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .menu-card {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            position: relative;
+            user-select: none;
+        }
+
+        .menu-card:active {
+            border-color: var(--accent);
+            background: var(--bg-secondary);
+        }
+
+        .menu-card.selected {
+            border-color: var(--success);
+            background: var(--bg-secondary);
+        }
+
+        .menu-card-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .menu-card-price {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .menu-card-qty {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--success);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .cart-summary {
+            position: sticky;
+            bottom: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .cart-total {
+            font-size: 20px;
+            font-weight: 700;
+            padding: 12px 0;
+            color: var(--success);
+        }
+
+        .inline-form-section {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            margin-left: 8px;
+        }
+
+        .inline-form-section .form-group {
+            margin-bottom: 8px;
+        }
+
+        .inline-form-section .form-group:last-child {
+            margin-bottom: 0;
         }
     </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useEffect } = React;
+    <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#94a3b8;font-family:sans-serif;font-size:18px">Loading VendorVault...</div></div>
+    <script>window.onerror=function(m,s,l,c,e){document.getElementById('root').innerHTML='<div style="padding:40px;color:#ef4444;font-family:monospace;font-size:14px;white-space:pre-wrap">Error: '+m+'\nLine: '+l+'\nCol: '+c+'</div>';}</script>
 
-/* ─── API helper ────────────────────────────────────────────────────── */
-const api = {
-    get:  async u => (await fetch(u)).json(),
-    post: async (u, d) => (await fetch(u, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d) })).json(),
-    put:  async (u, d) => (await fetch(u, { method:'PUT',  headers:{'Content-Type':'application/json'}, body:JSON.stringify(d) })).json(),
-    del:  async u => (await fetch(u, { method:'DELETE' })).json(),
-};
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 
-/* ─── Format helpers ────────────────────────────────────────────────── */
-const fmt    = n => '$' + Number(n||0).toFixed(2);
-const fmtPct = n => Number(n||0).toFixed(1) + '%';
-const fmtDate= d => new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-const fmtTime= d => new Date(d).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-/* ─── Toast ─────────────────────────────────────────────────────────── */
-function ToastContainer({ toasts }) {
-    return <div className="toast-container">{toasts.map((t,i) =>
-        <div key={i} className={`toast toast-${t.type}`}>
-            {t.type==='success'?'✅':t.type==='error'?'❌':'ℹ️'} {t.message}
-        </div>
-    )}</div>;
-}
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   DASHBOARD
-   ═══════════════════════════════════════════════════════════════════════ */
-function Dashboard() {
-    const [data, setData] = useState(null);
-    useEffect(() => { api.get('/api/dashboard').then(setData); }, []);
-    if (!data) return <div className="empty-state"><div className="icon">📊</div><h3>Loading…</h3></div>;
+        // Prevent gesture zoom
+        document.addEventListener('gesturestart', e => e.preventDefault());
 
-    const { today, this_week, this_month, top_items, recent_orders, hourly_sales } = data;
-    const maxRev = Math.max(...(hourly_sales||[]).map(h=>h.revenue), 1);
+        function App() {
+            const [currentPage, setCurrentPage] = useState('dashboard');
+            const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    return <div>
-        <div className="page-header"><div><h2>Dashboard</h2><p>Real-time business performance</p></div>
-            <button className="btn btn-outline" onClick={()=>window.location.reload()}>↻ Refresh</button></div>
+            const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+            const closeSidebar = () => setSidebarOpen(false);
 
-        <div className="stats-grid">
-            <div className="stat-card"><div className="stat-header"><span className="stat-label">Today's Revenue</span><div className="stat-icon" style={{background:'var(--accent-light)'}}>💰</div></div>
-                <div className="stat-value" style={{color:'var(--accent)'}}>{fmt(today.revenue)}</div>
-                <div className="stat-change positive">{today.total_orders} orders today</div></div>
-            <div className="stat-card"><div className="stat-header"><span className="stat-label">Today's Profit</span><div className="stat-icon" style={{background:'var(--green-light)'}}>📈</div></div>
-                <div className="stat-value" style={{color:'var(--green)'}}>{fmt(today.profit)}</div>
-                <div className="stat-change positive">{today.revenue>0?fmtPct((today.profit/today.revenue)*100):'0%'} margin</div></div>
-            <div className="stat-card"><div className="stat-header"><span className="stat-label">This Week</span><div className="stat-icon" style={{background:'var(--purple-light)'}}>📅</div></div>
-                <div className="stat-value" style={{color:'var(--purple)'}}>{fmt(this_week.revenue)}</div>
-                <div className="stat-change positive">{this_week.total_orders} orders · {fmt(this_week.profit)} profit</div></div>
-            <div className="stat-card"><div className="stat-header"><span className="stat-label">This Month</span><div className="stat-icon" style={{background:'var(--yellow-light)'}}>🏆</div></div>
-                <div className="stat-value" style={{color:'var(--yellow)'}}>{fmt(this_month.revenue)}</div>
-                <div className="stat-change positive">{this_month.total_orders} orders · {fmt(this_month.profit)} profit</div></div>
-        </div>
+            const navItems = [
+                { id: 'dashboard', label: 'Dashboard', emoji: '📊' },
+                { id: 'orders', label: 'Orders', emoji: '📋' },
+                { id: 'purchases', label: 'Purchases', emoji: '🛒' },
+                { id: 'reports', label: 'Reports', emoji: '📈' },
+                { id: 'profits', label: 'Profits', emoji: '💵' },
+                { id: 'cost-analysis', label: 'Cost Analysis', emoji: '💰' },
+                { id: 'settings', label: 'Settings', emoji: '⚙️' }
+            ];
 
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'24px',marginBottom:'24px'}}>
-            <div className="card"><div className="card-header"><h3>Hourly Sales Today</h3></div><div className="card-body">
-                {hourly_sales?.length>0 ? <div className="bar-chart">{hourly_sales.map((h,i)=>
-                    <div className="bar-group" key={i}><div className="bar-value">{fmt(h.revenue)}</div>
-                        <div className="bar" style={{height:`${(h.revenue/maxRev)*150}px`,background:'linear-gradient(to top,var(--accent),var(--purple))'}}/>
-                        <div className="bar-label">{h.hour}:00</div></div>
-                )}</div> : <div className="empty-state"><div className="icon">📊</div><p>No sales yet today</p></div>}
-            </div></div>
-            <div className="card"><div className="card-header"><h3>Top Items Today</h3></div><div className="card-body">
-                {top_items?.length>0 ? <table className="data-table"><thead><tr><th>Item</th><th>Qty</th><th>Revenue</th></tr></thead><tbody>
-                    {top_items.map((it,i)=><tr key={i}><td style={{fontWeight:600}}>{it.item_name}</td>
-                        <td><span className="badge badge-blue">{it.qty}</span></td>
-                        <td style={{fontWeight:600,color:'var(--green)'}}>{fmt(it.revenue)}</td></tr>)}
-                </tbody></table> : <div className="empty-state"><div className="icon">🍜</div><p>No items sold yet</p></div>}
-            </div></div>
-        </div>
-
-        <div className="card"><div className="card-header"><h3>Recent Orders</h3></div><div className="card-body" style={{padding:0}}>
-            {recent_orders?.length>0 ? <table className="data-table"><thead><tr><th>Order #</th><th>Customer</th><th>Source</th><th>Revenue</th><th>Profit</th><th>Status</th><th>Time</th></tr></thead><tbody>
-                {recent_orders.map((o,i)=><tr key={i}>
-                    <td style={{fontWeight:600}}>{o.order_number}</td><td>{o.customer_name}</td>
-                    <td><span className={`badge ${o.source==='whatsapp'?'badge-green':o.source==='call'?'badge-yellow':'badge-blue'}`}>{o.source}</span></td>
-                    <td style={{fontWeight:600}}>{fmt(o.subtotal)}</td>
-                    <td style={{fontWeight:600,color:'var(--green)'}}>{fmt(o.profit)}</td>
-                    <td><span className={`badge ${o.status==='completed'?'badge-green':o.status==='cancelled'?'badge-red':'badge-yellow'}`}>{o.status}</span></td>
-                    <td style={{color:'var(--text-muted)'}}>{fmtTime(o.created_at)}</td></tr>)}
-            </tbody></table> : <div className="empty-state"><div className="icon">📋</div><h3>No orders yet</h3><p>Create your first order from the Orders page</p></div>}
-        </div></div>
-    </div>;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   ORDERS
-   ═══════════════════════════════════════════════════════════════════════ */
-function OrdersPage({ addToast }) {
-    const [menu, setMenu] = useState([]);
-    const [cart, setCart] = useState([]);
-    const [orders, setOrders] = useState([]);
-    const [name, setName] = useState('');
-    const [phone, setPhone] = useState('');
-    const [source, setSource] = useState('offline');
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-    const [showHistory, setShowHistory] = useState(false);
-
-    useEffect(() => { api.get('/api/menu').then(setMenu); loadOrders(); }, []);
-    const loadOrders = () => api.get(`/api/orders?date=${date}`).then(setOrders);
-    useEffect(() => { loadOrders(); }, [date]);
-
-    const addToCart = item => setCart(prev => {
-        const ex = prev.find(c=>c.id===item.id);
-        return ex ? prev.map(c=>c.id===item.id?{...c,qty:c.qty+1}:c) : [...prev,{id:item.id,name:item.name,price:item.selling_price,cost:item.cost_per_item,qty:1}];
-    });
-    const updateQty = (id,d) => setCart(prev=>prev.map(c=>c.id===id?{...c,qty:c.qty+d}:c).filter(c=>c.qty>0));
-
-    const total  = cart.reduce((s,c)=>s+c.price*c.qty, 0);
-    const cost   = cart.reduce((s,c)=>s+c.cost*c.qty, 0);
-    const profit = total - cost;
-
-    const placeOrder = async () => {
-        if (!cart.length) return addToast('Add items first','error');
-        const r = await api.post('/api/orders', { customer_name:name||'Walk-in', customer_phone:phone, source, items:cart.map(c=>({menu_item_id:c.id,quantity:c.qty})) });
-        if (r.success) { addToast(`Order ${r.order_number} placed! Profit: ${fmt(r.profit)}`,'success'); setCart([]); setName(''); setPhone(''); loadOrders(); }
-    };
-    const cancelOrder = async id => { await api.del(`/api/orders/${id}`); addToast('Order cancelled','info'); loadOrders(); };
-
-    return <div>
-        <div className="page-header"><div><h2>Orders</h2><p>Create and manage orders</p></div>
-            <div className="tabs"><button className={`tab ${!showHistory?'active':''}`} onClick={()=>setShowHistory(false)}>New Order</button>
-                <button className={`tab ${showHistory?'active':''}`} onClick={()=>setShowHistory(true)}>History</button></div></div>
-
-        {!showHistory ? <div className="order-builder"><div>
-            <div className="card" style={{marginBottom:'20px'}}><div className="card-body"><div className="form-row">
-                <div className="form-group"><label className="form-label">Customer</label><input className="form-input" placeholder="Walk-in" value={name} onChange={e=>setName(e.target.value)}/></div>
-                <div className="form-group"><label className="form-label">Phone</label><input className="form-input" placeholder="Optional" value={phone} onChange={e=>setPhone(e.target.value)}/></div>
-                <div className="form-group"><label className="form-label">Source</label><select className="form-select" value={source} onChange={e=>setSource(e.target.value)}>
-                    <option value="offline">Walk-in</option><option value="call">Phone Call</option><option value="whatsapp">WhatsApp</option><option value="online">Online</option>
-                </select></div>
-            </div></div></div>
-
-            {menu.map((cat,ci)=><div key={ci} style={{marginBottom:'20px'}}>
-                <h3 style={{marginBottom:'12px'}}>{cat.category.icon} {cat.category.name}</h3>
-                <div className="menu-grid">{cat.items.filter(i=>i.is_available).map((item,ii)=>{
-                    const inCart = cart.find(c=>c.id===item.id);
-                    return <div key={ii} className={`menu-card ${inCart?'selected':''}`} onClick={()=>addToCart(item)}>
-                        <div className="item-name">{item.name}</div>
-                        <div className="item-price">{fmt(item.selling_price)}</div>
-                        <div className="item-profit">Profit: {fmt(item.profit_per_item)} ({fmtPct(item.profit_margin)})</div>
-                        {inCart && <span className="badge badge-green" style={{marginTop:'8px'}}>x{inCart.qty} in cart</span>}
-                    </div>;
-                })}</div>
-            </div>)}
-        </div>
-
-        <div className="cart">
-            <div className="cart-header">🛒 Order ({cart.reduce((s,c)=>s+c.qty,0)} items)</div>
-            {cart.length>0 ? <>
-                <div className="cart-items">{cart.map((c,i)=><div className="cart-item" key={i}>
-                    <div className="item-info"><div className="name">{c.name}</div><div className="meta">{fmt(c.price)} each</div></div>
-                    <div className="cart-qty"><button onClick={()=>updateQty(c.id,-1)}>−</button><span>{c.qty}</span><button onClick={()=>updateQty(c.id,1)}>+</button></div>
-                    <div style={{width:'70px',textAlign:'right',fontWeight:600}}>{fmt(c.price*c.qty)}</div>
-                </div>)}</div>
-                <div className="cart-total">
-                    <div className="cart-total-row"><span>Subtotal</span><span>{fmt(total)}</span></div>
-                    <div className="cart-total-row"><span>Cost</span><span style={{color:'var(--red)'}}>{fmt(cost)}</span></div>
-                    <div className="cart-total-row grand"><span>Profit</span><span className="profit">{fmt(profit)}</span></div>
-                    <div className="cart-total-row" style={{fontSize:'12px',color:'var(--text-muted)'}}><span>Margin</span><span>{fmtPct((profit/total)*100)}</span></div>
-                </div>
-                <div className="cart-actions">
-                    <button className="btn btn-success" onClick={placeOrder}>✓ Place Order — {fmt(total)}</button>
-                    <button className="btn btn-outline" style={{width:'100%',marginTop:'8px',justifyContent:'center'}} onClick={()=>setCart([])}>Clear</button>
-                </div>
-            </> : <div className="empty-state" style={{padding:'40px 20px'}}><div className="icon">🛒</div><p>Tap items to add</p></div>}
-        </div></div>
-
-        : <div>
-            <div style={{marginBottom:'20px',display:'flex',gap:'12px',alignItems:'center'}}>
-                <input type="date" className="form-input" style={{width:'auto'}} value={date} onChange={e=>setDate(e.target.value)}/>
-                <span style={{color:'var(--text-muted)'}}>{orders.length} orders</span></div>
-            <div className="card"><div className="card-body" style={{padding:0}}>
-                {orders.length>0 ? <table className="data-table"><thead><tr><th>Order #</th><th>Customer</th><th>Items</th><th>Source</th><th>Revenue</th><th>Profit</th><th>Status</th><th></th></tr></thead><tbody>
-                    {orders.map((o,i)=><tr key={i}><td style={{fontWeight:600}}>{o.order_number}</td><td>{o.customer_name}</td>
-                        <td>{o.items?.map(it=>`${it.item_name} x${it.quantity}`).join(', ')}</td>
-                        <td><span className={`badge ${o.source==='whatsapp'?'badge-green':'badge-blue'}`}>{o.source}</span></td>
-                        <td style={{fontWeight:600}}>{fmt(o.subtotal)}</td>
-                        <td style={{fontWeight:600,color:'var(--green)'}}>{fmt(o.profit)}</td>
-                        <td><span className={`badge ${o.status==='completed'?'badge-green':'badge-red'}`}>{o.status}</span></td>
-                        <td>{o.status!=='cancelled'&&<button className="btn btn-danger btn-sm" onClick={()=>cancelOrder(o.id)}>Cancel</button>}</td></tr>)}
-                </tbody></table> : <div className="empty-state"><div className="icon">📋</div><h3>No orders on this date</h3></div>}
-            </div></div>
-        </div>}
-    </div>;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   MENU MANAGEMENT
-   ═══════════════════════════════════════════════════════════════════════ */
-function MenuPage({ addToast }) {
-    const [menu, setMenu] = useState([]);
-    const [breakdown, setBreakdown] = useState({});
-    const [showModal, setShowModal] = useState(false);
-    const [editItem, setEditItem] = useState(null);
-    const [expandedItem, setExpandedItem] = useState(null);
-    const [form, setForm] = useState({name:'',selling_price:'',cost_per_item:'',category_id:'',is_sunday_only:false});
-
-    const load = () => { api.get('/api/menu').then(setMenu); api.get('/api/menu/cost-breakdown').then(setBreakdown); };
-    useEffect(() => { load(); }, []);
-
-    const openEdit = item => { setEditItem(item); setForm({name:item.name,selling_price:item.selling_price,cost_per_item:item.cost_per_item,category_id:item.category_id,is_sunday_only:item.is_sunday_only}); setShowModal(true); };
-    const openAdd  = () => { setEditItem(null); setForm({name:'',selling_price:'',cost_per_item:'',category_id:menu[0]?.category?.id||1,is_sunday_only:false}); setShowModal(true); };
-
-    const save = async () => {
-        const d = {...form, selling_price:parseFloat(form.selling_price), cost_per_item:parseFloat(form.cost_per_item), is_sunday_only:form.is_sunday_only?1:0};
-        if (editItem) { await api.put(`/api/menu/item/${editItem.id}`,d); addToast(`${form.name} updated!`,'success'); }
-        else { await api.post('/api/menu/item',d); addToast(`${form.name} added!`,'success'); }
-        setShowModal(false); load();
-    };
-
-    const del = async (id,n) => { if(confirm(`Delete ${n}?`)){await api.del(`/api/menu/item/${id}`); addToast(`${n} removed`,'info'); load();} };
-    const toggle = async item => { await api.put(`/api/menu/item/${item.id}`,{is_available:item.is_available?0:1}); load(); };
-
-    return <div>
-        <div className="page-header"><div><h2>Menu Management</h2><p>Items, prices, and cost breakdown</p></div>
-            <button className="btn btn-primary" onClick={openAdd}>+ Add Item</button></div>
-
-        <div className="profit-grid" style={{marginBottom:'28px'}}>
-            {menu.flatMap(cat=>cat.items).map((item,i)=>{
-                const m=item.profit_margin||0; const clr=m>=70?'var(--green)':m>=50?'var(--yellow)':'var(--red)';
-                return <div className="profit-card" key={i}>
-                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                        <div className="item-name">{item.name}</div>
-                        <div style={{display:'flex',gap:'4px'}}>
-                            <button className="btn btn-outline btn-sm" onClick={()=>openEdit(item)}>Edit</button>
-                            <button className="btn btn-sm" style={{background:item.is_available?'var(--green-light)':'var(--red-light)',color:item.is_available?'var(--green)':'var(--red)'}} onClick={()=>toggle(item)}>{item.is_available?'ON':'OFF'}</button>
-                        </div></div>
-                    <div className="profit-bar-container"><div className="profit-bar-fill" style={{width:`${m}%`,background:clr}}/></div>
-                    <div className="profit-detail"><span>Selling Price</span><span className="value">{fmt(item.selling_price)}</span></div>
-                    <div className="profit-detail"><span>Cost</span><span className="value" style={{color:'var(--red)'}}>{fmt(item.cost_per_item)}</span></div>
-                    <div className="profit-detail"><span>Profit</span><span className="value" style={{color:'var(--green)'}}>{fmt(item.profit_per_item)}</span></div>
-                    <div className="profit-detail"><span>Margin</span><span className="value" style={{color:clr}}>{fmtPct(m)}</span></div>
-                    {/* Expandable cost breakdown */}
-                    <button className="btn btn-outline btn-sm" style={{width:'100%',justifyContent:'center',marginTop:'8px'}}
-                        onClick={()=>setExpandedItem(expandedItem===item.name?null:item.name)}>
-                        {expandedItem===item.name?'▲ Hide':'▼ Show'} Cost Breakdown
-                    </button>
-                    {expandedItem===item.name && breakdown[item.name] && <div style={{marginTop:'8px',background:'var(--bg-input)',borderRadius:'8px',padding:'12px'}}>
-                        {breakdown[item.name].map((ing,j)=><div key={j} style={{display:'flex',justifyContent:'space-between',padding:'4px 0',fontSize:'13px',borderBottom:j<breakdown[item.name].length-1?'1px solid var(--border)':'none'}}>
-                            <span style={{color:'var(--text-secondary)'}}>{ing.ingredient}</span>
-                            <span style={{fontWeight:600}}>{fmt(ing.cost)}</span>
-                        </div>)}
-                        <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0 0',fontSize:'13px',fontWeight:700,borderTop:'1px solid var(--border)',marginTop:'4px'}}>
-                            <span>Total Cost</span><span style={{color:'var(--red)'}}>{fmt(breakdown[item.name].reduce((s,x)=>s+x.cost,0))}</span>
+            return (
+                <div className="app-container">
+                    <div className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`} onClick={closeSidebar}></div>
+                    <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+                        <div className="sidebar-header">VendorVault</div>
+                        <div className="sidebar-nav">
+                            {navItems.map(item => (
+                                <button
+                                    key={item.id}
+                                    className={`nav-item ${currentPage === item.id ? 'active' : ''}`}
+                                    onClick={() => {
+                                        setCurrentPage(item.id);
+                                        closeSidebar();
+                                    }}
+                                >
+                                    <span>{item.emoji}</span>
+                                    <span>{item.label}</span>
+                                </button>
+                            ))}
                         </div>
-                    </div>}
-                </div>;
-            })}
-        </div>
-
-        {showModal && <div className="modal-overlay" onClick={()=>setShowModal(false)}><div className="modal" onClick={e=>e.stopPropagation()}>
-            <div className="modal-header"><h3>{editItem?'Edit':'Add'} Menu Item</h3><button className="btn btn-icon btn-outline" onClick={()=>setShowModal(false)}>✕</button></div>
-            <div className="modal-body">
-                <div className="form-group"><label className="form-label">Item Name</label><input className="form-input" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></div>
-                <div className="form-row">
-                    <div className="form-group"><label className="form-label">Selling Price ($)</label><input className="form-input" type="number" step="0.01" value={form.selling_price} onChange={e=>setForm({...form,selling_price:e.target.value})}/></div>
-                    <div className="form-group"><label className="form-label">Cost ($)</label><input className="form-input" type="number" step="0.01" value={form.cost_per_item} onChange={e=>setForm({...form,cost_per_item:e.target.value})}/></div>
-                </div>
-                <div className="form-row">
-                    <div className="form-group"><label className="form-label">Category</label><select className="form-select" value={form.category_id} onChange={e=>setForm({...form,category_id:parseInt(e.target.value)})}>
-                        {menu.map(cat=><option key={cat.category.id} value={cat.category.id}>{cat.category.icon} {cat.category.name}</option>)}</select></div>
-                    <div className="form-group" style={{display:'flex',alignItems:'flex-end',paddingBottom:'10px'}}>
-                        <label style={{display:'flex',alignItems:'center',gap:'8px',cursor:'pointer'}}>
-                            <input type="checkbox" checked={form.is_sunday_only} onChange={e=>setForm({...form,is_sunday_only:e.target.checked})}/>
-                            <span className="form-label" style={{margin:0}}>Sunday Only</span></label></div>
-                </div>
-                {form.selling_price&&form.cost_per_item&&<div style={{background:'var(--bg-input)',padding:'14px 18px',borderRadius:'8px',marginTop:'8px'}}>
-                    <div style={{display:'flex',justifyContent:'space-between',marginBottom:'4px'}}><span style={{color:'var(--text-secondary)',fontSize:'13px'}}>Profit</span><span style={{color:'var(--green)',fontWeight:700}}>{fmt(form.selling_price-form.cost_per_item)}</span></div>
-                    <div style={{display:'flex',justifyContent:'space-between'}}><span style={{color:'var(--text-secondary)',fontSize:'13px'}}>Margin</span><span style={{fontWeight:700}}>{fmtPct(((form.selling_price-form.cost_per_item)/form.selling_price)*100)}</span></div>
-                </div>}
-            </div>
-            <div className="modal-footer"><button className="btn btn-outline" onClick={()=>setShowModal(false)}>Cancel</button><button className="btn btn-success" onClick={save}>{editItem?'Save':'Add'}</button></div>
-        </div></div>}
-    </div>;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   PURCHASES
-   ═══════════════════════════════════════════════════════════════════════ */
-function PurchasesPage({ addToast }) {
-    const [data, setData] = useState([]);
-    const [exp, setExp] = useState({});
-    const [showAddItem, setShowAddItem] = useState(false);
-    const [showAddCat, setShowAddCat] = useState(false);
-    const [addToCatId, setAddToCatId] = useState(null);
-    const [itemForm, setItemForm] = useState({name:'',unit:'unit',quantity:'',price:'',notes:''});
-    const [catForm, setCatForm] = useState({name:'',icon:'📦'});
-
-    const load = () => api.get('/api/purchases').then(setData);
-    useEffect(() => { load(); }, []);
-    const toggle = id => setExp(p=>({...p,[id]:!p[id]}));
-    const update = async (id,f,v) => { await api.put(`/api/purchases/item/${id}`,{[f]:f==='notes'?v:parseFloat(v)||0}); addToast('Updated! Menu costs recalculated.','success'); load(); };
-    const total = data.reduce((s,c)=>s+c.items.reduce((s2,i)=>s2+i.price,0),0);
-
-    const openAddItem = (catId) => { setAddToCatId(catId); setItemForm({name:'',unit:'unit',quantity:'',price:'',notes:''}); setShowAddItem(true); };
-    const addItem = async () => {
-        if(!itemForm.name||!itemForm.price){addToast('Name and price required','error');return;}
-        await api.post('/api/purchases/item',{category_id:addToCatId,name:itemForm.name,unit:itemForm.unit,quantity:parseFloat(itemForm.quantity)||0,price:parseFloat(itemForm.price)||0,notes:itemForm.notes});
-        addToast(`${itemForm.name} added!`,'success'); setShowAddItem(false); load();
-    };
-    const addCat = async () => {
-        if(!catForm.name){addToast('Name required','error');return;}
-        await api.post('/api/purchases/category',catForm);
-        addToast(`${catForm.name} category added!`,'success'); setShowAddCat(false); setCatForm({name:'',icon:'📦'}); load();
-    };
-    const delItem = async (id,name) => { if(confirm(`Delete ${name}?`)){await api.del(`/api/purchases/item/${id}`); addToast(`${name} removed`,'info'); load();} };
-
-    const units = ['unit','lbs','kg','dozen','packets','gallon','liters','pack','batch','count','oz','grams'];
-    const emojiOptions = ['📦','🍗','🥚','🍚','🍜','🛢️','🥬','🧂','🧴','🥤','🍞','🫘'];
-
-    return <div>
-        <div className="page-header"><div><h2>Purchase Tracker</h2><p>Update prices → menu costs auto-recalculate</p></div>
-            <div style={{display:'flex',gap:'12px',alignItems:'center'}}>
-                <div className="stat-card" style={{margin:0,minWidth:'180px'}}><div className="stat-label">Total Weekly Spend</div>
-                    <div className="stat-value" style={{fontSize:'22px',color:'var(--orange)',marginTop:'4px'}}>{fmt(total)}</div></div>
-                <button className="btn btn-primary" onClick={()=>setShowAddCat(true)}>+ Category</button>
-            </div></div>
-
-        {data.map((cat,ci)=><div className="purchase-card" key={ci}>
-            <div className="purchase-card-header" onClick={()=>toggle(cat.category.id)}>
-                <span className="cat-icon">{cat.category.icon}</span><h4>{cat.category.name}</h4>
-                <span style={{color:'var(--text-muted)',fontSize:'14px'}}>{cat.items.length} items · {fmt(cat.items.reduce((s,i)=>s+i.price,0))}</span>
-                <span style={{color:'var(--text-muted)'}}>{exp[cat.category.id]?'▲':'▼'}</span></div>
-            {exp[cat.category.id]&&<div className="purchase-card-body">
-                <div className="purchase-item-row" style={{fontWeight:600,fontSize:'12px',color:'var(--text-muted)',borderBottom:'1px solid var(--border)'}}><span>ITEM</span><span>QTY</span><span>PRICE ($)</span><span>PER UNIT</span><span></span></div>
-                {cat.items.map((it,ii)=><div className="purchase-item-row" key={ii}>
-                    <span style={{fontWeight:500}}>{it.name}</span>
-                    <input defaultValue={it.quantity} onBlur={e=>update(it.id,'quantity',e.target.value)} style={{textAlign:'center'}}/>
-                    <input defaultValue={it.price.toFixed(2)} onBlur={e=>update(it.id,'price',e.target.value)} style={{textAlign:'center'}}/>
-                    <span style={{color:'var(--accent)',fontWeight:600}}>{fmt(it.price_per_unit)}/{it.unit}</span>
-                    <div style={{display:'flex',gap:'6px',alignItems:'center'}}>
-                        <span style={{color:'var(--text-muted)',fontSize:'11px',flex:1}}>{it.notes}</span>
-                        <button onClick={()=>delItem(it.id,it.name)} style={{background:'none',border:'none',color:'var(--red)',cursor:'pointer',fontSize:'16px',padding:'2px 6px',borderRadius:'4px'}} title="Delete">✕</button>
                     </div>
-                </div>)}
-                <div style={{paddingTop:'12px',borderTop:'1px solid var(--border)',marginTop:'8px'}}>
-                    <button className="btn btn-outline btn-sm" onClick={()=>openAddItem(cat.category.id)} style={{width:'100%',justifyContent:'center'}}>
-                        + Add item to {cat.category.name}
-                    </button>
+
+                    <div className="page-content">
+                        <div className="header">
+                            <button className="menu-toggle" onClick={toggleSidebar}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                    <line x1="4" y1="6" x2="20" y2="6"></line>
+                                    <line x1="4" y1="12" x2="20" y2="12"></line>
+                                    <line x1="4" y1="18" x2="20" y2="18"></line>
+                                </svg>
+                            </button>
+                            <div>
+                                <h1 className="page-title">
+                                    {navItems.find(i => i.id === currentPage)?.emoji} {navItems.find(i => i.id === currentPage)?.label}
+                                </h1>
+                                <div className="page-subtitle">
+                                    {currentPage === 'dashboard' && 'Your business at a glance'}
+                                    {currentPage === 'orders' && 'Manage customer orders'}
+                                    {currentPage === 'purchases' && 'Track inventory and costs'}
+                                    {currentPage === 'reports' && 'View detailed analytics'}
+                                    {currentPage === 'profits' && 'Track your earnings'}
+                                    {currentPage === 'cost-analysis' && 'Analyze profitability'}
+                                    {currentPage === 'settings' && 'Configure your business'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="main-content">
+                            {currentPage === 'dashboard' && <Dashboard />}
+                            {currentPage === 'orders' && <Orders />}
+                            {currentPage === 'purchases' && <Purchases />}
+                            {currentPage === 'reports' && <Reports />}
+                            {currentPage === 'profits' && <Profits />}
+                            {currentPage === 'cost-analysis' && <CostAnalysis />}
+                            {currentPage === 'settings' && <Settings />}
+                        </div>
+                    </div>
                 </div>
-            </div>}
-        </div>)}
+            );
+        }
 
-        {/* Add Item Modal */}
-        {showAddItem&&<div className="modal-overlay" onClick={()=>setShowAddItem(false)}><div className="modal" onClick={e=>e.stopPropagation()}>
-            <div className="modal-header"><h3>Add Purchase Item</h3><button className="btn btn-icon btn-outline" onClick={()=>setShowAddItem(false)}>✕</button></div>
-            <div className="modal-body">
-                <div className="form-group"><label className="form-label">Item Name</label>
-                    <input className="form-input" placeholder="e.g., Chicken, Eggs, Soy Sauce…" value={itemForm.name} onChange={e=>setItemForm({...itemForm,name:e.target.value})}/></div>
-                <div className="form-row">
-                    <div className="form-group"><label className="form-label">Quantity</label>
-                        <input className="form-input" type="number" step="0.01" placeholder="e.g., 12" value={itemForm.quantity} onChange={e=>setItemForm({...itemForm,quantity:e.target.value})}/></div>
-                    <div className="form-group"><label className="form-label">Unit</label>
-                        <select className="form-select" value={itemForm.unit} onChange={e=>setItemForm({...itemForm,unit:e.target.value})}>
-                            {units.map(u=><option key={u} value={u}>{u}</option>)}</select></div>
-                    <div className="form-group"><label className="form-label">Total Price ($)</label>
-                        <input className="form-input" type="number" step="0.01" placeholder="e.g., 22.00" value={itemForm.price} onChange={e=>setItemForm({...itemForm,price:e.target.value})}/></div>
-                </div>
-                {itemForm.quantity&&itemForm.price&&<div style={{background:'var(--bg-input)',padding:'12px 16px',borderRadius:'8px',display:'flex',justifyContent:'space-between'}}>
-                    <span style={{color:'var(--text-secondary)',fontSize:'13px'}}>Price per {itemForm.unit}</span>
-                    <span style={{color:'var(--accent)',fontWeight:700}}>{fmt(parseFloat(itemForm.price)/parseFloat(itemForm.quantity))}</span>
-                </div>}
-                <div className="form-group" style={{marginTop:'12px'}}><label className="form-label">Notes (optional)</label>
-                    <input className="form-input" placeholder="e.g., 2 eggs per order" value={itemForm.notes} onChange={e=>setItemForm({...itemForm,notes:e.target.value})}/></div>
-            </div>
-            <div className="modal-footer"><button className="btn btn-outline" onClick={()=>setShowAddItem(false)}>Cancel</button>
-                <button className="btn btn-success" onClick={addItem}>Add Item</button></div>
-        </div></div>}
+        function Dashboard() {
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
 
-        {/* Add Category Modal */}
-        {showAddCat&&<div className="modal-overlay" onClick={()=>setShowAddCat(false)}><div className="modal" onClick={e=>e.stopPropagation()}>
-            <div className="modal-header"><h3>Add Purchase Category</h3><button className="btn btn-icon btn-outline" onClick={()=>setShowAddCat(false)}>✕</button></div>
-            <div className="modal-body">
-                <div className="form-group"><label className="form-label">Category Name</label>
-                    <input className="form-input" placeholder="e.g., Beverages, Frozen, Dry Goods…" value={catForm.name} onChange={e=>setCatForm({...catForm,name:e.target.value})}/></div>
-                <div className="form-group"><label className="form-label">Icon</label>
-                    <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
-                        {emojiOptions.map(em=><button key={em} onClick={()=>setCatForm({...catForm,icon:em})}
-                            style={{width:'40px',height:'40px',borderRadius:'8px',border:catForm.icon===em?'2px solid var(--accent)':'1px solid var(--border)',
-                            background:catForm.icon===em?'var(--accent-light)':'var(--bg-input)',fontSize:'20px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>{em}</button>)}
-                    </div></div>
-            </div>
-            <div className="modal-footer"><button className="btn btn-outline" onClick={()=>setShowAddCat(false)}>Cancel</button>
-                <button className="btn btn-success" onClick={addCat}>Add Category</button></div>
-        </div></div>}
-    </div>;
-}
+            useEffect(() => {
+                fetchDashboard();
+            }, []);
 
-/* ═══════════════════════════════════════════════════════════════════════
-   REPORTS
-   ═══════════════════════════════════════════════════════════════════════ */
-function ReportsPage() {
-    const [tab,setTab]=useState('daily');
-    const [daily,setDaily]=useState([]); const [weekly,setWeekly]=useState([]); const [monthly,setMonthly]=useState([]);
-    const [items,setItems]=useState([]); const [margins,setMargins]=useState([]);
+            const fetchDashboard = async () => {
+                try {
+                    setLoading(true);
+                    const res = await fetch('/api/dashboard');
+                    if (!res.ok) throw new Error('Failed to load dashboard');
+                    const json = await res.json();
+                    setData(json);
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                    setData(null);
+                }
+                setLoading(false);
+            };
 
-    useEffect(()=>{
-        api.get('/api/reports/daily?days=30').then(setDaily);
-        api.get('/api/reports/weekly').then(setWeekly);
-        api.get('/api/reports/monthly').then(setMonthly);
-        api.get('/api/reports/items').then(setItems);
-        api.get('/api/reports/profit-breakdown').then(setMargins);
-    },[]);
+            if (loading) return <div className="loading">Loading...</div>;
+            if (error) return <div className="error">Error: {error}</div>;
+            if (!data) return <div className="empty-state">No data available</div>;
 
-    const d = tab==='daily'?daily:tab==='weekly'?weekly:monthly;
-    const tRev=d.reduce((s,r)=>s+r.revenue,0); const tProf=d.reduce((s,r)=>s+r.profit,0); const tOrd=d.reduce((s,r)=>s+r.total_orders,0);
-    const mx=Math.max(...d.map(r=>r.revenue),1);
+            return (
+                <>
+                    <div className="grid-1">
+                        <div className="stat-card success">
+                            <div className="stat-label">Today's Revenue</div>
+                            <div className="stat-value large">${(data.today.revenue || 0).toFixed(2)}</div>
+                            <div className="stat-subtext">{data.today.orders} orders</div>
+                        </div>
+                    </div>
 
-    return <div>
-        <div className="page-header"><div><h2>Reports & Analytics</h2><p>Business performance insights</p></div>
-            <a href={`/api/export/orders?from=${new Date(Date.now()-30*86400000).toISOString().split('T')[0]}&to=${new Date().toISOString().split('T')[0]}`} className="btn btn-outline" download>📥 Export CSV</a></div>
+                    <div className="grid-1">
+                        <div className="stat-card info">
+                            <div className="stat-label">Today's Orders</div>
+                            <div className="stat-value large">{data.today.orders || 0}</div>
+                            <div className="stat-subtext">orders completed</div>
+                        </div>
+                    </div>
 
-        <div className="tabs" style={{marginBottom:'24px'}}><button className={`tab ${tab==='daily'?'active':''}`} onClick={()=>setTab('daily')}>Daily</button>
-            <button className={`tab ${tab==='weekly'?'active':''}`} onClick={()=>setTab('weekly')}>Weekly</button>
-            <button className={`tab ${tab==='monthly'?'active':''}`} onClick={()=>setTab('monthly')}>Monthly</button></div>
+                    <div className="card">
+                        <div className="section-title">Hourly Sales</div>
+                        {data.hourly && data.hourly.length > 0 ? (
+                            <div className="bar-chart">
+                                {data.hourly.map((h, i) => {
+                                    const maxRevenue = Math.max(...data.hourly.map(x => x.revenue), 1);
+                                    const height = (h.revenue / maxRevenue) * 100;
+                                    return (
+                                        <div key={i} style={{ flex: 1, position: 'relative', height: '100%', display: 'flex', alignItems: 'flex-end' }}>
+                                            <div style={{
+                                                width: '100%',
+                                                height: height + '%',
+                                                background: 'var(--accent)',
+                                                borderRadius: '4px 4px 0 0',
+                                                minHeight: '4px',
+                                                transition: 'background 0.2s'
+                                            }}></div>
+                                            <div className="bar-label">{h.hour}h</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="empty-state">No hourly data</div>
+                        )}
+                    </div>
 
-        <div className="stats-grid">
-            <div className="stat-card"><div className="stat-label">Revenue ({tab})</div><div className="stat-value" style={{fontSize:'24px',color:'var(--accent)',marginTop:'8px'}}>{fmt(tRev)}</div></div>
-            <div className="stat-card"><div className="stat-label">Profit ({tab})</div><div className="stat-value" style={{fontSize:'24px',color:'var(--green)',marginTop:'8px'}}>{fmt(tProf)}</div></div>
-            <div className="stat-card"><div className="stat-label">Orders ({tab})</div><div className="stat-value" style={{fontSize:'24px',color:'var(--purple)',marginTop:'8px'}}>{tOrd}</div></div>
-            <div className="stat-card"><div className="stat-label">Avg Margin</div><div className="stat-value" style={{fontSize:'24px',color:'var(--yellow)',marginTop:'8px'}}>{tRev>0?fmtPct((tProf/tRev)*100):'0%'}</div></div>
-        </div>
+                    <div className="card">
+                        <div className="section-title">Top Items Today</div>
+                        {data.top_items && data.top_items.length > 0 ? (
+                            <div className="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Item Name</th>
+                                            <th>Quantity</th>
+                                            <th>Revenue</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {data.top_items.map((item, i) => (
+                                            <tr key={i}>
+                                                <td>{item.name}</td>
+                                                <td>{item.qty}</td>
+                                                <td>${(item.revenue || 0).toFixed(2)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div className="empty-state">No items sold yet</div>
+                        )}
+                    </div>
 
-        <div className="card" style={{marginBottom:'24px'}}><div className="card-header"><h3>Revenue & Profit</h3></div><div className="card-body">
-            {d.length>0 ? <div className="bar-chart" style={{height:'250px'}}>{d.slice(-15).map((r,i)=><div className="bar-group" key={i}>
-                <div className="bar-value" style={{color:'var(--green)',fontSize:'10px'}}>{fmt(r.profit)}</div>
-                <div style={{display:'flex',gap:'3px',alignItems:'flex-end',height:'100%'}}>
-                    <div className="bar" style={{height:`${(r.revenue/mx)*180}px`,background:'var(--accent)',width:'20px'}}/>
-                    <div className="bar" style={{height:`${(r.profit/mx)*180}px`,background:'var(--green)',width:'20px'}}/>
-                </div><div className="bar-label">{r.date||r.week||r.month}</div></div>)}</div>
-            : <div className="empty-state"><div className="icon">📊</div><p>No data yet</p></div>}
-        </div></div>
+                    <div className="card">
+                        <div className="section-title">Recent Orders</div>
+                        {data.recent_orders && data.recent_orders.length > 0 ? (
+                            <div className="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Order #</th>
+                                            <th>Customer</th>
+                                            <th>Source</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                            <th>Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {data.recent_orders.map((order, i) => (
+                                            <tr key={i}>
+                                                <td>#{order.order_number}</td>
+                                                <td>{order.customer_name}</td>
+                                                <td><span className={`badge ${order.source === 'walk-in' ? 'blue' : order.source === 'call' ? 'green' : 'emerald'}`}>{order.source}</span></td>
+                                                <td>${(order.subtotal || 0).toFixed(2)}</td>
+                                                <td><span className={`badge ${order.status === 'completed' ? 'green' : order.status === 'pending' ? 'yellow' : 'red'}`}>{order.status}</span></td>
+                                                <td>{new Date(order.created_at).toLocaleTimeString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div className="empty-state">No orders yet</div>
+                        )}
+                    </div>
+                </>
+            );
+        }
 
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'24px'}}>
-            <div className="card"><div className="card-header"><h3>Item Performance</h3></div><div className="card-body" style={{padding:0}}>
-                {items.length>0 ? <table className="data-table"><thead><tr><th>Item</th><th>Sold</th><th>Revenue</th><th>Profit</th></tr></thead><tbody>
-                    {items.map((it,i)=><tr key={i}><td style={{fontWeight:600}}>{it.item_name}</td><td><span className="badge badge-blue">{it.total_qty}</span></td>
-                        <td>{fmt(it.total_revenue)}</td><td style={{color:'var(--green)',fontWeight:600}}>{fmt(it.total_profit)}</td></tr>)}
-                </tbody></table> : <div className="empty-state"><div className="icon">🍜</div><p>No data yet</p></div>}
-            </div></div>
-            <div className="card"><div className="card-header"><h3>Margin Ranking</h3></div><div className="card-body">
-                {margins.map((it,i)=><div key={i} style={{marginBottom:'16px'}}>
-                    <div style={{display:'flex',justifyContent:'space-between',marginBottom:'6px'}}><span style={{fontWeight:500,fontSize:'14px'}}>{it.name}</span><span style={{fontWeight:700,color:'var(--green)'}}>{fmtPct(it.profit_margin)}</span></div>
-                    <div className="profit-bar-container"><div className="profit-bar-fill" style={{width:`${it.profit_margin}%`,background:it.profit_margin>=70?'var(--green)':it.profit_margin>=50?'var(--yellow)':'var(--red)'}}/></div>
-                    <div style={{display:'flex',justifyContent:'space-between',fontSize:'12px',color:'var(--text-muted)'}}><span>Price: {fmt(it.selling_price)}</span><span>Cost: {fmt(it.cost_per_item)}</span><span>Profit: {fmt(it.profit_per_item)}</span></div>
-                </div>)}
-            </div></div>
-        </div>
-    </div>;
-}
+        function Orders() {
+            const [orders, setOrders] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [menu, setMenu] = useState([]);
+            const [showOrderHistory, setShowOrderHistory] = useState(false);
+            const [formData, setFormData] = useState({
+                source: 'walk-in',
+                customer_name: '',
+                customer_phone: '',
+                notes: '',
+                items: []
+            });
+            const [selectedItems, setSelectedItems] = useState({});
 
-/* ═══════════════════════════════════════════════════════════════════════
-   EXPENSES
-   ═══════════════════════════════════════════════════════════════════════ */
-function ExpensesPage({ addToast }) {
-    const [data,setData]=useState({expenses:[],total:0});
-    const [month,setMonth]=useState(new Date().toISOString().slice(0,7));
-    const [showAdd,setShowAdd]=useState(false);
-    const [form,setForm]=useState({category:'ingredients',description:'',amount:'',date:new Date().toISOString().split('T')[0]});
+            useEffect(() => {
+                fetchOrders();
+                fetchMenu();
+            }, []);
 
-    const load=()=>api.get(`/api/expenses?month=${month}`).then(setData);
-    useEffect(()=>{load();},[month]);
+            const fetchOrders = async () => {
+                try {
+                    setLoading(true);
+                    const res = await fetch('/api/orders');
+                    if (!res.ok) throw new Error('Failed to load orders');
+                    const json = await res.json();
+                    setOrders(json);
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                }
+                setLoading(false);
+            };
 
-    const add=async()=>{await api.post('/api/expenses',{...form,amount:parseFloat(form.amount)});addToast('Expense recorded','success');setShowAdd(false);setForm({category:'ingredients',description:'',amount:'',date:new Date().toISOString().split('T')[0]});load();};
-    const cats=['ingredients','packaging','gas/fuel','rent','equipment','marketing','labor','utilities','other'];
+            const fetchMenu = async () => {
+                try {
+                    const res = await fetch('/api/menu');
+                    if (!res.ok) throw new Error('Failed to load menu');
+                    const json = await res.json();
+                    setMenu(json);
+                } catch (err) {
+                    console.error('Menu load error:', err);
+                }
+            };
 
-    return <div>
-        <div className="page-header"><div><h2>Expenses</h2><p>Track costs beyond ingredients</p></div>
-            <button className="btn btn-primary" onClick={()=>setShowAdd(true)}>+ Add Expense</button></div>
+            const resetForm = () => {
+                setFormData({
+                    source: 'walk-in',
+                    customer_name: '',
+                    customer_phone: '',
+                    notes: '',
+                    items: []
+                });
+                setSelectedItems({});
+            };
 
-        <div className="stats-grid" style={{marginBottom:'24px'}}>
-            <div className="stat-card"><div className="stat-label">Monthly Expenses</div><div className="stat-value" style={{fontSize:'24px',color:'var(--red)',marginTop:'8px'}}>{fmt(data.total)}</div></div>
-            <div className="stat-card" style={{display:'flex',alignItems:'center'}}><input type="month" className="form-input" value={month} onChange={e=>setMonth(e.target.value)}/></div>
-        </div>
+            const updateItemQty = (itemId, qty) => {
+                const newSelected = { ...selectedItems };
+                if (qty > 0) {
+                    newSelected[itemId] = qty;
+                } else {
+                    delete newSelected[itemId];
+                }
+                setSelectedItems(newSelected);
+            };
 
-        <div className="card"><div className="card-body" style={{padding:0}}>
-            {data.expenses.length>0 ? <table className="data-table"><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th></tr></thead><tbody>
-                {data.expenses.map((e,i)=><tr key={i}><td>{fmtDate(e.date)}</td><td><span className="badge badge-purple">{e.category}</span></td><td>{e.description}</td><td style={{fontWeight:600,color:'var(--red)'}}>{fmt(e.amount)}</td></tr>)}
-            </tbody></table> : <div className="empty-state"><div className="icon">💸</div><h3>No expenses</h3></div>}
-        </div></div>
+            const calculateTotal = () => {
+                let total = 0;
+                const allItems = menu.flatMap(c => c.items || []);
+                Object.entries(selectedItems).forEach(([itemId, qty]) => {
+                    const item = allItems.find(i => i.id == itemId);
+                    if (item) total += item.price * qty;
+                });
+                return total;
+            };
 
-        {showAdd&&<div className="modal-overlay" onClick={()=>setShowAdd(false)}><div className="modal" onClick={e=>e.stopPropagation()}>
-            <div className="modal-header"><h3>Add Expense</h3><button className="btn btn-icon btn-outline" onClick={()=>setShowAdd(false)}>✕</button></div>
-            <div className="modal-body">
-                <div className="form-group"><label className="form-label">Category</label><select className="form-select" value={form.category} onChange={e=>setForm({...form,category:e.target.value})}>{cats.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
-                <div className="form-group"><label className="form-label">Description</label><input className="form-input" placeholder="e.g., Weekly gas" value={form.description} onChange={e=>setForm({...form,description:e.target.value})}/></div>
-                <div className="form-row"><div className="form-group"><label className="form-label">Amount ($)</label><input className="form-input" type="number" step="0.01" value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})}/></div>
-                    <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={form.date} onChange={e=>setForm({...form,date:e.target.value})}/></div></div>
-            </div>
-            <div className="modal-footer"><button className="btn btn-outline" onClick={()=>setShowAdd(false)}>Cancel</button><button className="btn btn-success" onClick={add}>Add</button></div>
-        </div></div>}
-    </div>;
-}
+            const submitOrder = async () => {
+                if (!formData.customer_name) {
+                    alert('Please enter customer name');
+                    return;
+                }
+                if (Object.keys(selectedItems).length === 0) {
+                    alert('Please select at least one item');
+                    return;
+                }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   WHATSAPP
-   ═══════════════════════════════════════════════════════════════════════ */
-function WhatsAppPage({ addToast }) {
-    const [config,setConfig]=useState({});
-    const [msgs,setMsgs]=useState([]);
-    const [showSetup,setShowSetup]=useState(false);
+                try {
+                    const items = Object.entries(selectedItems).map(([id, qty]) => ({
+                        menu_item_id: parseInt(id),
+                        quantity: qty
+                    }));
 
-    useEffect(()=>{api.get('/api/whatsapp/config').then(setConfig);api.get('/api/whatsapp/messages').then(setMsgs);},[]);
-    const save=async()=>{await api.post('/api/whatsapp/config',config);addToast('Config saved!','success');setShowSetup(false);};
+                    const res = await fetch('/api/orders', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            source: formData.source,
+                            customer_name: formData.customer_name,
+                            customer_phone: formData.customer_phone,
+                            notes: formData.notes,
+                            items: items
+                        })
+                    });
 
-    return <div>
-        <div className="page-header"><div><h2>WhatsApp Integration</h2><p>Connect WhatsApp Business for order intake</p></div>
-            <button className="btn btn-primary" onClick={()=>setShowSetup(true)}>⚙ Setup API</button></div>
+                    if (!res.ok) throw new Error('Failed to create order');
+                    resetForm();
+                    fetchOrders();
+                    alert('Order placed successfully!');
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
 
-        <div className="wa-status"><div className={`wa-dot ${config.is_enabled?'online':'offline'}`}/>
-            <div><div style={{fontWeight:600}}>{config.is_enabled?'Connected':'Not Connected'}</div><div style={{fontSize:'13px',color:'var(--text-muted)'}}>{config.phone_number||'Not configured'}</div></div></div>
+            const deleteOrder = async (orderId) => {
+                if (!confirm('Delete this order?')) return;
+                try {
+                    const res = await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Failed to delete');
+                    fetchOrders();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
 
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'24px'}}>
-            <div className="card"><div className="card-header"><h3>How It Works</h3></div><div className="card-body">
-                <div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
-                    <div style={{display:'flex',gap:'12px'}}><span className="badge badge-blue" style={{minWidth:'28px',justifyContent:'center'}}>1</span><div><strong>Manual Mode (Now)</strong><br/><span style={{color:'var(--text-secondary)',fontSize:'13px'}}>Enter WhatsApp orders manually via Orders page</span></div></div>
-                    <div style={{display:'flex',gap:'12px'}}><span className="badge badge-green" style={{minWidth:'28px',justifyContent:'center'}}>2</span><div><strong>API Mode (Setup)</strong><br/><span style={{color:'var(--text-secondary)',fontSize:'13px'}}>Connect Meta WhatsApp Business API for auto-receive</span></div></div>
-                    <div style={{display:'flex',gap:'12px'}}><span className="badge badge-purple" style={{minWidth:'28px',justifyContent:'center'}}>3</span><div><strong>Auto-Confirm</strong><br/><span style={{color:'var(--text-secondary)',fontSize:'13px'}}>Auto-create orders from parsed messages</span></div></div>
-                </div>
-                <div style={{background:'var(--bg-input)',padding:'16px',borderRadius:'8px',marginTop:'20px'}}>
-                    <h4 style={{marginBottom:'8px'}}>Setup Guide</h4>
-                    <ol style={{paddingLeft:'20px',color:'var(--text-secondary)',fontSize:'13px',lineHeight:'2'}}>
-                        <li>Go to developers.facebook.com</li><li>Create a Meta Business App</li><li>Add WhatsApp product</li>
-                        <li>Get your access token</li><li>Set webhook: <code style={{background:'var(--bg-card)',padding:'2px 6px',borderRadius:'4px'}}>{window.location.origin}/api/whatsapp/webhook</code></li>
-                    </ol></div>
-            </div></div>
-            <div className="card"><div className="card-header"><h3>Messages</h3></div><div className="card-body">
-                {msgs.length>0 ? msgs.map((m,i)=><div key={i} style={{padding:'12px',marginBottom:'8px',background:m.is_processed?'var(--green-light)':'var(--bg-input)',borderRadius:'8px'}}>
-                    <div style={{display:'flex',justifyContent:'space-between',marginBottom:'4px'}}><span style={{fontWeight:600}}>{m.from_number}</span>
-                        <span className={`badge ${m.is_processed?'badge-green':'badge-yellow'}`}>{m.is_processed?'Processed':'Pending'}</span></div>
-                    <p style={{fontSize:'14px',color:'var(--text-secondary)'}}>{m.message_text}</p></div>)
-                : <div className="empty-state"><div className="icon">💬</div><h3>No messages</h3><p>Messages appear here once API is connected</p></div>}
-            </div></div>
-        </div>
+            if (loading) return <div className="loading">Loading...</div>;
+            if (error) return <div className="error">Error: {error}</div>;
 
-        {showSetup&&<div className="modal-overlay" onClick={()=>setShowSetup(false)}><div className="modal" onClick={e=>e.stopPropagation()}>
-            <div className="modal-header"><h3>WhatsApp Config</h3><button className="btn btn-icon btn-outline" onClick={()=>setShowSetup(false)}>✕</button></div>
-            <div className="modal-body">
-                <div className="form-group"><label className="form-label">Phone Number</label><input className="form-input" value={config.phone_number||''} onChange={e=>setConfig({...config,phone_number:e.target.value})}/></div>
-                <div className="form-group"><label className="form-label">API Token</label><input className="form-input" type="password" value={config.api_token||''} onChange={e=>setConfig({...config,api_token:e.target.value})}/></div>
-                <div className="form-group"><label className="form-label">Webhook Secret</label><input className="form-input" value={config.webhook_secret||''} onChange={e=>setConfig({...config,webhook_secret:e.target.value})}/></div>
-                <div className="form-group" style={{display:'flex',gap:'20px'}}>
-                    <label style={{display:'flex',alignItems:'center',gap:'8px'}}><input type="checkbox" checked={config.is_enabled||false} onChange={e=>setConfig({...config,is_enabled:e.target.checked?1:0})}/> Enable API</label>
-                    <label style={{display:'flex',alignItems:'center',gap:'8px'}}><input type="checkbox" checked={config.auto_confirm||false} onChange={e=>setConfig({...config,auto_confirm:e.target.checked?1:0})}/> Auto-Confirm</label></div>
-            </div>
-            <div className="modal-footer"><button className="btn btn-outline" onClick={()=>setShowSetup(false)}>Cancel</button><button className="btn btn-success" onClick={save}>Save</button></div>
-        </div></div>}
-    </div>;
-}
+            if (showOrderHistory) {
+                return (
+                    <>
+                        <button onClick={() => setShowOrderHistory(false)} style={{ width: '100%', marginBottom: '16px' }}>← Back to New Order</button>
 
-/* ═══════════════════════════════════════════════════════════════════════
-   SETTINGS
-   ═══════════════════════════════════════════════════════════════════════ */
-function SettingsPage({ addToast }) {
-    const [s,setS]=useState({});
-    useEffect(()=>{api.get('/api/settings').then(setS);},[]);
-    const save=async()=>{await api.post('/api/settings',s);addToast('Saved!','success');};
+                        {orders.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-state-icon">📋</div>
+                                <p>No orders yet.</p>
+                            </div>
+                        ) : (
+                            orders.map(order => (
+                                <div key={order.id} className="card">
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '12px' }}>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '8px' }}>
+                                                Order #{order.order_number}
+                                            </div>
+                                            <div style={{ fontSize: '14px', marginBottom: '6px' }}>
+                                                <strong>Customer:</strong> {order.customer_name}
+                                            </div>
+                                            <div style={{ fontSize: '14px', marginBottom: '6px' }}>
+                                                <strong>Source:</strong> <span className={`badge ${order.source === 'walk-in' ? 'blue' : order.source === 'call' ? 'green' : 'emerald'}`}>{order.source}</span>
+                                            </div>
+                                            <div style={{ fontSize: '14px', marginBottom: '6px' }}>
+                                                <strong>Total:</strong> ${(order.subtotal || 0).toFixed(2)}
+                                            </div>
+                                            <div style={{ fontSize: '14px' }}>
+                                                <strong>Status:</strong> <span className={`badge ${order.status === 'completed' ? 'green' : order.status === 'pending' ? 'yellow' : 'red'}`}>{order.status}</span>
+                                            </div>
+                                            {order.created_at && (
+                                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                                                    {new Date(order.created_at).toLocaleString()}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <button className="danger" onClick={() => deleteOrder(order.id)} style={{ minHeight: 'auto', padding: '8px 12px', fontSize: '14px' }}>🗑️</button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </>
+                );
+            }
 
-    return <div>
-        <div className="page-header"><div><h2>Settings</h2><p>Business profile & preferences</p></div>
-            <button className="btn btn-success" onClick={save}>Save</button></div>
-        <div className="card"><div className="card-header"><h3>Business Profile</h3></div><div className="card-body">
-            <div className="form-row">
-                <div className="form-group"><label className="form-label">Business Name</label><input className="form-input" value={s.business_name||''} onChange={e=>setS({...s,business_name:e.target.value})}/></div>
-                <div className="form-group"><label className="form-label">Type</label><select className="form-select" value={s.business_type||''} onChange={e=>setS({...s,business_type:e.target.value})}>
-                    <option value="cloud_kitchen">Cloud Kitchen</option><option value="restaurant">Restaurant</option><option value="food_truck">Food Truck</option>
-                    <option value="retail">Retail</option><option value="grocery">Grocery</option><option value="bakery">Bakery</option><option value="other">Other</option></select></div></div>
-            <div className="form-row">
-                <div className="form-group"><label className="form-label">Currency</label><select className="form-select" value={s.currency||'USD'} onChange={e=>setS({...s,currency:e.target.value})}>
-                    <option value="USD">USD ($)</option><option value="INR">INR (₹)</option><option value="EUR">EUR (€)</option><option value="GBP">GBP (£)</option></select></div>
-                <div className="form-group"><label className="form-label">Tax Rate (%)</label><input className="form-input" type="number" step="0.1" value={s.tax_rate||'0'} onChange={e=>setS({...s,tax_rate:e.target.value})}/></div></div>
-        </div></div>
-    </div>;
-}
+            return (
+                <>
+                    <div className="tabs">
+                        <button className={`tab-button ${!showOrderHistory ? 'active' : ''}`} onClick={() => setShowOrderHistory(false)}>New Order</button>
+                        <button className={`tab-button ${showOrderHistory ? 'active' : ''}`} onClick={() => setShowOrderHistory(true)}>Order History</button>
+                    </div>
 
-/* ═══════════════════════════════════════════════════════════════════════
-   MAIN APP
-   ═══════════════════════════════════════════════════════════════════════ */
-function App() {
-    const [page,setPage]=useState('dashboard');
-    const [toasts,setToasts]=useState([]);
-    const [sideOpen,setSideOpen]=useState(false);
+                    <div className="card">
+                        <div className="section-title">Customer Info</div>
+                        <div className="form-group">
+                            <label>Source</label>
+                            <div className="radio-group">
+                                {['walk-in', 'call', 'whatsapp'].map(src => (
+                                    <button
+                                        key={src}
+                                        className={`radio-button ${formData.source === src ? 'selected' : ''}`}
+                                        onClick={() => setFormData({ ...formData, source: src })}
+                                    >
+                                        {src}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
 
-    const addToast=(msg,type='info')=>{const t={message:msg,type};setToasts(p=>[...p,t]);setTimeout(()=>setToasts(p=>p.filter(x=>x!==t)),3500);};
+                        <div className="form-group">
+                            <label>Customer Name</label>
+                            <input
+                                type="text"
+                                value={formData.customer_name}
+                                onChange={e => setFormData({ ...formData, customer_name: e.target.value })}
+                                placeholder="Customer name"
+                            />
+                        </div>
 
-    const nav=[
-        {id:'dashboard',icon:'📊',label:'Dashboard'},{id:'orders',icon:'🛒',label:'Orders'},
-        {id:'menu',icon:'🍽️',label:'Menu'},{id:'purchases',icon:'📦',label:'Purchases'},
-        {id:'reports',icon:'📈',label:'Reports'},{id:'expenses',icon:'💸',label:'Expenses'},
-        {id:'whatsapp',icon:'💬',label:'WhatsApp'},{id:'settings',icon:'⚙️',label:'Settings'},
-    ];
+                        <div className="form-group">
+                            <label>Customer Phone</label>
+                            <input
+                                type="tel"
+                                value={formData.customer_phone}
+                                onChange={e => setFormData({ ...formData, customer_phone: e.target.value })}
+                                placeholder="Phone number"
+                            />
+                        </div>
+                    </div>
 
-    const render=()=>{switch(page){
-        case 'dashboard':return <Dashboard/>;case 'orders':return <OrdersPage addToast={addToast}/>;
-        case 'menu':return <MenuPage addToast={addToast}/>;case 'purchases':return <PurchasesPage addToast={addToast}/>;
-        case 'reports':return <ReportsPage/>;case 'expenses':return <ExpensesPage addToast={addToast}/>;
-        case 'whatsapp':return <WhatsAppPage addToast={addToast}/>;case 'settings':return <SettingsPage addToast={addToast}/>;
-        default:return <Dashboard/>;
-    }};
+                    <div className="card">
+                        <div className="section-title">Select Items</div>
+                        {menu.flatMap(c => c.items || []).length === 0 ? (
+                            <div className="empty-state" style={{ padding: '20px 0' }}>No menu items available</div>
+                        ) : (
+                            menu.map(category => (
+                                category.items && category.items.length > 0 && (
+                                    <div key={category.id} style={{ marginBottom: '24px' }}>
+                                        <div style={{ fontWeight: '600', fontSize: '16px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
+                                            {category.name}
+                                        </div>
+                                        <div className="menu-grid">
+                                            {category.items.map(item => (
+                                                <div
+                                                    key={item.id}
+                                                    className={`menu-card ${selectedItems[item.id] ? 'selected' : ''}`}
+                                                    onClick={() => updateItemQty(item.id, (selectedItems[item.id] || 0) + 1)}
+                                                >
+                                                    {selectedItems[item.id] > 0 && (
+                                                        <div className="menu-card-qty">{selectedItems[item.id]}</div>
+                                                    )}
+                                                    <div className="menu-card-name">{item.name}</div>
+                                                    <div className="menu-card-price">${(item.price || 0).toFixed(2)}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )
+                            ))
+                        )}
+                    </div>
 
-    return <div className="app-container">
-        <ToastContainer toasts={toasts}/>
-        <div className={`sidebar ${sideOpen?'open':''}`}>
-            <div className="sidebar-logo"><div className="logo-icon">⚡</div><div><h1>VendorVault</h1><span>Smart Business Tracker</span></div></div>
-            <div className="nav-section"><div className="nav-section-title">Main</div>
-                {nav.slice(0,6).map(n=><div key={n.id} className={`nav-item ${page===n.id?'active':''}`} onClick={()=>{setPage(n.id);setSideOpen(false);}}>
-                    <span className="nav-icon">{n.icon}</span>{n.label}</div>)}</div>
-            <div className="nav-section"><div className="nav-section-title">Integration</div>
-                {nav.slice(6).map(n=><div key={n.id} className={`nav-item ${page===n.id?'active':''}`} onClick={()=>{setPage(n.id);setSideOpen(false);}}>
-                    <span className="nav-icon">{n.icon}</span>{n.label}</div>)}</div>
-            <div style={{marginTop:'auto',padding:'16px',background:'var(--bg-input)',borderRadius:'10px',fontSize:'12px',color:'var(--text-muted)',position:'absolute',bottom:'16px',left:'16px',right:'16px'}}>
-                <strong style={{color:'var(--text-secondary)'}}>VendorVault v1.0</strong><br/>Built for all businesses</div>
-        </div>
-        <div className="main-content">{render()}</div>
-    </div>;
-}
+                    <div className="card">
+                        <div className="section-title">Notes</div>
+                        <div className="form-group">
+                            <textarea
+                                value={formData.notes}
+                                onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                                placeholder="Special instructions..."
+                            ></textarea>
+                        </div>
+                    </div>
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
-</script>
+                    <div className="cart-summary">
+                        {Object.keys(selectedItems).length > 0 && (
+                            <>
+                                {Object.entries(selectedItems).map(([itemId, qty]) => {
+                                    const allItems = menu.flatMap(c => c.items || []);
+                                    const item = allItems.find(i => i.id == itemId);
+                                    if (!item) return null;
+                                    return (
+                                        <div key={itemId} className="cart-item">
+                                            <span>{item.name} x{qty}</span>
+                                            <span>${((item.price || 0) * qty).toFixed(2)}</span>
+                                        </div>
+                                    );
+                                })}
+                                <div className="cart-total">
+                                    Total: ${(calculateTotal() || 0).toFixed(2)}
+                                </div>
+                            </>
+                        )}
+                        <div className="action-buttons">
+                            <button className="secondary" onClick={resetForm}>Clear</button>
+                            <button onClick={submitOrder}>Place Order</button>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        function Purchases() {
+            const [categories, setCategories] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [expandedCategories, setExpandedCategories] = useState({});
+            const [showCategoryModal, setShowCategoryModal] = useState(false);
+            const [expandedItemForms, setExpandedItemForms] = useState({});
+            const [newCategoryName, setNewCategoryName] = useState('');
+            const [selectedEmoji, setSelectedEmoji] = useState('📦');
+            const [itemForm, setItemForm] = useState({
+                name: '',
+                quantity: '',
+                unit: 'piece',
+                price: '',
+                notes: ''
+            });
+
+            const emojis = ['📦', '🥫', '🥘', '🍗', '🥬', '🧂', '🍯', '🧈', '🥛', '🧄', '🥕', '🍅'];
+
+            useEffect(() => {
+                fetchPurchases();
+            }, []);
+
+            const fetchPurchases = async () => {
+                try {
+                    setLoading(true);
+                    const res = await fetch('/api/purchases');
+                    if (!res.ok) throw new Error('Failed to load purchases');
+                    const json = await res.json();
+                    setCategories(json);
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                }
+                setLoading(false);
+            };
+
+            const toggleCategory = (catId) => {
+                setExpandedCategories({
+                    ...expandedCategories,
+                    [catId]: !expandedCategories[catId]
+                });
+            };
+
+            const toggleItemForm = (catId) => {
+                setExpandedItemForms({
+                    ...expandedItemForms,
+                    [catId]: !expandedItemForms[catId]
+                });
+                if (!expandedItemForms[catId]) {
+                    setItemForm({ name: '', quantity: '', unit: 'piece', price: '', notes: '' });
+                }
+            };
+
+            const submitItem = async (catId) => {
+                if (!itemForm.name || !itemForm.quantity || !itemForm.price) {
+                    alert('Please fill all required fields');
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/api/purchases/items', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            category_id: catId,
+                            name: itemForm.name,
+                            quantity: parseFloat(itemForm.quantity),
+                            unit: itemForm.unit,
+                            price: parseFloat(itemForm.price),
+                            notes: itemForm.notes
+                        })
+                    });
+
+                    if (!res.ok) throw new Error('Failed to add item');
+                    setExpandedItemForms({ ...expandedItemForms, [catId]: false });
+                    setItemForm({ name: '', quantity: '', unit: 'piece', price: '', notes: '' });
+                    fetchPurchases();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            const deleteItem = async (itemId) => {
+                if (!confirm('Delete this item?')) return;
+                try {
+                    const res = await fetch(`/api/purchases/items/${itemId}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Failed to delete');
+                    fetchPurchases();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            const submitCategory = async () => {
+                if (!newCategoryName.trim()) {
+                    alert('Please enter category name');
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/api/purchases/categories', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: newCategoryName,
+                            emoji: selectedEmoji
+                        })
+                    });
+
+                    if (!res.ok) throw new Error('Failed to add category');
+                    setShowCategoryModal(false);
+                    setNewCategoryName('');
+                    setSelectedEmoji('📦');
+                    fetchPurchases();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            const deleteCategory = async (catId) => {
+                if (!confirm('Delete this category and all its items?')) return;
+                try {
+                    const res = await fetch(`/api/purchases/categories/${catId}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Failed to delete');
+                    fetchPurchases();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            if (loading) return <div className="loading">Loading...</div>;
+            if (error) return <div className="error">Error: {error}</div>;
+
+            return (
+                <>
+                    <button onClick={() => setShowCategoryModal(true)} style={{ width: '100%', marginBottom: '16px' }}>+ Add Category</button>
+
+                    {categories.length === 0 ? (
+                        <div className="empty-state">
+                            <div className="empty-state-icon">🛒</div>
+                            <p>No categories yet. Create your first one!</p>
+                        </div>
+                    ) : (
+                        categories.map(category => (
+                            <div key={category.id}>
+                                <button
+                                    className="category-header"
+                                    onClick={() => toggleCategory(category.id)}
+                                >
+                                    <span>{category.emoji} {category.name} ({category.items?.length || 0} items)</span>
+                                    <span>{expandedCategories[category.id] ? '▼' : '▶'}</span>
+                                </button>
+
+                                {expandedCategories[category.id] && (
+                                    <div className="category-items">
+                                        {category.items && category.items.length > 0 ? (
+                                            category.items.map(item => {
+                                                const perUnit = ((item.price || 0) / (item.quantity || 1)).toFixed(2);
+                                                return (
+                                                    <div key={item.id} className="category-item">
+                                                        <div className="category-item-info">
+                                                            <div className="category-item-name">{item.name}</div>
+                                                            <div className="category-item-details">
+                                                                {item.quantity} {item.unit} • ${perUnit} per {item.unit}
+                                                            </div>
+                                                        </div>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <div className="category-item-price">${(item.price || 0).toFixed(2)}</div>
+                                                            <button className="danger" onClick={() => deleteItem(item.id)} style={{ minHeight: 'auto', padding: '8px 12px', fontSize: '14px' }}>🗑️</button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="empty-state" style={{ padding: '20px' }}>No items in this category</div>
+                                        )}
+
+                                        {expandedItemForms[category.id] && (
+                                            <div className="inline-form-section">
+                                                <div className="form-group">
+                                                    <label>Item Name</label>
+                                                    <input
+                                                        type="text"
+                                                        value={itemForm.name}
+                                                        onChange={e => setItemForm({ ...itemForm, name: e.target.value })}
+                                                        placeholder="e.g., Tomatoes"
+                                                    />
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label>Quantity</label>
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={itemForm.quantity}
+                                                        onChange={e => setItemForm({ ...itemForm, quantity: e.target.value })}
+                                                        placeholder="e.g., 10"
+                                                    />
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label>Unit</label>
+                                                    <select
+                                                        value={itemForm.unit}
+                                                        onChange={e => setItemForm({ ...itemForm, unit: e.target.value })}
+                                                    >
+                                                        <option value="dozen">Dozen</option>
+                                                        <option value="lb">Pound (lb)</option>
+                                                        <option value="pack">Pack</option>
+                                                        <option value="batch">Batch</option>
+                                                        <option value="piece">Piece</option>
+                                                        <option value="cup">Cup</option>
+                                                        <option value="unit">Unit</option>
+                                                    </select>
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label>Total Price</label>
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={itemForm.price}
+                                                        onChange={e => setItemForm({ ...itemForm, price: e.target.value })}
+                                                        placeholder="e.g., 25.00"
+                                                    />
+                                                </div>
+
+                                                {itemForm.quantity && itemForm.price && (
+                                                    <div className="per-unit-price">
+                                                        Per unit: ${((itemForm.price || 0) / (itemForm.quantity || 1)).toFixed(2)}
+                                                    </div>
+                                                )}
+
+                                                <div className="form-group">
+                                                    <label>Notes</label>
+                                                    <textarea
+                                                        value={itemForm.notes}
+                                                        onChange={e => setItemForm({ ...itemForm, notes: e.target.value })}
+                                                        placeholder="Optional notes..."
+                                                    ></textarea>
+                                                </div>
+
+                                                <div className="action-buttons">
+                                                    <button className="secondary" onClick={() => toggleItemForm(category.id)}>Cancel</button>
+                                                    <button onClick={() => submitItem(category.id)}>Add Item</button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {!expandedItemForms[category.id] && (
+                                            <>
+                                                <button className="secondary add-button" onClick={() => toggleItemForm(category.id)}>+ Add Item</button>
+                                                <button className="danger add-button" onClick={() => deleteCategory(category.id)}>Delete Category</button>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
+
+                    {showCategoryModal && (
+                        <div className="modal-overlay" onClick={() => setShowCategoryModal(false)}>
+                            <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <span>Add Category</span>
+                                    <button className="modal-close" onClick={() => setShowCategoryModal(false)}>×</button>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Category Name</label>
+                                    <input
+                                        type="text"
+                                        value={newCategoryName}
+                                        onChange={e => setNewCategoryName(e.target.value)}
+                                        placeholder="e.g., Vegetables"
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Emoji</label>
+                                    <div className="emoji-picker">
+                                        {emojis.map(emoji => (
+                                            <button
+                                                key={emoji}
+                                                className={`emoji-button ${selectedEmoji === emoji ? 'selected' : ''}`}
+                                                onClick={() => setSelectedEmoji(emoji)}
+                                            >
+                                                {emoji}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="action-buttons">
+                                    <button className="secondary" onClick={() => setShowCategoryModal(false)}>Cancel</button>
+                                    <button onClick={submitCategory}>Add Category</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </>
+            );
+        }
+
+        function Reports() {
+            const [activeTab, setActiveTab] = useState('daily');
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+            const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().split('T')[0].substring(0, 7));
+
+            useEffect(() => {
+                fetchReportData();
+            }, [activeTab, selectedDate, selectedMonth]);
+
+            const fetchReportData = async () => {
+                try {
+                    setLoading(true);
+                    let url = '';
+                    if (activeTab === 'daily') {
+                        url = `/api/reports/daily?date=${selectedDate}`;
+                    } else if (activeTab === 'weekly') {
+                        const today = new Date();
+                        const dayOfWeek = today.getDay();
+                        const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                        const weekStart = new Date(today.setDate(diff));
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekEnd.getDate() + 6);
+                        const start = weekStart.toISOString().split('T')[0];
+                        const end = weekEnd.toISOString().split('T')[0];
+                        url = `/api/reports/weekly?start=${start}&end=${end}`;
+                    } else {
+                        url = `/api/reports/monthly?month=${selectedMonth}`;
+                    }
+
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error('Failed to load report');
+                    const json = await res.json();
+                    setData(json);
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                    setData(null);
+                }
+                setLoading(false);
+            };
+
+            if (loading) return <div className="loading">Loading...</div>;
+            if (error) return <div className="error">Error: {error}</div>;
+            if (!data) return <div className="empty-state">No data available</div>;
+
+            return (
+                <>
+                    <div className="tabs">
+                        <button className={`tab-button ${activeTab === 'daily' ? 'active' : ''}`} onClick={() => setActiveTab('daily')}>Daily</button>
+                        <button className={`tab-button ${activeTab === 'weekly' ? 'active' : ''}`} onClick={() => setActiveTab('weekly')}>Weekly</button>
+                        <button className={`tab-button ${activeTab === 'monthly' ? 'active' : ''}`} onClick={() => setActiveTab('monthly')}>Monthly</button>
+                    </div>
+
+                    {activeTab === 'daily' && (
+                        <>
+                            <div className="form-group" style={{ marginBottom: '16px' }}>
+                                <label>Select Date</label>
+                                <input
+                                    type="date"
+                                    value={selectedDate}
+                                    onChange={e => setSelectedDate(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="grid-2">
+                                <div className="stat-card success">
+                                    <div className="stat-label">Revenue</div>
+                                    <div className="stat-value">${(data.revenue || 0).toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card danger">
+                                    <div className="stat-label">Expenses</div>
+                                    <div className="stat-value">${(data.expenses || 0).toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card info">
+                                    <div className="stat-label">Orders</div>
+                                    <div className="stat-value">{data.orders || 0}</div>
+                                </div>
+                                <div className="stat-card warning">
+                                    <div className="stat-label">Net</div>
+                                    <div className="stat-value">${((data.revenue || 0) - (data.expenses || 0)).toFixed(2)}</div>
+                                </div>
+                            </div>
+
+                            {data.sources && Object.keys(data.sources).length > 0 && (
+                                <div className="card">
+                                    <div className="section-title">Orders by Source</div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Source</th>
+                                                <th>Count</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {Object.entries(data.sources).map(([src, count]) => (
+                                                <tr key={src}>
+                                                    <td><span className={`badge ${src === 'walk-in' ? 'blue' : src === 'call' ? 'green' : 'emerald'}`}>{src}</span></td>
+                                                    <td>{count}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+                            {data.items && data.items.length > 0 && (
+                                <div className="card">
+                                    <div className="section-title">Items Sold</div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Item Name</th>
+                                                <th>Qty</th>
+                                                <th>Revenue</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {data.items.map((item, i) => (
+                                                <tr key={i}>
+                                                    <td>{item.name}</td>
+                                                    <td>{item.qty}</td>
+                                                    <td>${(item.revenue || 0).toFixed(2)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {activeTab === 'weekly' && (
+                        <>
+                            <div className="grid-2">
+                                <div className="stat-card success">
+                                    <div className="stat-label">Revenue</div>
+                                    <div className="stat-value">${(data.revenue || 0).toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card danger">
+                                    <div className="stat-label">Expenses</div>
+                                    <div className="stat-value">${(data.expenses || 0).toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card info">
+                                    <div className="stat-label">Orders</div>
+                                    <div className="stat-value">{data.orders || 0}</div>
+                                </div>
+                                <div className="stat-card warning">
+                                    <div className="stat-label">Net</div>
+                                    <div className="stat-value">${((data.revenue || 0) - (data.expenses || 0)).toFixed(2)}</div>
+                                </div>
+                            </div>
+
+                            {data.daily && data.daily.length > 0 && (
+                                <div className="card">
+                                    <div className="section-title">Day-by-Day</div>
+                                    <div className="table-wrapper">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Orders</th>
+                                                    <th>Revenue</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {data.daily.map((day, i) => (
+                                                    <tr key={i}>
+                                                        <td>{day.date}</td>
+                                                        <td>{day.orders}</td>
+                                                        <td>${(day.revenue || 0).toFixed(2)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {activeTab === 'monthly' && (
+                        <>
+                            <div className="form-group" style={{ marginBottom: '16px' }}>
+                                <label>Select Month</label>
+                                <input
+                                    type="month"
+                                    value={selectedMonth}
+                                    onChange={e => setSelectedMonth(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="grid-2">
+                                <div className="stat-card success">
+                                    <div className="stat-label">Revenue</div>
+                                    <div className="stat-value">${(data.revenue || 0).toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card danger">
+                                    <div className="stat-label">Expenses</div>
+                                    <div className="stat-value">${(data.expenses || 0).toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card info">
+                                    <div className="stat-label">Orders</div>
+                                    <div className="stat-value">{data.orders || 0}</div>
+                                </div>
+                                <div className="stat-card warning">
+                                    <div className="stat-label">Net</div>
+                                    <div className="stat-value">${((data.revenue || 0) - (data.expenses || 0)).toFixed(2)}</div>
+                                </div>
+                            </div>
+
+                            {data.weekly && data.weekly.length > 0 && (
+                                <div className="card">
+                                    <div className="section-title">Week-by-Week</div>
+                                    <div className="table-wrapper">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Week</th>
+                                                    <th>Orders</th>
+                                                    <th>Revenue</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {data.weekly.map((week, i) => (
+                                                    <tr key={i}>
+                                                        <td>{week.week}</td>
+                                                        <td>{week.orders}</td>
+                                                        <td>${(week.revenue || 0).toFixed(2)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {data.expense_categories && data.expense_categories.length > 0 && (
+                                <div className="card">
+                                    <div className="section-title">Expense Categories</div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Category</th>
+                                                <th>Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {data.expense_categories.map((cat, i) => (
+                                                <tr key={i}>
+                                                    <td>{cat.name}</td>
+                                                    <td>${(cat.total || 0).toFixed(2)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </>
+            );
+        }
+
+        function Profits() {
+            const [data, setData] = useState(null);
+            const [orders, setOrders] = useState([]);
+            const [weeklyData, setWeeklyData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            useEffect(() => {
+                fetchProfitsData();
+            }, []);
+
+            const fetchProfitsData = async () => {
+                try {
+                    setLoading(true);
+                    const dashRes = await fetch('/api/dashboard');
+                    if (!dashRes.ok) throw new Error('Failed to load dashboard');
+                    const dashJson = await dashRes.json();
+                    setData(dashJson);
+
+                    const ordersRes = await fetch('/api/orders');
+                    if (!ordersRes.ok) throw new Error('Failed to load orders');
+                    const ordersJson = await ordersRes.json();
+                    setOrders(ordersJson);
+
+                    const weekRes = await fetch('/api/reports/weekly');
+                    if (!weekRes.ok) throw new Error('Failed to load weekly data');
+                    const weekJson = await weekRes.json();
+                    setWeeklyData(weekJson);
+
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                }
+                setLoading(false);
+            };
+
+            if (loading) return <div className="loading">Loading...</div>;
+            if (error) return <div className="error">Error: {error}</div>;
+            if (!data) return <div className="empty-state">No data available</div>;
+
+            const todayMargin = data.today.revenue > 0 ? ((data.today.profit / data.today.revenue) * 100).toFixed(1) : 0;
+
+            return (
+                <>
+                    <div className="grid-1">
+                        <div className="stat-card success">
+                            <div className="stat-label">Today's Profit</div>
+                            <div className="stat-value large">${(data.today.profit || 0).toFixed(2)}</div>
+                            <div className="stat-subtext">{todayMargin}% margin</div>
+                        </div>
+                    </div>
+
+                    <div className="grid-2">
+                        <div className="stat-card warning">
+                            <div className="stat-label">Today's Margin</div>
+                            <div className="stat-value">{todayMargin}%</div>
+                            <div className="stat-subtext">profit percentage</div>
+                        </div>
+                        <div className="stat-card info">
+                            <div className="stat-label">This Week</div>
+                            <div className="stat-value">${(data.week.profit || 0).toFixed(2)}</div>
+                            <div className="stat-subtext">{data.week.orders} orders</div>
+                        </div>
+                    </div>
+
+                    <div className="grid-2">
+                        <div className="stat-card info">
+                            <div className="stat-label">This Month</div>
+                            <div className="stat-value">${(data.month.profit || 0).toFixed(2)}</div>
+                            <div className="stat-subtext">{data.month.orders} orders</div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="section-title">Profit by Order</div>
+                        {orders && orders.length > 0 ? (
+                            <div className="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Order #</th>
+                                            <th>Customer</th>
+                                            <th>Revenue</th>
+                                            <th>Cost</th>
+                                            <th>Profit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {orders.slice(0, 20).map((order, i) => (
+                                            <tr key={i}>
+                                                <td>#{order.order_number}</td>
+                                                <td>{order.customer_name}</td>
+                                                <td>${(order.subtotal || 0).toFixed(2)}</td>
+                                                <td>${((order.total_cost) || 0).toFixed(2)}</td>
+                                                <td>${((order.profit) || 0).toFixed(2)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div className="empty-state">No orders yet</div>
+                        )}
+                    </div>
+
+                    {weeklyData && weeklyData.daily && weeklyData.daily.length > 0 && (
+                        <div className="card">
+                            <div className="section-title">Daily Profit Trend (Last 7 Days)</div>
+                            <div className="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Revenue</th>
+                                            <th>Profit</th>
+                                            <th>Margin</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {weeklyData.daily.map((day, i) => {
+                                            const margin = day.revenue > 0 ? ((day.profit / day.revenue) * 100).toFixed(1) : 0;
+                                            return (
+                                                <tr key={i}>
+                                                    <td>{day.date}</td>
+                                                    <td>${(day.revenue || 0).toFixed(2)}</td>
+                                                    <td>${(day.profit || 0).toFixed(2)}</td>
+                                                    <td>{margin}%</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                </>
+            );
+        }
+
+        function CostAnalysis() {
+            const [data, setData] = useState(null);
+            const [purchases, setPurchases] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            useEffect(() => {
+                fetchCostData();
+                fetchPurchases();
+            }, []);
+
+            const fetchCostData = async () => {
+                try {
+                    setLoading(true);
+                    const res = await fetch('/api/menu/cost-breakdown');
+                    if (!res.ok) throw new Error('Failed to load cost data');
+                    const json = await res.json();
+                    setData(json);
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                }
+                setLoading(false);
+            };
+
+            const fetchPurchases = async () => {
+                try {
+                    const res = await fetch('/api/purchases');
+                    if (!res.ok) throw new Error('Failed to load purchases');
+                    const json = await res.json();
+                    setPurchases(json);
+                } catch (err) {
+                    console.error('Purchases load error:', err);
+                }
+            };
+
+            if (loading) return <div className="loading">Loading...</div>;
+            if (error) return <div className="error">Error: {error}</div>;
+            if (!data) return <div className="empty-state">No data available</div>;
+
+            const menuItems = data.menu_items || [];
+            const avgMargin = menuItems.length > 0 ? (menuItems.reduce((s, i) => s + (i.margin || 0), 0) / menuItems.length).toFixed(1) : 0;
+            const bestItem = menuItems.length > 0 ? menuItems.reduce((prev, curr) => ((curr.margin || 0) > (prev.margin || 0) ? curr : prev), menuItems[0]) : null;
+            const worstItem = menuItems.length > 0 ? menuItems.reduce((prev, curr) => ((curr.margin || 0) < (prev.margin || 0) ? curr : prev), menuItems[0]) : null;
+
+            return (
+                <>
+                    <div className="grid-3">
+                        <div className="stat-card warning">
+                            <div className="stat-label">Average Margin</div>
+                            <div className="stat-value">{avgMargin}%</div>
+                        </div>
+                        <div className="stat-card success">
+                            <div className="stat-label">Best Item</div>
+                            <div className="stat-value" style={{ fontSize: '18px' }}>{bestItem ? bestItem.name : 'N/A'}</div>
+                            <div className="stat-subtext">{bestItem ? (bestItem.margin || 0).toFixed(1) + '% margin' : '-'}</div>
+                        </div>
+                        <div className="stat-card danger">
+                            <div className="stat-label">Worst Item</div>
+                            <div className="stat-value" style={{ fontSize: '18px' }}>{worstItem ? worstItem.name : 'N/A'}</div>
+                            <div className="stat-subtext">{worstItem ? (worstItem.margin || 0).toFixed(1) + '% margin' : '-'}</div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="section-title">Menu Profitability</div>
+                        {menuItems.length > 0 ? (
+                            <div className="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Sell Price</th>
+                                            <th>Cost</th>
+                                            <th>Profit</th>
+                                            <th>Margin</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {menuItems.slice().sort((a, b) => (b.margin || 0) - (a.margin || 0)).map((item, i) => {
+                                            let marginClass = 'margin-poor';
+                                            if ((item.margin || 0) > 60) marginClass = 'margin-good';
+                                            else if ((item.margin || 0) >= 40) marginClass = 'margin-fair';
+
+                                            return (
+                                                <tr key={i}>
+                                                    <td>{item.name}</td>
+                                                    <td>${(item.price || 0).toFixed(2)}</td>
+                                                    <td>${(item.cost || 0).toFixed(2)}</td>
+                                                    <td>${(item.profit || 0).toFixed(2)}</td>
+                                                    <td><span className={marginClass}>{(item.margin || 0).toFixed(1)}%</span></td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div className="empty-state">No menu items</div>
+                        )}
+                    </div>
+
+                    {data.ingredients && Object.keys(data.ingredients).length > 0 && (
+                        <div className="card">
+                            <div className="section-title">Ingredient Prices</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Ingredient</th>
+                                        <th>Per-Unit Cost</th>
+                                        <th>Unit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Object.entries(data.ingredients).map(([name, info]) => (
+                                        <tr key={name}>
+                                            <td>{name}</td>
+                                            <td>${(info.cost || 0).toFixed(2)}</td>
+                                            <td>{info.unit}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+
+                    <div className="card">
+                        <div className="section-title">Purchase Summary</div>
+                        {purchases.length > 0 ? (
+                            purchases.map(category => (
+                                category.items && category.items.length > 0 && (
+                                    <div key={category.id}>
+                                        <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '8px', color: 'var(--text-secondary)' }}>
+                                            {category.emoji} {category.name}
+                                        </div>
+                                        {category.items.map(item => {
+                                            const perUnit = ((item.price || 0) / (item.quantity || 1)).toFixed(2);
+                                            return (
+                                                <div key={item.id} style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: '8px', marginBottom: '8px' }}>
+                                                    <div style={{ fontWeight: '600', marginBottom: '4px' }}>{item.name}</div>
+                                                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                                                        {item.quantity} {item.unit} @ ${perUnit}/{item.unit} = ${(item.price || 0).toFixed(2)}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )
+                            ))
+                        ) : (
+                            <div className="empty-state">No purchases recorded</div>
+                        )}
+                    </div>
+                </>
+            );
+        }
+
+        function Settings() {
+            const [settings, setSettings] = useState({
+                business_name: '',
+                phone: '',
+                address: '',
+                currency: '$'
+            });
+            const [networkInfo, setNetworkInfo] = useState(null);
+            const [menu, setMenu] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [expandedCategories, setExpandedCategories] = useState({});
+            const [showCategoryModal, setShowCategoryModal] = useState(false);
+            const [showItemModal, setShowItemModal] = useState(false);
+            const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+            const [newCategoryName, setNewCategoryName] = useState('');
+            const [itemForm, setItemForm] = useState({
+                name: '',
+                price: '',
+                cost: ''
+            });
+
+            useEffect(() => {
+                fetchSettings();
+                fetchNetwork();
+                fetchMenu();
+            }, []);
+
+            const fetchSettings = async () => {
+                try {
+                    setLoading(true);
+                    const res = await fetch('/api/settings');
+                    if (!res.ok) throw new Error('Failed to load settings');
+                    const json = await res.json();
+                    setSettings(json);
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                }
+                setLoading(false);
+            };
+
+            const fetchNetwork = async () => {
+                try {
+                    const res = await fetch('/api/network-info');
+                    if (!res.ok) throw new Error('Failed to load network info');
+                    const json = await res.json();
+                    setNetworkInfo(json);
+                } catch (err) {
+                    console.error('Network info error:', err);
+                }
+            };
+
+            const fetchMenu = async () => {
+                try {
+                    const res = await fetch('/api/menu');
+                    if (!res.ok) throw new Error('Failed to load menu');
+                    const json = await res.json();
+                    setMenu(json);
+                } catch (err) {
+                    console.error('Menu load error:', err);
+                }
+            };
+
+            const saveSettings = async () => {
+                try {
+                    const res = await fetch('/api/settings', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(settings)
+                    });
+                    if (!res.ok) throw new Error('Failed to save settings');
+                    alert('Settings saved!');
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            const toggleCategory = (catId) => {
+                setExpandedCategories({
+                    ...expandedCategories,
+                    [catId]: !expandedCategories[catId]
+                });
+            };
+
+            const openItemModal = (catId) => {
+                setSelectedCategoryId(catId);
+                setItemForm({ name: '', price: '', cost: '' });
+                setShowItemModal(true);
+            };
+
+            const submitItem = async () => {
+                if (!itemForm.name || !itemForm.price) {
+                    alert('Please fill all required fields');
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/api/menu/items', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            category_id: selectedCategoryId,
+                            name: itemForm.name,
+                            price: parseFloat(itemForm.price),
+                            cost: parseFloat(itemForm.cost || 0)
+                        })
+                    });
+
+                    if (!res.ok) throw new Error('Failed to add item');
+                    setShowItemModal(false);
+                    fetchMenu();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            const deleteItem = async (itemId) => {
+                if (!confirm('Delete this item?')) return;
+                try {
+                    const res = await fetch(`/api/menu/items/${itemId}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Failed to delete');
+                    fetchMenu();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            const submitCategory = async () => {
+                if (!newCategoryName.trim()) {
+                    alert('Please enter category name');
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/api/menu/categories', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: newCategoryName })
+                    });
+
+                    if (!res.ok) throw new Error('Failed to add category');
+                    setShowCategoryModal(false);
+                    setNewCategoryName('');
+                    fetchMenu();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            const deleteCategory = async (catId) => {
+                if (!confirm('Delete this category and all its items?')) return;
+                try {
+                    const res = await fetch(`/api/menu/categories/${catId}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Failed to delete');
+                    fetchMenu();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            if (loading) return <div className="loading">Loading...</div>;
+
+            return (
+                <>
+                    <div className="card">
+                        <div className="section-title">Business Information</div>
+                        <div className="form-group">
+                            <label>Business Name</label>
+                            <input
+                                type="text"
+                                value={settings.business_name}
+                                onChange={e => setSettings({ ...settings, business_name: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Phone</label>
+                            <input
+                                type="tel"
+                                value={settings.phone}
+                                onChange={e => setSettings({ ...settings, phone: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Address</label>
+                            <input
+                                type="text"
+                                value={settings.address}
+                                onChange={e => setSettings({ ...settings, address: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Currency Symbol</label>
+                            <input
+                                type="text"
+                                value={settings.currency}
+                                onChange={e => setSettings({ ...settings, currency: e.target.value })}
+                                maxLength="3"
+                            />
+                        </div>
+                        <button onClick={saveSettings} style={{ width: '100%' }}>Save Settings</button>
+                    </div>
+
+                    {networkInfo && (
+                        <div className="wifi-panel">
+                            <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>📱 Connect Your Phone</div>
+                            <div className="wifi-url">
+                                {networkInfo.url}
+                            </div>
+                            <div className="wifi-instructions">
+                                Open this URL on your phone (same WiFi) and tap "Add to Home Screen" for quick access.
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="card">
+                        <div className="section-title">Menu Management</div>
+                        <button onClick={() => setShowCategoryModal(true)} style={{ width: '100%', marginBottom: '16px' }}>+ Add Category</button>
+
+                        {menu.length === 0 ? (
+                            <div className="empty-state">No categories yet</div>
+                        ) : (
+                            menu.map(category => (
+                                <div key={category.id}>
+                                    <button
+                                        className="category-header"
+                                        onClick={() => toggleCategory(category.id)}
+                                    >
+                                        <span>{category.name} ({category.items?.length || 0} items)</span>
+                                        <span>{expandedCategories[category.id] ? '▼' : '▶'}</span>
+                                    </button>
+
+                                    {expandedCategories[category.id] && (
+                                        <div className="category-items">
+                                            {category.items && category.items.length > 0 ? (
+                                                category.items.map(item => (
+                                                    <div key={item.id} className="category-item">
+                                                        <div className="category-item-info">
+                                                            <div className="category-item-name">{item.name}</div>
+                                                            <div className="category-item-details">
+                                                                ${(item.price || 0).toFixed(2)} (cost: ${(item.cost || 0).toFixed(2)})
+                                                            </div>
+                                                        </div>
+                                                        <button className="danger" onClick={() => deleteItem(item.id)} style={{ minHeight: 'auto', padding: '8px 12px', fontSize: '14px' }}>🗑️</button>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="empty-state" style={{ padding: '20px' }}>No items</div>
+                                            )}
+
+                                            <button className="secondary add-button" onClick={() => openItemModal(category.id)}>+ Add Item</button>
+                                            <button className="danger add-button" onClick={() => deleteCategory(category.id)}>Delete Category</button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {showCategoryModal && (
+                        <div className="modal-overlay" onClick={() => setShowCategoryModal(false)}>
+                            <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <span>Add Category</span>
+                                    <button className="modal-close" onClick={() => setShowCategoryModal(false)}>×</button>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Category Name</label>
+                                    <input
+                                        type="text"
+                                        value={newCategoryName}
+                                        onChange={e => setNewCategoryName(e.target.value)}
+                                        placeholder="e.g., Main Dishes"
+                                    />
+                                </div>
+
+                                <div className="action-buttons">
+                                    <button className="secondary" onClick={() => setShowCategoryModal(false)}>Cancel</button>
+                                    <button onClick={submitCategory}>Add Category</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showItemModal && (
+                        <div className="modal-overlay" onClick={() => setShowItemModal(false)}>
+                            <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <span>Add Menu Item</span>
+                                    <button className="modal-close" onClick={() => setShowItemModal(false)}>×</button>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Item Name</label>
+                                    <input
+                                        type="text"
+                                        value={itemForm.name}
+                                        onChange={e => setItemForm({ ...itemForm, name: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Selling Price</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={itemForm.price}
+                                        onChange={e => setItemForm({ ...itemForm, price: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Cost Price</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={itemForm.cost}
+                                        onChange={e => setItemForm({ ...itemForm, cost: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="action-buttons">
+                                    <button className="secondary" onClick={() => setShowItemModal(false)}>Cancel</button>
+                                    <button onClick={submitItem}>Add Item</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
 </body>
 </html>
 {% endraw %}

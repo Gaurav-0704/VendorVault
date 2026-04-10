@@ -1,0 +1,1908 @@
+{% raw %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <title>VendorVault</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --accent: #6366f1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+        }
+
+        html {
+            touch-action: manipulation;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+        }
+
+        #root {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-container {
+            display: flex;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-secondary);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 12px rgba(99, 102, 241, 0.15);
+        }
+
+        .menu-toggle {
+            width: 48px;
+            height: 48px;
+            min-height: 44px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .menu-toggle:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .menu-toggle:active {
+            background: #5558e3;
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid var(--border);
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+            display: none;
+        }
+
+        .sidebar-overlay.open {
+            display: block;
+        }
+
+        .sidebar-header {
+            padding: 20px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.03));
+            border-left: 3px solid var(--accent);
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 8px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            text-align: left;
+            font-size: 16px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(99, 102, 241, 0.08);
+        }
+
+        .nav-item:active {
+            background: var(--bg-tertiary);
+        }
+
+        .nav-item.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .main-content {
+            padding: 16px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card.success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.03));
+            border-left: 3px solid var(--success);
+        }
+
+        .stat-card.warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.03));
+            border-left: 3px solid var(--warning);
+        }
+
+        .stat-card.danger {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.03));
+            border-left: 3px solid var(--danger);
+        }
+
+        .stat-card.info {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.03));
+            border-left: 3px solid var(--accent);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-value.large {
+            font-size: 40px;
+        }
+
+        .stat-subtext {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .grid-1 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            min-height: 44px;
+            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        button:active {
+            background: #5558e3;
+        }
+
+        button.secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        button.secondary:hover {
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+        }
+
+        button.secondary:active {
+            background: #475569;
+        }
+
+        button.danger {
+            background: var(--danger);
+        }
+
+        button.danger:hover {
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        button.danger:active {
+            background: #dc2626;
+        }
+
+        button.success {
+            background: var(--success);
+        }
+
+        button.success:hover {
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        button.success:active {
+            background: #059669;
+        }
+
+        input, select, textarea {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            min-height: 44px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1001;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal-content {
+            width: 100%;
+            max-width: 600px;
+            background: var(--bg-secondary);
+            border-radius: 16px 16px 0 0;
+            padding: 24px 16px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        @media (min-width: 600px) {
+            .modal-overlay {
+                align-items: center;
+                justify-content: center;
+            }
+
+            .modal-content {
+                max-width: 500px;
+                width: auto;
+                border-radius: 12px;
+            }
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:active {
+            color: var(--text-primary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+        }
+
+        .badge.blue {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .badge.green {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .badge.emerald {
+            background: rgba(5, 150, 105, 0.2);
+            color: #059669;
+            border: 1px solid rgba(5, 150, 105, 0.2);
+        }
+
+        .badge.yellow {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .badge.red {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:nth-child(even) {
+            background: rgba(99, 102, 241, 0.03);
+        }
+
+        tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .quantity-control button {
+            width: 36px;
+            height: 36px;
+            min-height: auto;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        .quantity-control input {
+            width: 60px;
+            text-align: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons button {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        @media (max-width: 600px) {
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-buttons button {
+                flex: 1;
+            }
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 20px 0 16px 0;
+            padding-left: 12px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: #fca5a5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: inline-block;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .empty-state-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0;
+        }
+
+        .tab-button {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            min-height: auto;
+        }
+
+        .tab-button:hover {
+            color: var(--text-primary);
+            background: rgba(99, 102, 241, 0.05);
+            box-shadow: none;
+        }
+
+        .tab-button.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-button.active:hover {
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .mini-chart {
+            height: 40px;
+            margin-top: 8px;
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        .mini-chart-bar {
+            flex: 1;
+            background: var(--accent);
+            border-radius: 2px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .mini-chart-bar:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                padding: 12px;
+            }
+
+            .main-content {
+                padding: 12px;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .stat-value.large {
+                font-size: 32px;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                margin-top: 16px;
+                margin-bottom: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#94a3b8"><div style="text-align:center"><div style="font-size:48px;margin-bottom:16px">⚡</div><div>Loading VendorVault...</div></div></div></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const ReactDOM = window.ReactDOM;
+
+        function App() {
+            const [currentPage, setCurrentPage] = useState('dashboard');
+            const [sidebarOpen, setSidebarOpen] = useState(false);
+
+            const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+            const closeSidebar = () => setSidebarOpen(false);
+
+            const navItems = [
+                { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+                { id: 'orders', label: 'Orders', icon: '📋' },
+                { id: 'purchases', label: 'Purchases', icon: '📦' },
+                { id: 'reports', label: 'Reports', icon: '📈' },
+                { id: 'profits', label: 'Profits', icon: '💰' },
+                { id: 'cost-analysis', label: 'Cost Analysis', icon: '💹' },
+                { id: 'settings', label: 'Settings', icon: '⚙️' }
+            ];
+
+            const renderPage = () => {
+                switch (currentPage) {
+                    case 'dashboard':
+                        return <Dashboard />;
+                    case 'orders':
+                        return <Orders />;
+                    case 'purchases':
+                        return <Purchases />;
+                    case 'reports':
+                        return <Reports />;
+                    case 'profits':
+                        return <Profits />;
+                    case 'cost-analysis':
+                        return <CostAnalysis />;
+                    case 'settings':
+                        return <Settings />;
+                    default:
+                        return <Dashboard />;
+                }
+            };
+
+            return (
+                <div className="app-container">
+                    <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+                        <div className="sidebar-header">VendorVault</div>
+                        <div className="sidebar-nav">
+                            {navItems.map(item => (
+                                <button
+                                    key={item.id}
+                                    className={`nav-item ${currentPage === item.id ? 'active' : ''}`}
+                                    onClick={() => {
+                                        setCurrentPage(item.id);
+                                        closeSidebar();
+                                    }}
+                                >
+                                    <span>{item.icon}</span>
+                                    <span>{item.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`} onClick={closeSidebar}></div>
+                    <div className="page-content">
+                        <div className="header">
+                            <button className="menu-toggle" onClick={toggleSidebar}>☰</button>
+                            <div>
+                                <h1 className="page-title">{navItems.find(x => x.id === currentPage)?.label || 'Dashboard'}</h1>
+                                <p className="page-subtitle">{new Date().toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}</p>
+                            </div>
+                        </div>
+                        <div className="main-content">
+                            {renderPage()}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function Dashboard() {
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            useEffect(() => {
+                fetchDashboard();
+            }, []);
+
+            const fetchDashboard = async () => {
+                try {
+                    setLoading(true);
+                    const res = await fetch('/api/dashboard');
+                    const json = await res.json();
+                    setData(json);
+                    setError(null);
+                } catch (e) {
+                    setError('Failed to load dashboard data');
+                    console.error(e);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            if (loading) {
+                return (
+                    <div className="loading">
+                        <div className="loading-spinner"></div>
+                        <div>Loading dashboard...</div>
+                    </div>
+                );
+            }
+
+            if (error || !data) {
+                return (
+                    <div>
+                        <div className="error">{error || 'No data available'}</div>
+                        <button onClick={fetchDashboard}>Retry</button>
+                    </div>
+                );
+            }
+
+            const todayMargin = data.today.revenue > 0 ? ((data.today.profit / data.today.revenue) * 100).toFixed(1) : 0;
+
+            return (
+                <div>
+                    <div className="grid-3">
+                        <div className="stat-card success">
+                            <div className="stat-label">Today's Revenue</div>
+                            <div className="stat-value">${data.today.revenue.toFixed(2)}</div>
+                            <div className="stat-subtext">{data.today.orders} orders today</div>
+                        </div>
+                        <div className="stat-card warning">
+                            <div className="stat-label">Total Orders</div>
+                            <div className="stat-value">{data.today.orders}</div>
+                            <div className="stat-subtext">{data.today.pendingOrders || 0} pending</div>
+                        </div>
+                        <div className="stat-card danger">
+                            <div className="stat-label">Profit Margin</div>
+                            <div className="stat-value">{todayMargin}%</div>
+                            <div className="stat-subtext">Target: 35%</div>
+                        </div>
+                    </div>
+
+                    <div className="grid-2">
+                        <div className="card">
+                            <h3 className="section-title">Hourly Revenue</h3>
+                            <div className="mini-chart">
+                                {data.hourly.map((h, idx) => {
+                                    const maxRevenue = Math.max(...data.hourly.map(x => x.revenue), 1);
+                                    const height = (h.revenue / maxRevenue) * 100;
+                                    return <div key={idx} className="mini-chart-bar" style={{ height: height + '%' }} title={`${h.time}: $${h.revenue.toFixed(2)}`}></div>;
+                                })}
+                            </div>
+                            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '8px' }}>Last 24 hours</div>
+                        </div>
+
+                        <div className="card">
+                            <h3 className="section-title">Quick Stats</h3>
+                            <div style={{ marginTop: '12px' }}>
+                                <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ color: 'var(--text-secondary)' }}>Avg Order Value</span>
+                                    <span>${(data.today.revenue / Math.max(data.today.orders, 1)).toFixed(2)}</span>
+                                </div>
+                                <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ color: 'var(--text-secondary)' }}>Total Profit</span>
+                                    <span>${data.today.profit.toFixed(2)}</span>
+                                </div>
+                                <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ color: 'var(--text-secondary)' }}>Cost of Goods</span>
+                                    <span>${(data.today.revenue - data.today.profit).toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="section-title">Recent Orders</h3>
+                        <div className="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Status</th>
+                                        <th>Amount</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.recentOrders.map(order => (
+                                        <tr key={order.id}>
+                                            <td>#{order.id}</td>
+                                            <td><span className={`badge ${order.status === 'completed' ? 'green' : order.status === 'pending' ? 'yellow' : 'red'}`}>{order.status}</span></td>
+                                            <td>${order.amount.toFixed(2)}</td>
+                                            <td>{order.time}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function Orders() {
+            const [orders, setOrders] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [menu, setMenu] = useState([]);
+            const [showOrderHistory, setShowOrderHistory] = useState(false);
+            const [formData, setFormData] = useState({
+                customerName: '',
+                customerPhone: '',
+                note: ''
+            });
+            const [selectedItems, setSelectedItems] = useState({});
+
+            useEffect(() => {
+                fetchOrders();
+                fetchMenu();
+            }, []);
+
+            const fetchOrders = async () => {
+                try {
+                    const res = await fetch('/api/orders');
+                    const json = await res.json();
+                    setOrders(json);
+                    setError(null);
+                } catch (e) {
+                    setError('Failed to load orders');
+                    console.error(e);
+                }
+            };
+
+            const fetchMenu = async () => {
+                try {
+                    const res = await fetch('/api/menu');
+                    const json = await res.json();
+                    setMenu(json);
+                    setLoading(false);
+                } catch (e) {
+                    setError('Failed to load menu');
+                    setLoading(false);
+                }
+            };
+
+            const resetForm = () => {
+                setFormData({
+                    customerName: '',
+                    customerPhone: '',
+                    note: ''
+                });
+                setSelectedItems({});
+            };
+
+            const updateItemQty = (itemId, qty) => {
+                const newSelected = { ...selectedItems };
+                if (qty <= 0) {
+                    delete newSelected[itemId];
+                } else {
+                    newSelected[itemId] = qty;
+                }
+                setSelectedItems(newSelected);
+            };
+
+            const calculateTotal = () => {
+                const allItems = menu.flatMap(c => c.items || []);
+                return Object.entries(selectedItems).reduce((sum, [itemId, qty]) => {
+                    const item = allItems.find(i => i.id == itemId);
+                    return sum + (item ? item.price * qty : 0);
+                }, 0);
+            };
+
+            const submitOrder = async () => {
+                if (!formData.customerName.trim() || Object.keys(selectedItems).length === 0) {
+                    alert('Please fill in customer name and select items');
+                    return;
+                }
+
+                try {
+                    const items = Object.entries(selectedItems).map(([id, qty]) => ({
+                        itemId: parseInt(id),
+                        quantity: qty
+                    }));
+
+                    const res = await fetch('/api/orders', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            customerName: formData.customerName,
+                            customerPhone: formData.customerPhone,
+                            items: items,
+                            note: formData.note
+                        })
+                    });
+
+                    if (res.ok) {
+                        resetForm();
+                        await fetchOrders();
+                        alert('Order created successfully');
+                    } else {
+                        alert('Failed to create order');
+                    }
+                } catch (e) {
+                    alert('Error: ' + e.message);
+                }
+            };
+
+            const deleteOrder = async (orderId) => {
+                if (!window.confirm('Delete this order?')) return;
+                try {
+                    const res = await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        await fetchOrders();
+                    }
+                } catch (e) {
+                    alert('Failed to delete order');
+                }
+            };
+
+            if (loading) {
+                return (
+                    <div className="loading">
+                        <div className="loading-spinner"></div>
+                        <div>Loading...</div>
+                    </div>
+                );
+            }
+
+            return (
+                <div>
+                    <div className="card">
+                        <h3 className="section-title">Create New Order</h3>
+                        <div className="form-group">
+                            <label>Customer Name</label>
+                            <input
+                                type="text"
+                                placeholder="e.g., John Doe"
+                                value={formData.customerName}
+                                onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Phone</label>
+                            <input
+                                type="tel"
+                                placeholder="e.g., +1234567890"
+                                value={formData.customerPhone}
+                                onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Note</label>
+                            <textarea
+                                placeholder="Add any special notes..."
+                                value={formData.note}
+                                onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                            ></textarea>
+                        </div>
+
+                        <h3 className="section-title" style={{ marginTop: '20px' }}>Select Items</h3>
+                        {menu.map(category => (
+                            <div key={category.id} style={{ marginBottom: '20px' }}>
+                                <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-secondary)', fontSize: '14px' }}>
+                                    {category.emoji} {category.name}
+                                </h4>
+                                {category.items && category.items.map(item => (
+                                    <div key={item.id} style={{ marginBottom: '12px', padding: '12px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                                            <div>
+                                                <div style={{ fontWeight: '500' }}>{item.name}</div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>${item.price.toFixed(2)} each</div>
+                                            </div>
+                                        </div>
+                                        {selectedItems[item.id] ? (
+                                            <div className="quantity-control">
+                                                <button onClick={() => updateItemQty(item.id, selectedItems[item.id] - 1)}>−</button>
+                                                <input type="number" value={selectedItems[item.id]} readOnly />
+                                                <button onClick={() => updateItemQty(item.id, selectedItems[item.id] + 1)}>+</button>
+                                                <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                                                    ${(item.price * selectedItems[item.id]).toFixed(2)}
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <button className="secondary" onClick={() => updateItemQty(item.id, 1)} style={{ width: '100%' }}>Add</button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+
+                        <div style={{ backgroundColor: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginTop: '16px', marginBottom: '16px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                <span>Items Selected:</span>
+                                <strong>{Object.values(selectedItems).reduce((a, b) => a + b, 0)}</strong>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span>Order Total:</span>
+                                <strong style={{ fontSize: '20px', color: 'var(--success)' }}>${calculateTotal().toFixed(2)}</strong>
+                            </div>
+                        </div>
+
+                        <div className="action-buttons">
+                            <button className="success" onClick={submitOrder}>Create Order</button>
+                            <button className="secondary" onClick={resetForm}>Reset</button>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                            <h3 className="section-title" style={{ margin: 0 }}>Recent Orders</h3>
+                            <button className="secondary" onClick={() => setShowOrderHistory(!showOrderHistory)}>
+                                {showOrderHistory ? 'Hide' : 'Show'} All
+                            </button>
+                        </div>
+
+                        {orders.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-state-icon">📋</div>
+                                <div className="empty-state-text">No orders yet. Create one above!</div>
+                            </div>
+                        ) : (
+                            <div className="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Order ID</th>
+                                            <th>Customer</th>
+                                            <th>Items</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {orders.slice(0, showOrderHistory ? orders.length : 5).map(order => (
+                                            <tr key={order.id}>
+                                                <td>#{order.id}</td>
+                                                <td>{order.customerName}</td>
+                                                <td>{order.items.length}</td>
+                                                <td>${order.total.toFixed(2)}</td>
+                                                <td><span className={`badge ${order.status === 'completed' ? 'green' : 'yellow'}`}>{order.status}</span></td>
+                                                <td>
+                                                    <button className="danger" onClick={() => deleteOrder(order.id)} style={{ width: '80px', padding: '6px 0', fontSize: '12px' }}>Delete</button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        function Purchases() {
+            const [categories, setCategories] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [expandedCategories, setExpandedCategories] = useState({});
+            const [showCategoryModal, setShowCategoryModal] = useState(false);
+            const [expandedItemForms, setExpandedItemForms] = useState({});
+            const [newCategoryName, setNewCategoryName] = useState('');
+            const [selectedEmoji, setSelectedEmoji] = useState('📦');
+            const [itemForm, setItemForm] = useState({
+                name: '',
+                price: '',
+                quantity: '',
+                unit: 'kg'
+            });
+
+            const emojis = ['📦', '🥫', '🥘', '🍗', '🥬', '🧂', '🍯', '🧈', '🥛', '🧄', '🥕', '🍅'];
+
+            useEffect(() => {
+                fetchPurchases();
+            }, []);
+
+            const fetchPurchases = async () => {
+                try {
+                    const res = await fetch('/api/purchases');
+                    const json = await res.json();
+                    setCategories(json);
+                    setLoading(false);
+                    setError(null);
+                } catch (e) {
+                    setError('Failed to load purchases');
+                    setLoading(false);
+                }
+            };
+
+            const toggleCategory = (catId) => {
+                setExpandedCategories({
+                    ...expandedCategories,
+                    [catId]: !expandedCategories[catId]
+                });
+            };
+
+            const toggleItemForm = (catId) => {
+                setExpandedItemForms({
+                    ...expandedItemForms,
+                    [catId]: !expandedItemForms[catId]
+                });
+                setItemForm({ name: '', price: '', quantity: '', unit: 'kg' });
+            };
+
+            const submitItem = async (catId) => {
+                if (!itemForm.name || !itemForm.price || !itemForm.quantity) {
+                    alert('Fill all fields');
+                    return;
+                }
+                try {
+                    const res = await fetch('/api/purchases/items', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            category_id: catId,
+                            name: itemForm.name,
+                            price: parseFloat(itemForm.price),
+                            quantity: parseFloat(itemForm.quantity),
+                            unit: itemForm.unit
+                        })
+                    });
+                    if (res.ok) {
+                        await fetchPurchases();
+                        toggleItemForm(catId);
+                    }
+                } catch (e) {
+                    alert('Error: ' + e.message);
+                }
+            };
+
+            const deleteItem = async (itemId) => {
+                if (!window.confirm('Delete this item?')) return;
+                try {
+                    const res = await fetch(`/api/purchases/items/${itemId}`, { method: 'DELETE' });
+                    if (res.ok) await fetchPurchases();
+                } catch (e) {
+                    alert('Failed to delete');
+                }
+            };
+
+            const submitCategory = async () => {
+                if (!newCategoryName.trim()) {
+                    alert('Enter category name');
+                    return;
+                }
+                try {
+                    const res = await fetch('/api/purchases/categories', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: newCategoryName,
+                            emoji: selectedEmoji
+                        })
+                    });
+                    if (res.ok) {
+                        setNewCategoryName('');
+                        setSelectedEmoji('📦');
+                        setShowCategoryModal(false);
+                        await fetchPurchases();
+                    }
+                } catch (e) {
+                    alert('Error: ' + e.message);
+                }
+            };
+
+            const deleteCategory = async (catId) => {
+                if (!window.confirm('Delete this category?')) return;
+                try {
+                    const res = await fetch(`/api/purchases/categories/${catId}`, { method: 'DELETE' });
+                    if (res.ok) await fetchPurchases();
+                } catch (e) {
+                    alert('Failed to delete');
+                }
+            };
+
+            if (loading) {
+                return (
+                    <div className="loading">
+                        <div className="loading-spinner"></div>
+                        <div>Loading purchases...</div>
+                    </div>
+                );
+            }
+
+            if (error) {
+                return <div className="error">{error}</div>;
+            }
+
+            return (
+                <div>
+                    <div style={{ marginBottom: '16px' }}>
+                        <button className="success" onClick={() => setShowCategoryModal(true)} style={{ width: '100%' }}>+ Add Category</button>
+                    </div>
+
+                    {showCategoryModal && (
+                        <div className="card" style={{ marginBottom: '16px', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderLeft: '3px solid var(--success)' }}>
+                            <h4 style={{ marginTop: 0 }}>New Category</h4>
+                            <div className="form-group">
+                                <label>Category Name</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g., Vegetables"
+                                    value={newCategoryName}
+                                    onChange={(e) => setNewCategoryName(e.target.value)}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Emoji</label>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px', marginTop: '8px' }}>
+                                    {emojis.map(emoji => (
+                                        <button
+                                            key={emoji}
+                                            className={`secondary ${selectedEmoji === emoji ? '' : ''}`}
+                                            onClick={() => setSelectedEmoji(emoji)}
+                                            style={{
+                                                fontSize: '24px',
+                                                padding: '8px',
+                                                backgroundColor: selectedEmoji === emoji ? 'var(--accent)' : 'var(--bg-tertiary)',
+                                                minHeight: 'auto'
+                                            }}
+                                        >
+                                            {emoji}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="action-buttons">
+                                <button className="success" onClick={submitCategory}>Create</button>
+                                <button className="secondary" onClick={() => setShowCategoryModal(false)}>Cancel</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {categories.length === 0 ? (
+                        <div className="empty-state">
+                            <div className="empty-state-icon">📦</div>
+                            <div className="empty-state-text">No purchase categories yet. Create one!</div>
+                        </div>
+                    ) : (
+                        categories.map(category => (
+                            <div key={category.id} className="card">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                    <h3 style={{ cursor: 'pointer', margin: 0, fontSize: '18px' }} onClick={() => toggleCategory(category.id)}>
+                                        {category.emoji} {category.name} ({category.items?.length || 0})
+                                    </h3>
+                                    <button className="danger" onClick={() => deleteCategory(category.id)} style={{ width: '80px', fontSize: '12px', padding: '6px 0' }}>Delete</button>
+                                </div>
+
+                                {expandedCategories[category.id] && (
+                                    <>
+                                        {category.items && category.items.length > 0 && (
+                                            <div className="table-wrapper" style={{ marginBottom: '16px' }}>
+                                                <table>
+                                                    <thead>
+                                                        <tr>
+                                            <th>Item</th>
+                                            <th>Unit Price</th>
+                                            <th>Qty</th>
+                                            <th>Total</th>
+                                            <th>Action</th>
+                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {category.items.map(item => {
+                                                            const perUnit = ((item.price || 0) / (item.quantity || 1)).toFixed(2);
+                                                            return (
+                                                                <tr key={item.id}>
+                                                                    <td>{item.name}</td>
+                                                                    <td>${perUnit}/{item.unit}</td>
+                                                                    <td>{item.quantity} {item.unit}</td>
+                                                                    <td>${item.price.toFixed(2)}</td>
+                                                                    <td>
+                                                                        <button className="danger" onClick={() => deleteItem(item.id)} style={{ width: '60px', padding: '4px 0', fontSize: '11px' }}>Delete</button>
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        )}
+
+                                        {expandedItemForms[category.id] ? (
+                                            <div className="card" style={{ backgroundColor: 'var(--bg-tertiary)', marginBottom: '12px' }}>
+                                                <h4 style={{ marginTop: 0 }}>Add Item</h4>
+                                                <div className="form-group">
+                                                    <label>Item Name</label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="e.g., Tomato"
+                                                        value={itemForm.name}
+                                                        onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="grid-2">
+                                                    <div className="form-group">
+                                                        <label>Price ($)</label>
+                                                        <input
+                                                            type="number"
+                                                            placeholder="0.00"
+                                                            step="0.01"
+                                                            value={itemForm.price}
+                                                            onChange={(e) => setItemForm({ ...itemForm, price: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div className="form-group">
+                                                        <label>Quantity</label>
+                                                        <input
+                                                            type="number"
+                                                            placeholder="0"
+                                                            step="0.1"
+                                                            value={itemForm.quantity}
+                                                            onChange={(e) => setItemForm({ ...itemForm, quantity: e.target.value })}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="form-group">
+                                                    <label>Unit</label>
+                                                    <select value={itemForm.unit} onChange={(e) => setItemForm({ ...itemForm, unit: e.target.value })}>
+                                                        <option>kg</option>
+                                                        <option>l</option>
+                                                        <option>pcs</option>
+                                                        <option>dozen</option>
+                                                        <option>box</option>
+                                                    </select>
+                                                </div>
+                                                <div className="action-buttons">
+                                                    <button className="success" onClick={() => submitItem(category.id)}>Add Item</button>
+                                                    <button className="secondary" onClick={() => toggleItemForm(category.id)}>Cancel</button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <button className="secondary" onClick={() => toggleItemForm(category.id)} style={{ width: '100%' }}>+ Add Item</button>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        ))
+                    )}
+                </div>
+            );
+        }
+
+        function Reports() {
+            const [activeTab, setActiveTab] = useState('daily');
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            useEffect(() => {
+                fetchReports();
+            }, []);
+
+            const fetchReports = async () => {
+                try {
+                    const res = await fetch('/api/reports');
+                    const json = await res.json();
+                    setData(json);
+                    setError(null);
+                } catch (e) {
+                    setError('Failed to load reports');
+                    console.error(e);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            if (loading) {
+                return (
+                    <div className="loading">
+                        <div className="loading-spinner"></div>
+                        <div>Loading reports...</div>
+                    </div>
+                );
+            }
+
+            if (error || !data) {
+                return <div className="error">{error || 'No data'}</div>;
+            }
+
+            const reportData = activeTab === 'daily' ? data.daily : activeTab === 'weekly' ? data.weekly : data.monthly;
+
+            return (
+                <div>
+                    <div className="card">
+                        <div className="tab-bar">
+                            <button className={`tab-button ${activeTab === 'daily' ? 'active' : ''}`} onClick={() => setActiveTab('daily')}>Daily</button>
+                            <button className={`tab-button ${activeTab === 'weekly' ? 'active' : ''}`} onClick={() => setActiveTab('weekly')}>Weekly</button>
+                            <button className={`tab-button ${activeTab === 'monthly' ? 'active' : ''}`} onClick={() => setActiveTab('monthly')}>Monthly</button>
+                        </div>
+
+                        <div className="grid-3">
+                            <div className="stat-card success">
+                                <div className="stat-label">Total Revenue</div>
+                                <div className="stat-value">${reportData.revenue.toFixed(2)}</div>
+                            </div>
+                            <div className="stat-card warning">
+                                <div className="stat-label">Total Orders</div>
+                                <div className="stat-value">{reportData.orders}</div>
+                            </div>
+                            <div className="stat-card info">
+                                <div className="stat-label">Avg Order Value</div>
+                                <div className="stat-value">${(reportData.revenue / Math.max(reportData.orders, 1)).toFixed(2)}</div>
+                            </div>
+                        </div>
+
+                        <h3 className="section-title">Breakdown</h3>
+                        <div className="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>{activeTab === 'daily' ? 'Item' : activeTab === 'weekly' ? 'Date' : 'Week'}</th>
+                                        <th>Revenue</th>
+                                        <th>{activeTab === 'daily' ? 'Qty Sold' : 'Orders'}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {reportData.breakdown && reportData.breakdown.map((item, idx) => (
+                                        <tr key={idx}>
+                                            <td>{item.name || item.date || item.week || '-'}</td>
+                                            <td>${(item.revenue || 0).toFixed(2)}</td>
+                                            <td>{item.qty || item.orders || 0}</td>
+                                        </tr>
+                                    ))}
+                                    {(!reportData.breakdown || reportData.breakdown.length === 0) && (
+                                        <tr><td colSpan="3" style={{textAlign:'center', color:'var(--text-secondary)', padding:'20px'}}>No data for this period</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function Profits() {
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            useEffect(() => {
+                fetchProfits();
+            }, []);
+
+            const fetchProfits = async () => {
+                try {
+                    const res = await fetch('/api/profits');
+                    const json = await res.json();
+                    setData(json);
+                    setError(null);
+                } catch (e) {
+                    setError('Failed to load profits data');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            if (loading) {
+                return (
+                    <div className="loading">
+                        <div className="loading-spinner"></div>
+                        <div>Loading profits...</div>
+                    </div>
+                );
+            }
+
+            if (error || !data) {
+                return <div className="error">{error || 'No data'}</div>;
+            }
+
+            return (
+                <div>
+                    <div className="grid-2">
+                        <div className="stat-card success">
+                            <div className="stat-label">Total Profit</div>
+                            <div className="stat-value large">${data.totalProfit.toFixed(2)}</div>
+                            <div className="stat-subtext">All time</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-label">Profit Margin</div>
+                            <div className="stat-value large">{data.profitMargin.toFixed(1)}%</div>
+                            <div className="stat-subtext">Avg margin</div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="section-title">Profit by Product</h3>
+                        <div className="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Revenue</th>
+                                        <th>Cost</th>
+                                        <th>Profit</th>
+                                        <th>Margin</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.byProduct && data.byProduct.map((p, idx) => (
+                                        <tr key={idx}>
+                                            <td>{p.name}</td>
+                                            <td>${p.revenue.toFixed(2)}</td>
+                                            <td>${p.cost.toFixed(2)}</td>
+                                            <td style={{ color: 'var(--success)' }}>${p.profit.toFixed(2)}</td>
+                                            <td><span className="badge green">{p.margin.toFixed(1)}%</span></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function CostAnalysis() {
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            useEffect(() => {
+                fetchCostAnalysis();
+            }, []);
+
+            const fetchCostAnalysis = async () => {
+                try {
+                    const res = await fetch('/api/cost-analysis');
+                    const json = await res.json();
+                    setData(json);
+                    setError(null);
+                } catch (e) {
+                    setError('Failed to load cost analysis');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            if (loading) {
+                return (
+                    <div className="loading">
+                        <div className="loading-spinner"></div>
+                        <div>Loading cost analysis...</div>
+                    </div>
+                );
+            }
+
+            if (error || !data) {
+                return <div className="error">{error || 'No data'}</div>;
+            }
+
+            return (
+                <div>
+                    <div className="grid-2">
+                        <div className="stat-card warning">
+                            <div className="stat-label">Total Cost</div>
+                            <div className="stat-value">${data.totalCost.toFixed(2)}</div>
+                            <div className="stat-subtext">All purchases</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-label">Avg Cost per Item</div>
+                            <div className="stat-value">${data.avgCostPerItem.toFixed(2)}</div>
+                            <div className="stat-subtext">Across all products</div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="section-title">Cost by Category</h3>
+                        <div className="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Items</th>
+                                        <th>Total Cost</th>
+                                        <th>Avg Unit Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.byCategory && data.byCategory.map((cat, idx) => (
+                                        <tr key={idx}>
+                                            <td>{cat.emoji} {cat.name}</td>
+                                            <td>{cat.itemCount}</td>
+                                            <td>${cat.totalCost.toFixed(2)}</td>
+                                            <td>${cat.avgUnitCost.toFixed(2)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function Settings() {
+            const [form, setForm] = useState({
+                business_name: '',
+                email: '',
+                phone: '',
+                address: '',
+                currency: 'USD',
+            });
+            const [loading, setLoading] = useState(true);
+            const [saved, setSaved] = useState(false);
+
+            useEffect(() => {
+                fetch('/api/settings')
+                    .then(r => r.json())
+                    .then(data => {
+                        setForm(prev => ({ ...prev, ...data }));
+                        setLoading(false);
+                    })
+                    .catch(() => setLoading(false));
+            }, []);
+
+            const saveSettings = async () => {
+                try {
+                    const res = await fetch('/api/settings', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(form),
+                    });
+                    if (res.ok) {
+                        setSaved(true);
+                        setTimeout(() => setSaved(false), 2000);
+                    }
+                } catch (e) {
+                    alert('Failed to save settings');
+                }
+            };
+
+            if (loading) {
+                return <div className="loading"><div className="loading-spinner"></div><div>Loading settings...</div></div>;
+            }
+
+            return (
+                <div>
+                    <div className="card">
+                        <h3 className="section-title">App Settings</h3>
+                        <div className="form-group">
+                            <label>Business Name</label>
+                            <input type="text" placeholder="Your business name"
+                                value={form.business_name}
+                                onChange={e => setForm({...form, business_name: e.target.value})} />
+                        </div>
+                        <div className="form-group">
+                            <label>Email</label>
+                            <input type="email" placeholder="contact@business.com"
+                                value={form.email}
+                                onChange={e => setForm({...form, email: e.target.value})} />
+                        </div>
+                        <div className="form-group">
+                            <label>Phone</label>
+                            <input type="tel" placeholder="+1234567890"
+                                value={form.phone}
+                                onChange={e => setForm({...form, phone: e.target.value})} />
+                        </div>
+                        <div className="form-group">
+                            <label>Address</label>
+                            <input type="text" placeholder="123 Main St, City"
+                                value={form.address}
+                                onChange={e => setForm({...form, address: e.target.value})} />
+                        </div>
+                        <div className="form-group">
+                            <label>Currency</label>
+                            <select value={form.currency} onChange={e => setForm({...form, currency: e.target.value})}>
+                                <option value="USD">USD ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="GBP">GBP (£)</option>
+                                <option value="INR">INR (₹)</option>
+                                <option value="PHP">PHP (₱)</option>
+                            </select>
+                        </div>
+                        <div className="action-buttons">
+                            <button className="success" onClick={saveSettings}>
+                                {saved ? '✓ Saved' : 'Save Settings'}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="section-title">Network Access</h3>
+                        <NetworkInfo />
+                    </div>
+
+                    <div className="card">
+                        <h3 className="section-title">About</h3>
+                        <p style={{ color: 'var(--text-secondary)' }}>
+                            VendorVault v1.0
+                        </p>
+                    </div>
+                </div>
+            );
+        }
+
+        function NetworkInfo() {
+            const [info, setInfo] = useState(null);
+
+            useEffect(() => {
+                fetch('/api/network-info')
+                    .then(r => r.json())
+                    .then(setInfo)
+                    .catch(() => {});
+            }, []);
+
+            if (!info || info.error) return <p style={{color:'var(--text-secondary)'}}>Could not detect network info.</p>;
+
+            return (
+                <div>
+                    <div style={{marginBottom:'8px',display:'flex',justifyContent:'space-between'}}>
+                        <span style={{color:'var(--text-secondary)'}}>Local URL</span>
+                        <span>{info.localUrl}</span>
+                    </div>
+                    <div style={{display:'flex',justifyContent:'space-between'}}>
+                        <span style={{color:'var(--text-secondary)'}}>Phone / Network</span>
+                        <span>{info.networkUrl}</span>
+                    </div>
+                    <p style={{color:'var(--text-secondary)', fontSize:'12px', marginTop:'12px'}}>
+                        Open the network URL on your phone (same WiFi) to use VendorVault as a mobile app.
+                    </p>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
+{% endraw %}

@@ -1,28 +1,31 @@
 # Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
-# VendorVault — Settings Routes
 
 from flask import Blueprint, request, jsonify
 from database import get_db
 
-bp = Blueprint('settings', __name__)
+settings_bp = Blueprint('settings', __name__)
 
 
-@bp.route('/api/settings')
+@settings_bp.route('/api/settings', methods=['GET'])
 def get_settings():
-    db   = get_db()
+    """Get all application settings."""
+    db = get_db()
     rows = db.execute("SELECT key, value FROM settings").fetchall()
+    db.close()
     return jsonify({r['key']: r['value'] for r in rows})
 
 
-@bp.route('/api/settings', methods=['POST'])
+@settings_bp.route('/api/settings', methods=['PUT'])
 def update_settings():
-    db   = get_db()
+    """Update application settings (key-value pairs)."""
     data = request.json
+    db = get_db()
     for key, value in data.items():
-        db.execute(
-            "INSERT OR REPLACE INTO settings "
-            "(key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
-            (key, str(value)),
-        )
+        existing = db.execute("SELECT key FROM settings WHERE key = ?", (key,)).fetchone()
+        if existing:
+            db.execute("UPDATE settings SET value = ? WHERE key = ?", (str(value), key))
+        else:
+            db.execute("INSERT INTO settings (key, value) VALUES (?, ?)", (key, str(value)))
     db.commit()
+    db.close()
     return jsonify({'success': True})

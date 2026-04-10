@@ -1,7 +1,13 @@
 __pycache__/
 *.pyc
-data/
-*.db
-*.db-wal
-*.db-shm
+*.pyo
+vendorvault.db
 .env
+.DS_Store
+*.swp
+*.swo
+*~
+data/
+routes/
+static/
+templates/
