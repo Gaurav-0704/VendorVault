@@ -1,4 +1,8 @@
 {% raw %}
+<!--
+    VendorVault - Restaurant Management System
+    Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,16 +16,18 @@
     <title>VendorVault</title>
     <style>
         :root {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --bg-tertiary: #334155;
-            --accent: #6366f1;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #131a2e;
+            --bg-tertiary: #1e293b;
+            --accent: #818cf8;
+            --accent-glow: rgba(129, 140, 248, 0.25);
+            --success: #34d399;
+            --success-glow: rgba(52, 211, 153, 0.2);
+            --warning: #fbbf24;
+            --danger: #f87171;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
-            --border: #334155;
+            --border: rgba(148, 163, 184, 0.1);
         }
 
         html {
@@ -64,13 +70,14 @@
             display: flex;
             flex: 1;
             position: relative;
-            overflow: hidden;
+            width: 100%;
+            min-width: 0;
         }
 
         .page-content {
             flex: 1;
             overflow-y: auto;
-            overflow-x: hidden;
+            min-width: 0;
         }
 
         .header {
@@ -79,11 +86,11 @@
             gap: 16px;
             padding: 16px;
             border-bottom: 1px solid var(--border);
-            background: var(--bg-secondary);
+            background: linear-gradient(135deg, var(--bg-secondary), rgba(129, 140, 248, 0.05));
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 1px 12px rgba(99, 102, 241, 0.15);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
         }
 
         .menu-toggle {
@@ -129,12 +136,12 @@
             top: 0;
             width: 280px;
             height: 100vh;
-            background: rgba(30, 41, 59, 0.95);
-            backdrop-filter: blur(12px);
+            background: linear-gradient(180deg, #0f172a 0%, #131a2e 100%);
+            backdrop-filter: blur(16px);
             border-right: 1px solid var(--border);
             z-index: 1000;
             transform: translateX(-100%);
-            transition: transform 0.3s ease;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -157,12 +164,13 @@
         }
 
         .sidebar-header {
-            padding: 20px 16px;
+            padding: 24px 20px;
             border-bottom: 1px solid var(--border);
-            font-size: 20px;
-            font-weight: 700;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.03));
-            border-left: 3px solid var(--accent);
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, rgba(129, 140, 248, 0.12), transparent);
+            letter-spacing: -0.5px;
+            color: var(--accent);
         }
 
         .sidebar-nav {
@@ -200,8 +208,9 @@
         }
 
         .nav-item.active {
-            background: var(--accent);
+            background: linear-gradient(135deg, var(--accent), #6366f1);
             color: white;
+            box-shadow: 0 4px 15px var(--accent-glow);
         }
 
         .main-content {
@@ -209,6 +218,7 @@
             max-width: 1200px;
             margin: 0 auto;
             width: 100%;
+            min-width: 0;
             animation: fadeIn 0.3s ease;
         }
 
@@ -226,51 +236,69 @@
         .card {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
+            border-radius: 14px;
+            padding: 18px;
             margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255,255,255,0.02);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .card:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(129,140,248,0.08);
         }
 
         .stat-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-            transition: transform 0.15s, box-shadow 0.15s;
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            opacity: 0.06;
+            transform: translate(20px, -20px);
         }
 
         .stat-card:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
         }
 
         .stat-card.success {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.03));
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.12), rgba(52, 211, 153, 0.02));
             border-left: 3px solid var(--success);
         }
+        .stat-card.success::before { background: var(--success); }
 
         .stat-card.warning {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.03));
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(251, 191, 36, 0.02));
             border-left: 3px solid var(--warning);
         }
+        .stat-card.warning::before { background: var(--warning); }
 
         .stat-card.danger {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.03));
+            background: linear-gradient(135deg, rgba(248, 113, 113, 0.12), rgba(248, 113, 113, 0.02));
             border-left: 3px solid var(--danger);
         }
+        .stat-card.danger::before { background: var(--danger); }
 
         .stat-card.info {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.03));
+            background: linear-gradient(135deg, rgba(129, 140, 248, 0.12), rgba(129, 140, 248, 0.02));
             border-left: 3px solid var(--accent);
         }
+        .stat-card.info::before { background: var(--accent); }
 
         .stat-label {
             font-size: 14px;
@@ -327,11 +355,11 @@
         }
 
         button {
-            background: var(--accent);
+            background: linear-gradient(135deg, var(--accent), #6366f1);
             color: white;
             border: none;
             padding: 12px 16px;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
             min-height: 44px;
@@ -341,20 +369,24 @@
 
         button:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 6px 20px var(--accent-glow);
+            filter: brightness(1.1);
         }
 
         button:active {
-            background: #5558e3;
+            transform: translateY(0);
+            filter: brightness(0.95);
         }
 
         button.secondary {
             background: var(--bg-tertiary);
             color: var(--text-primary);
+            border: 1px solid var(--border);
         }
 
         button.secondary:hover {
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border-color: var(--accent);
         }
 
         button.secondary:active {
@@ -362,45 +394,38 @@
         }
 
         button.danger {
-            background: var(--danger);
+            background: linear-gradient(135deg, var(--danger), #ef4444);
         }
 
         button.danger:hover {
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-        }
-
-        button.danger:active {
-            background: #dc2626;
+            box-shadow: 0 6px 20px rgba(248, 113, 113, 0.3);
         }
 
         button.success {
-            background: var(--success);
+            background: linear-gradient(135deg, var(--success), #10b981);
         }
 
         button.success:hover {
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-
-        button.success:active {
-            background: #059669;
+            box-shadow: 0 6px 20px var(--success-glow);
         }
 
         input, select, textarea {
-            background: var(--bg-tertiary);
+            background: rgba(30, 41, 59, 0.6);
             border: 1px solid var(--border);
             color: var(--text-primary);
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 10px;
             width: 100%;
             min-height: 44px;
             font-size: 16px;
             font-family: inherit;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
         }
 
         input:focus, select:focus, textarea:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+            background: rgba(30, 41, 59, 0.9);
             outline: none;
         }
 
@@ -423,8 +448,8 @@
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
             z-index: 1001;
             display: flex;
             align-items: flex-end;
@@ -434,11 +459,12 @@
         .modal-content {
             width: 100%;
             max-width: 600px;
-            background: var(--bg-secondary);
-            border-radius: 16px 16px 0 0;
-            padding: 24px 16px;
+            background: linear-gradient(180deg, var(--bg-secondary), #0f172a);
+            border-radius: 20px 20px 0 0;
+            padding: 24px 18px;
             max-height: 90vh;
             overflow-y: auto;
+            border-top: 1px solid rgba(129, 140, 248, 0.15);
             animation: slideUp 0.3s ease;
         }
 
@@ -733,6 +759,333 @@
             opacity: 1;
         }
 
+        /* order page: split layout */
+        .order-layout {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .order-menu-panel {
+            flex: 1;
+            min-width: 0;
+            overflow: visible;
+        }
+
+        .order-cart-panel {
+            width: 340px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 90px;
+        }
+
+        .category-pills {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            scrollbar-width: none;
+            touch-action: pan-x;
+        }
+
+        .category-pills::-webkit-scrollbar { display: none; }
+
+        .cat-pill {
+            padding: 8px 18px;
+            border-radius: 20px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 500;
+            min-height: auto;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .cat-pill:hover {
+            background: rgba(129, 140, 248, 0.12);
+            color: var(--text-primary);
+            border-color: rgba(129, 140, 248, 0.3);
+            box-shadow: none;
+            transform: none;
+        }
+
+        .cat-pill.active {
+            background: linear-gradient(135deg, var(--accent), #6366f1);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+        .item-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .item-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 0%, var(--accent-glow), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .item-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .item-card:hover::after {
+            opacity: 1;
+        }
+
+        .item-card:active {
+            transform: scale(0.97);
+        }
+
+        .item-card.selected {
+            border-color: var(--accent);
+            background: rgba(129, 140, 248, 0.12);
+            box-shadow: 0 0 0 2px var(--accent), 0 4px 15px var(--accent-glow);
+        }
+
+        .item-card-name {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            line-height: 1.3;
+            position: relative;
+            z-index: 1;
+        }
+
+        .item-card-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--success);
+            position: relative;
+            z-index: 1;
+        }
+
+        .item-card-qty {
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .item-card-qty button {
+            width: 32px;
+            height: 32px;
+            min-height: auto;
+            padding: 0;
+            border-radius: 8px;
+            font-size: 18px;
+            line-height: 1;
+            position: relative;
+            z-index: 3;
+        }
+
+        .item-card-qty span {
+            font-weight: 700;
+            font-size: 15px;
+            min-width: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .cart-item:last-child { border-bottom: none; }
+
+        .cart-item-name {
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .cart-item-qty {
+            color: var(--text-secondary);
+            margin: 0 12px;
+            font-size: 13px;
+        }
+
+        .cart-item-price {
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 0 0;
+            margin-top: 8px;
+            border-top: 2px solid var(--border);
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .cart-total-amount {
+            color: var(--success);
+        }
+
+        .cart-empty {
+            text-align: center;
+            padding: 24px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* purchase categories */
+        .purchase-cat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 4px 0;
+        }
+
+        .purchase-cat-title {
+            font-size: 17px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .purchase-cat-badge {
+            font-size: 12px;
+            background: var(--bg-tertiary);
+            padding: 2px 8px;
+            border-radius: 10px;
+            color: var(--text-secondary);
+        }
+
+        .purchase-cat-total {
+            font-size: 14px;
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .purchase-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+
+        .purchase-item-info {
+            flex: 1;
+        }
+
+        .purchase-item-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .purchase-item-detail {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .add-item-inline {
+            display: grid;
+            grid-template-columns: 1fr 80px 70px 60px auto;
+            gap: 8px;
+            align-items: end;
+            margin-top: 10px;
+        }
+
+        .add-item-inline input,
+        .add-item-inline select {
+            min-height: 38px;
+            font-size: 13px;
+            padding: 8px;
+        }
+
+        .add-item-inline button {
+            min-height: 38px;
+            padding: 0 12px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            .order-layout {
+                flex-direction: column;
+            }
+
+            .order-cart-panel {
+                display: none;
+            }
+
+            .item-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+
+            .add-item-inline {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .add-item-inline button {
+                grid-column: span 2;
+            }
+
+            .mobile-cart-bar {
+                display: flex;
+            }
+
+            .main-content {
+                padding-bottom: 80px;
+            }
+
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .bulk-cat-row {
+                flex-wrap: wrap;
+            }
+
+            .bulk-cat-row .cat-label {
+                width: 100%;
+                margin-bottom: 4px;
+            }
+        }
+
         @media (max-width: 600px) {
             .header {
                 padding: 12px;
@@ -740,6 +1093,7 @@
 
             .main-content {
                 padding: 12px;
+                padding-bottom: 80px;
             }
 
             .page-title {
@@ -758,24 +1112,239 @@
                 grid-template-columns: 1fr;
             }
 
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
             .section-title {
                 margin-top: 16px;
                 margin-bottom: 12px;
             }
+
+            .item-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .category-pills {
+                gap: 6px;
+            }
+
+            .cat-pill {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+
+            .tab-toolbar {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* Mobile cart bar: hidden on desktop, shown on mobile via media query above */
+        .mobile-cart-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 999;
+            background: linear-gradient(135deg, var(--bg-secondary), rgba(129, 140, 248, 0.05));
+            border-top: 1px solid rgba(129, 140, 248, 0.15);
+            padding: 14px 16px;
+            box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        /* Hide on desktop — the media query at max-width:768px sets display:flex */
+        @media (min-width: 769px) {
+            .mobile-cart-bar {
+                display: none !important;
+            }
+        }
+
+        .mobile-cart-bar .cart-summary {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .mobile-cart-bar .cart-badge {
+            background: var(--accent);
+            color: white;
+            min-width: 26px;
+            height: 26px;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .mobile-cart-bar .view-cart-btn {
+            background: linear-gradient(135deg, var(--success), #10b981);
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            min-height: auto;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px var(--success-glow);
+        }
+
+        .tab-toolbar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+
+        .btn-refresh {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            min-height: 40px;
+        }
+
+        .btn-refresh:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .btn-refresh.spinning span {
+            display: inline-block;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .bulk-cat-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+
+        .bulk-cat-row .cat-label {
+            flex: 1;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bulk-cat-row input {
+            width: 70px;
+            min-height: 34px;
+            font-size: 13px;
+            padding: 4px 8px;
+            text-align: center;
+        }
+
+        .bulk-cat-row select {
+            width: 70px;
+            min-height: 34px;
+            font-size: 13px;
+            padding: 4px 6px;
+        }
+
+        .purchase-date-tag {
+            font-size: 11px;
+            color: var(--accent);
+            background: rgba(99, 102, 241, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
         }
     </style>
 </head>
 <body>
-    <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#94a3b8"><div style="text-align:center"><div style="font-size:48px;margin-bottom:16px">⚡</div><div>Loading VendorVault...</div></div></div></div>
+    <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#818cf8;background:#0a0e1a"><div style="text-align:center"><div style="font-size:48px;margin-bottom:16px;animation:pulse 2s infinite">⚡</div><div style="font-size:18px;font-weight:600;letter-spacing:1px">VendorVault</div><div style="font-size:13px;color:#94a3b8;margin-top:8px">Loading...</div></div></div></div>
+    <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}</style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        // VendorVault - Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
+        const { useState, useEffect, useCallback, useRef } = React;
 
         const ReactDOM = window.ReactDOM;
+
+        // global toast system
+        let _showToast = () => {};
+        function ToastProvider({ children }) {
+            const [toasts, setToasts] = useState([]);
+            const idRef = useRef(0);
+
+            _showToast = (message, type = 'success') => {
+                const id = ++idRef.current;
+                setToasts(prev => [...prev, { id, message, type }]);
+                setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 2500);
+            };
+
+            return (
+                <div>
+                    {children}
+                    <div style={{ position: 'fixed', top: '16px', right: '16px', zIndex: 9999,
+                        display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'none' }}>
+                        {toasts.map(t => (
+                            <div key={t.id} style={{
+                                padding: '12px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 600,
+                                color: 'white', pointerEvents: 'auto', animation: 'slideIn 0.3s ease',
+                                boxShadow: '0 8px 25px rgba(0,0,0,0.4)',
+                                background: t.type === 'success' ? 'linear-gradient(135deg, #34d399, #10b981)' :
+                                    t.type === 'error' ? 'linear-gradient(135deg, #f87171, #ef4444)' :
+                                    'linear-gradient(135deg, #818cf8, #6366f1)',
+                            }}>{t.message}</div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+        function toast(msg, type) { _showToast(msg, type); }
+
+        function RefreshButton({ onRefresh }) {
+            const [spinning, setSpinning] = useState(false);
+            const handleClick = async () => {
+                setSpinning(true);
+                try { await onRefresh(); } catch(e) { toast('Refresh failed', 'error'); }
+                setTimeout(() => setSpinning(false), 400);
+            };
+            return (
+                <button className={`btn-refresh ${spinning ? 'spinning' : ''}`} onClick={handleClick} title="Refresh">
+                    <span>🔄</span> Refresh
+                </button>
+            );
+        }
 
         function App() {
             const [currentPage, setCurrentPage] = useState('dashboard');
@@ -788,6 +1357,9 @@
                 { id: 'dashboard', label: 'Dashboard', icon: '📊' },
                 { id: 'orders', label: 'Orders', icon: '📋' },
                 { id: 'purchases', label: 'Purchases', icon: '📦' },
+                { id: 'finance', label: 'Finance', icon: '💵' },
+                { id: 'stock', label: 'Stock', icon: '🏪' },
+                { id: 'payouts', label: 'Payouts', icon: '💸' },
                 { id: 'reports', label: 'Reports', icon: '📈' },
                 { id: 'profits', label: 'Profits', icon: '💰' },
                 { id: 'cost-analysis', label: 'Cost Analysis', icon: '💹' },
@@ -797,11 +1369,17 @@
             const renderPage = () => {
                 switch (currentPage) {
                     case 'dashboard':
-                        return <Dashboard />;
+                        return <Dashboard onNavigate={setCurrentPage} />;
                     case 'orders':
                         return <Orders />;
                     case 'purchases':
                         return <Purchases />;
+                    case 'finance':
+                        return <Finance />;
+                    case 'stock':
+                        return <Stock />;
+                    case 'payouts':
+                        return <Payouts />;
                     case 'reports':
                         return <Reports />;
                     case 'profits':
@@ -811,7 +1389,7 @@
                     case 'settings':
                         return <Settings />;
                     default:
-                        return <Dashboard />;
+                        return <Dashboard onNavigate={setCurrentPage} />;
                 }
             };
 
@@ -852,7 +1430,7 @@
             );
         }
 
-        function Dashboard() {
+        function Dashboard({ onNavigate }) {
             const [data, setData] = useState(null);
             const [loading, setLoading] = useState(true);
             const [error, setError] = useState(null);
@@ -898,6 +1476,14 @@
 
             return (
                 <div>
+                    <div className="tab-toolbar">
+                        <button className="success" onClick={() => onNavigate('orders')}
+                            style={{ flex: 1, padding: '14px', fontSize: '16px' }}>
+                            + New Order
+                        </button>
+                        <RefreshButton onRefresh={fetchDashboard} />
+                    </div>
+
                     <div className="grid-3">
                         <div className="stat-card success">
                             <div className="stat-label">Today's Revenue</div>
@@ -909,44 +1495,44 @@
                             <div className="stat-value">{data.today.orders}</div>
                             <div className="stat-subtext">{data.today.pendingOrders || 0} pending</div>
                         </div>
-                        <div className="stat-card danger">
+                        <div className="stat-card info">
                             <div className="stat-label">Profit Margin</div>
                             <div className="stat-value">{todayMargin}%</div>
-                            <div className="stat-subtext">Target: 35%</div>
+                            <div className="stat-subtext">Profit: ${data.today.profit.toFixed(2)}</div>
                         </div>
                     </div>
 
                     <div className="grid-2">
-                        <div className="card">
-                            <h3 className="section-title">Hourly Revenue</h3>
-                            <div className="mini-chart">
-                                {data.hourly.map((h, idx) => {
-                                    const maxRevenue = Math.max(...data.hourly.map(x => x.revenue), 1);
-                                    const height = (h.revenue / maxRevenue) * 100;
-                                    return <div key={idx} className="mini-chart-bar" style={{ height: height + '%' }} title={`${h.time}: $${h.revenue.toFixed(2)}`}></div>;
-                                })}
-                            </div>
-                            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '8px' }}>Last 24 hours</div>
+                        <div className="stat-card success">
+                            <div className="stat-label">This Week</div>
+                            <div className="stat-value">${data.week.revenue.toFixed(2)}</div>
+                            <div className="stat-subtext">{data.week.orders} orders — ${data.week.profit.toFixed(2)} profit</div>
                         </div>
-
-                        <div className="card">
-                            <h3 className="section-title">Quick Stats</h3>
-                            <div style={{ marginTop: '12px' }}>
-                                <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ color: 'var(--text-secondary)' }}>Avg Order Value</span>
-                                    <span>${(data.today.revenue / Math.max(data.today.orders, 1)).toFixed(2)}</span>
-                                </div>
-                                <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ color: 'var(--text-secondary)' }}>Total Profit</span>
-                                    <span>${data.today.profit.toFixed(2)}</span>
-                                </div>
-                                <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ color: 'var(--text-secondary)' }}>Cost of Goods</span>
-                                    <span>${(data.today.revenue - data.today.profit).toFixed(2)}</span>
-                                </div>
-                            </div>
+                        <div className="stat-card warning">
+                            <div className="stat-label">This Month</div>
+                            <div className="stat-value">${data.month.revenue.toFixed(2)}</div>
+                            <div className="stat-subtext">{data.month.orders} orders — ${data.month.profit.toFixed(2)} profit</div>
                         </div>
                     </div>
+
+                    {data.hourly.some(h => h.revenue > 0) && (
+                        <div className="card">
+                            <h3 className="section-title">Today's Sales</h3>
+                            <div className="mini-chart" style={{ height: '60px' }}>
+                                {data.hourly.map((h, idx) => {
+                                    const peak = Math.max(...data.hourly.map(x => x.revenue), 1);
+                                    const pct = (h.revenue / peak) * 100;
+                                    return <div key={idx} className="mini-chart-bar"
+                                        style={{ height: pct + '%' }}
+                                        title={`${h.time} — $${h.revenue.toFixed(2)} (${h.orders} orders)`}></div>;
+                                })}
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-secondary)', marginTop: '6px' }}>
+                                <span>{data.hourly[0]?.time}</span>
+                                <span>{data.hourly[data.hourly.length - 1]?.time}</span>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="card">
                         <h3 className="section-title">Recent Orders</h3>
@@ -980,243 +1566,556 @@
         function Orders() {
             const [orders, setOrders] = useState([]);
             const [loading, setLoading] = useState(true);
-            const [error, setError] = useState(null);
             const [menu, setMenu] = useState([]);
-            const [showOrderHistory, setShowOrderHistory] = useState(false);
-            const [formData, setFormData] = useState({
-                customerName: '',
-                customerPhone: '',
-                note: ''
-            });
-            const [selectedItems, setSelectedItems] = useState({});
+            const [activeCategory, setActiveCategory] = useState('all');
+            const [showHistory, setShowHistory] = useState(false);
+            const [editMode, setEditMode] = useState(false);
+            const [editingItem, setEditingItem] = useState(null);
+            const [cart, setCart] = useState({});
+            const [customer, setCustomer] = useState({ name: '', phone: '', note: '' });
+            const [orderDate, setOrderDate] = useState('');
+            const [showAddItem, setShowAddItem] = useState(false);
+            const [newItem, setNewItem] = useState({ name: '', price: '', cost: '', categoryId: '' });
+            const [mobileCartOpen, setMobileCartOpen] = useState(false);
+            const [searchQuery, setSearchQuery] = useState('');
 
-            useEffect(() => {
-                fetchOrders();
-                fetchMenu();
-            }, []);
-
-            const fetchOrders = async () => {
-                try {
-                    const res = await fetch('/api/orders');
-                    const json = await res.json();
-                    setOrders(json);
-                    setError(null);
-                } catch (e) {
-                    setError('Failed to load orders');
-                    console.error(e);
-                }
-            };
-
-            const fetchMenu = async () => {
-                try {
-                    const res = await fetch('/api/menu');
-                    const json = await res.json();
-                    setMenu(json);
+            const loadData = () => {
+                Promise.all([
+                    fetch('/api/orders').then(r => r.json()),
+                    fetch('/api/menu').then(r => r.json()),
+                ]).then(([ordersData, menuData]) => {
+                    setOrders(ordersData);
+                    setMenu(menuData);
                     setLoading(false);
-                } catch (e) {
-                    setError('Failed to load menu');
+                }).catch(() => {
+                    toast('Failed to load data', 'error');
                     setLoading(false);
-                }
-            };
-
-            const resetForm = () => {
-                setFormData({
-                    customerName: '',
-                    customerPhone: '',
-                    note: ''
                 });
-                setSelectedItems({});
             };
 
-            const updateItemQty = (itemId, qty) => {
-                const newSelected = { ...selectedItems };
-                if (qty <= 0) {
-                    delete newSelected[itemId];
-                } else {
-                    newSelected[itemId] = qty;
-                }
-                setSelectedItems(newSelected);
+            useEffect(() => { loadData(); }, []);
+
+            const allItems = menu.flatMap(c => (c.items || []).map(i => ({ ...i, category: c.name, categoryId: c.id })));
+
+            const filteredItems = allItems.filter(i => {
+                const matchCat = activeCategory === 'all' || i.category === activeCategory;
+                const matchSearch = !searchQuery || i.name.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchCat && matchSearch;
+            });
+
+            const addToCart = (id) => {
+                if (editMode) return;
+                setCart({ ...cart, [id]: (cart[id] || 0) + 1 });
+            };
+            const removeFromCart = (id) => {
+                const updated = { ...cart };
+                if (updated[id] > 1) updated[id]--;
+                else delete updated[id];
+                setCart(updated);
             };
 
-            const calculateTotal = () => {
-                const allItems = menu.flatMap(c => c.items || []);
-                return Object.entries(selectedItems).reduce((sum, [itemId, qty]) => {
-                    const item = allItems.find(i => i.id == itemId);
-                    return sum + (item ? item.price * qty : 0);
-                }, 0);
+            const cartItems = Object.entries(cart).map(([id, qty]) => {
+                const item = allItems.find(i => i.id === Number(id));
+                return item ? { ...item, qty, lineTotal: item.price * qty } : null;
+            }).filter(Boolean);
+
+            const cartTotal = cartItems.reduce((sum, i) => sum + i.lineTotal, 0);
+            const cartCount = cartItems.reduce((sum, i) => sum + i.qty, 0);
+
+            // menu editing
+            const startEdit = (item) => setEditingItem({ ...item });
+            const saveEdit = async () => {
+                if (!editingItem) return;
+                try {
+                    const res = await fetch('/api/menu/items/' + editingItem.id, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: editingItem.name,
+                            price: parseFloat(editingItem.price),
+                            cost: parseFloat(editingItem.cost)
+                        })
+                    });
+                    if (res.ok) {
+                        setEditingItem(null);
+                        loadData();
+                        toast('Item updated!');
+                    } else {
+                        toast('Failed to update item', 'error');
+                    }
+                } catch (e) { toast('Network error', 'error'); }
+            };
+            const deleteMenuItem = async (id) => {
+                if (!confirm('Remove this item from menu?')) return;
+                try {
+                    await fetch('/api/menu/items/' + id, { method: 'DELETE' });
+                    setEditingItem(null);
+                    loadData();
+                    toast('Item removed');
+                } catch (e) { toast('Failed to delete', 'error'); }
             };
 
-            const submitOrder = async () => {
-                if (!formData.customerName.trim() || Object.keys(selectedItems).length === 0) {
-                    alert('Please fill in customer name and select items');
+            const addNewItem = async () => {
+                if (!newItem.name || !newItem.price || !newItem.categoryId) {
+                    toast('Fill in name, price, and pick a category', 'error');
                     return;
                 }
-
                 try {
-                    const items = Object.entries(selectedItems).map(([id, qty]) => ({
-                        itemId: parseInt(id),
-                        quantity: qty
-                    }));
-
-                    const res = await fetch('/api/orders', {
+                    const res = await fetch('/api/menu/items', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            customerName: formData.customerName,
-                            customerPhone: formData.customerPhone,
-                            items: items,
-                            note: formData.note
+                            categoryId: parseInt(newItem.categoryId),
+                            name: newItem.name,
+                            price: parseFloat(newItem.price),
+                            cost: parseFloat(newItem.cost) || 0,
                         })
                     });
-
                     if (res.ok) {
-                        resetForm();
-                        await fetchOrders();
-                        alert('Order created successfully');
+                        setNewItem({ name: '', price: '', cost: '', categoryId: '' });
+                        setShowAddItem(false);
+                        loadData();
+                        toast('Item added to menu!');
                     } else {
-                        alert('Failed to create order');
+                        toast('Failed to add item', 'error');
                     }
-                } catch (e) {
-                    alert('Error: ' + e.message);
-                }
+                } catch (e) { toast('Network error', 'error'); }
             };
 
-            const deleteOrder = async (orderId) => {
-                if (!window.confirm('Delete this order?')) return;
+            const submitOrder = async () => {
+                if (!customer.name.trim() || cartItems.length === 0) {
+                    toast('Add a name and pick some items', 'error');
+                    return false;
+                }
+                const payload = {
+                    customerName: customer.name,
+                    customerPhone: customer.phone,
+                    note: customer.note,
+                    items: cartItems.map(i => ({ itemId: i.id, quantity: i.qty }))
+                };
+                if (orderDate) payload.orderDate = orderDate;
+
                 try {
-                    const res = await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
+                    const res = await fetch('/api/orders', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
                     if (res.ok) {
-                        await fetchOrders();
+                        setCart({});
+                        setCustomer({ name: '', phone: '', note: '' });
+                        setOrderDate('');
+                        const updated = await fetch('/api/orders').then(r => r.json());
+                        setOrders(updated);
+                        toast('Order placed!');
+                        return true;
+                    } else {
+                        toast('Failed to place order', 'error');
+                        return false;
                     }
                 } catch (e) {
-                    alert('Failed to delete order');
+                    toast('Error: ' + e.message, 'error');
+                    return false;
                 }
             };
 
-            if (loading) {
-                return (
-                    <div className="loading">
-                        <div className="loading-spinner"></div>
-                        <div>Loading...</div>
-                    </div>
-                );
-            }
+            const deleteOrder = async (id) => {
+                if (!confirm('Delete this order?')) return;
+                try {
+                    const res = await fetch('/api/orders/' + id, { method: 'DELETE' });
+                    if (res.ok) {
+                        const updated = await fetch('/api/orders').then(r => r.json());
+                        setOrders(updated);
+                        toast('Order deleted');
+                    } else {
+                        toast('Failed to delete order', 'error');
+                    }
+                } catch (e) { toast('Network error', 'error'); }
+            };
+
+            if (loading) return <div className="loading"><div className="loading-spinner"></div><div>Loading menu...</div></div>;
 
             return (
                 <div>
-                    <div className="card">
-                        <h3 className="section-title">Create New Order</h3>
-                        <div className="form-group">
-                            <label>Customer Name</label>
-                            <input
-                                type="text"
-                                placeholder="e.g., John Doe"
-                                value={formData.customerName}
-                                onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Phone</label>
-                            <input
-                                type="tel"
-                                placeholder="e.g., +1234567890"
-                                value={formData.customerPhone}
-                                onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Note</label>
-                            <textarea
-                                placeholder="Add any special notes..."
-                                value={formData.note}
-                                onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                            ></textarea>
-                        </div>
+                    <div className="tab-toolbar" style={{ justifyContent: 'flex-end' }}>
+                        <RefreshButton onRefresh={loadData} />
+                    </div>
+                    <div className="order-layout">
+                        <div className="order-menu-panel">
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+                                <button className={editMode ? '' : 'secondary'}
+                                    onClick={() => { setEditMode(!editMode); setEditingItem(null); }}
+                                    style={{ fontSize: '12px', padding: '6px 12px', minHeight: 'auto', whiteSpace: 'nowrap' }}>
+                                    {editMode ? 'Done' : 'Edit Menu'}
+                                </button>
+                            </div>
+                            <div style={{ position: 'relative', marginBottom: '10px' }}>
+                                <input type="text" placeholder="Search menu items..."
+                                    value={searchQuery}
+                                    onChange={e => setSearchQuery(e.target.value)}
+                                    style={{ minHeight: '40px', fontSize: '14px', paddingLeft: '36px', paddingRight: searchQuery ? '36px' : '12px' }} />
+                                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)',
+                                    color: 'var(--text-secondary)', fontSize: '16px', pointerEvents: 'none' }}>🔍</span>
+                                {searchQuery && (
+                                    <button onClick={() => setSearchQuery('')}
+                                        style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)',
+                                            background: 'var(--bg-tertiary)', border: 'none', color: 'var(--text-secondary)',
+                                            width: '24px', height: '24px', borderRadius: '12px', padding: 0,
+                                            minHeight: 'auto', fontSize: '12px', cursor: 'pointer', display: 'flex',
+                                            alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                                )}
+                            </div>
+                            <div className="category-pills">
+                                <button className={`cat-pill ${activeCategory === 'all' ? 'active' : ''}`}
+                                    onClick={() => setActiveCategory('all')}>All</button>
+                                {menu.map(c => (
+                                    <button key={c.id} className={`cat-pill ${activeCategory === c.name ? 'active' : ''}`}
+                                        onClick={() => setActiveCategory(c.name)}>{c.name}</button>
+                                ))}
+                            </div>
 
-                        <h3 className="section-title" style={{ marginTop: '20px' }}>Select Items</h3>
-                        {menu.map(category => (
-                            <div key={category.id} style={{ marginBottom: '20px' }}>
-                                <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-secondary)', fontSize: '14px' }}>
-                                    {category.emoji} {category.name}
-                                </h4>
-                                {category.items && category.items.map(item => (
-                                    <div key={item.id} style={{ marginBottom: '12px', padding: '12px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
-                                            <div>
-                                                <div style={{ fontWeight: '500' }}>{item.name}</div>
-                                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>${item.price.toFixed(2)} each</div>
-                                            </div>
+                            {editMode && editingItem && (
+                                <div className="card" style={{ marginBottom: '12px', borderLeft: '3px solid var(--accent)',
+                                    background: 'linear-gradient(135deg, rgba(129,140,248,0.08), var(--bg-secondary))' }}>
+                                    <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px', color: 'var(--accent)' }}>
+                                        Editing Item
+                                    </div>
+                                    <div className="form-group" style={{ marginBottom: '10px' }}>
+                                        <label style={{ fontSize: '12px' }}>Item Name</label>
+                                        <input value={editingItem.name}
+                                            onChange={e => setEditingItem({...editingItem, name: e.target.value})}
+                                            placeholder="Item name"
+                                            autoFocus
+                                            style={{ minHeight: '40px', fontSize: '15px', fontWeight: 600 }} />
+                                    </div>
+                                    <div className="grid-2" style={{ marginBottom: '10px' }}>
+                                        <div className="form-group" style={{ marginBottom: 0 }}>
+                                            <label style={{ fontSize: '12px' }}>Sell Price ($)</label>
+                                            <input type="number" step="0.01" value={editingItem.price}
+                                                onChange={e => setEditingItem({...editingItem, price: e.target.value})}
+                                                style={{ minHeight: '40px', fontSize: '14px' }} />
                                         </div>
-                                        {selectedItems[item.id] ? (
-                                            <div className="quantity-control">
-                                                <button onClick={() => updateItemQty(item.id, selectedItems[item.id] - 1)}>−</button>
-                                                <input type="number" value={selectedItems[item.id]} readOnly />
-                                                <button onClick={() => updateItemQty(item.id, selectedItems[item.id] + 1)}>+</button>
-                                                <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                                                    ${(item.price * selectedItems[item.id]).toFixed(2)}
-                                                </span>
+                                        <div className="form-group" style={{ marginBottom: 0 }}>
+                                            <label style={{ fontSize: '12px' }}>Your Cost ($)</label>
+                                            <input type="number" step="0.01" value={editingItem.cost}
+                                                onChange={e => setEditingItem({...editingItem, cost: e.target.value})}
+                                                style={{ minHeight: '40px', fontSize: '14px' }} />
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button className="success" onClick={saveEdit} style={{ flex: 1, fontSize: '14px', minHeight: '40px' }}>Save Changes</button>
+                                        <button className="secondary" onClick={() => setEditingItem(null)} style={{ fontSize: '14px', minHeight: '40px', padding: '0 16px' }}>Cancel</button>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="item-grid">
+                                {filteredItems.map(item => (
+                                    <div key={item.id}
+                                        className={`item-card ${cart[item.id] ? 'selected' : ''}`}
+                                        onClick={() => editMode ? startEdit(item) : addToCart(item.id)}>
+                                        <div className="item-card-name">{item.name}</div>
+                                        <div className="item-card-price">${item.price.toFixed(2)}</div>
+                                        {editMode ? (
+                                            <div style={{ marginTop: '6px' }} onClick={e => e.stopPropagation()}>
+                                                <button className="danger" onClick={() => deleteMenuItem(item.id)}
+                                                    style={{ fontSize: '11px', padding: '3px 8px', minHeight: 'auto' }}>Remove</button>
                                             </div>
                                         ) : (
-                                            <button className="secondary" onClick={() => updateItemQty(item.id, 1)} style={{ width: '100%' }}>Add</button>
+                                            cart[item.id] && (
+                                                <div className="item-card-qty" onClick={e => e.stopPropagation()}>
+                                                    <button className="danger" onClick={() => removeFromCart(item.id)}>−</button>
+                                                    <span>{cart[item.id]}</span>
+                                                    <button onClick={() => addToCart(item.id)}>+</button>
+                                                </div>
+                                            )
                                         )}
                                     </div>
                                 ))}
+                                {editMode && (
+                                    <div className="item-card" onClick={() => setShowAddItem(true)}
+                                        style={{ border: '2px dashed var(--border)', background: 'transparent',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            flexDirection: 'column', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                                        <div style={{ fontSize: '24px' }}>+</div>
+                                        <div style={{ fontSize: '12px' }}>Add Item</div>
+                                    </div>
+                                )}
                             </div>
-                        ))}
 
-                        <div style={{ backgroundColor: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginTop: '16px', marginBottom: '16px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                <span>Items Selected:</span>
-                                <strong>{Object.values(selectedItems).reduce((a, b) => a + b, 0)}</strong>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span>Order Total:</span>
-                                <strong style={{ fontSize: '20px', color: 'var(--success)' }}>${calculateTotal().toFixed(2)}</strong>
-                            </div>
+                            {editMode && showAddItem && (
+                                <div className="card" style={{ marginTop: '12px', borderLeft: '3px solid var(--success)' }}>
+                                    <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '10px' }}>New Menu Item</div>
+                                    <div className="form-group" style={{ marginBottom: '8px' }}>
+                                        <label style={{ fontSize: '12px' }}>Category</label>
+                                        <select value={newItem.categoryId}
+                                            onChange={e => setNewItem({...newItem, categoryId: e.target.value})}
+                                            style={{ minHeight: '36px', fontSize: '13px' }}>
+                                            <option value="">Pick a category</option>
+                                            {menu.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="grid-3" style={{ marginBottom: '8px' }}>
+                                        <div className="form-group" style={{ marginBottom: 0 }}>
+                                            <label style={{ fontSize: '12px' }}>Name</label>
+                                            <input value={newItem.name}
+                                                onChange={e => setNewItem({...newItem, name: e.target.value})}
+                                                placeholder="Item name"
+                                                style={{ minHeight: '36px', fontSize: '13px' }} />
+                                        </div>
+                                        <div className="form-group" style={{ marginBottom: 0 }}>
+                                            <label style={{ fontSize: '12px' }}>Sell Price</label>
+                                            <input type="number" step="0.01" value={newItem.price}
+                                                onChange={e => setNewItem({...newItem, price: e.target.value})}
+                                                placeholder="0.00"
+                                                style={{ minHeight: '36px', fontSize: '13px' }} />
+                                        </div>
+                                        <div className="form-group" style={{ marginBottom: 0 }}>
+                                            <label style={{ fontSize: '12px' }}>Your Cost</label>
+                                            <input type="number" step="0.01" value={newItem.cost}
+                                                onChange={e => setNewItem({...newItem, cost: e.target.value})}
+                                                placeholder="0.00"
+                                                style={{ minHeight: '36px', fontSize: '13px' }} />
+                                        </div>
+                                    </div>
+                                    <div className="action-buttons">
+                                        <button className="success" onClick={addNewItem} style={{ fontSize: '13px', minHeight: '36px' }}>Add to Menu</button>
+                                        <button className="secondary" onClick={() => setShowAddItem(false)} style={{ fontSize: '13px', minHeight: '36px' }}>Cancel</button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {allItems.length === 0 && !editMode && (
+                                <div className="empty-state">
+                                    <div className="empty-state-icon">🍽</div>
+                                    <div className="empty-state-text">No menu items yet</div>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="action-buttons">
-                            <button className="success" onClick={submitOrder}>Create Order</button>
-                            <button className="secondary" onClick={resetForm}>Reset</button>
+                        <div className="order-cart-panel">
+                            <div className="card">
+                                <h3 className="section-title" style={{ marginTop: 0 }}>
+                                    Order {cartCount > 0 && <span className="badge blue" style={{ marginLeft: '8px' }}>{cartCount}</span>}
+                                </h3>
+
+                                <div className="form-group">
+                                    <input type="text" placeholder="Customer name"
+                                        value={customer.name}
+                                        onChange={e => setCustomer({...customer, name: e.target.value})} />
+                                </div>
+                                <div className="form-group">
+                                    <input type="tel" placeholder="Phone (optional)"
+                                        value={customer.phone}
+                                        onChange={e => setCustomer({...customer, phone: e.target.value})} />
+                                </div>
+                                <div className="form-group">
+                                    <label style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                                        Order date {orderDate ? '' : '(today)'}
+                                    </label>
+                                    <input type="date" value={orderDate}
+                                        onChange={e => setOrderDate(e.target.value)}
+                                        style={{ minHeight: '36px', fontSize: '13px' }} />
+                                </div>
+
+                                {cartItems.length === 0 ? (
+                                    <div className="cart-empty">Tap items to add them here</div>
+                                ) : (
+                                    <div>
+                                        {cartItems.map(item => (
+                                            <div key={item.id} className="cart-item">
+                                                <span className="cart-item-name">{item.name}</span>
+                                                <span className="cart-item-qty">x{item.qty}</span>
+                                                <span className="cart-item-price">${item.lineTotal.toFixed(2)}</span>
+                                            </div>
+                                        ))}
+                                        <div className="cart-total">
+                                            <span>Total</span>
+                                            <span className="cart-total-amount">${cartTotal.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div style={{ marginTop: '14px' }}>
+                                    <textarea placeholder="Notes (optional)" rows="2"
+                                        style={{ minHeight: '50px' }}
+                                        value={customer.note}
+                                        onChange={e => setCustomer({...customer, note: e.target.value})}></textarea>
+                                </div>
+
+                                <div className="action-buttons" style={{ marginTop: '12px' }}>
+                                    <button className="success" onClick={submitOrder}
+                                        style={{ opacity: cartItems.length === 0 ? 0.5 : 1 }}>
+                                        {orderDate ? `Place Order (${orderDate})` : `Place Order`} — ${cartTotal.toFixed(2)}
+                                    </button>
+                                </div>
+                                {cartItems.length > 0 && (
+                                    <button className="secondary" onClick={() => setCart({})}
+                                        style={{ width: '100%', marginTop: '8px', fontSize: '13px', minHeight: '36px' }}>Clear cart</button>
+                                )}
+                            </div>
                         </div>
                     </div>
 
-                    <div className="card">
+                    {/* mobile floating cart bar — only visible on small screens via CSS */}
+                    <div className="mobile-cart-bar">
+                        <div className="cart-summary">
+                            <span className="cart-badge">{cartCount}</span>
+                            <span>${cartTotal.toFixed(2)}</span>
+                        </div>
+                        <button className="view-cart-btn" onClick={() => setMobileCartOpen(true)}>
+                            {cartCount > 0 ? 'View Cart' : 'New Order'}
+                        </button>
+                    </div>
+
+                    {/* mobile cart modal */}
+                    {mobileCartOpen && (
+                        <div className="modal-overlay" onClick={() => setMobileCartOpen(false)}>
+                            <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <span>Order {cartCount > 0 && `(${cartCount} items)`}</span>
+                                    <button className="modal-close" onClick={() => setMobileCartOpen(false)}>×</button>
+                                </div>
+
+                                <div className="form-group">
+                                    <input type="text" placeholder="Customer name"
+                                        value={customer.name}
+                                        onChange={e => setCustomer({...customer, name: e.target.value})} />
+                                </div>
+                                <div className="form-group">
+                                    <input type="tel" placeholder="Phone (optional)"
+                                        value={customer.phone}
+                                        onChange={e => setCustomer({...customer, phone: e.target.value})} />
+                                </div>
+                                <div className="form-group">
+                                    <label style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                                        Order date {orderDate ? '' : '(today)'}
+                                    </label>
+                                    <input type="date" value={orderDate}
+                                        onChange={e => setOrderDate(e.target.value)}
+                                        style={{ minHeight: '36px', fontSize: '13px' }} />
+                                </div>
+
+                                {cartItems.length === 0 ? (
+                                    <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '20px 0' }}>
+                                        Tap items from the menu to add them
+                                    </div>
+                                ) : (
+                                    <div>
+                                        {cartItems.map(item => (
+                                            <div key={item.id} className="cart-item">
+                                                <span className="cart-item-name">{item.name}</span>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <button className="danger" onClick={() => removeFromCart(item.id)}
+                                                        style={{ width: '36px', height: '36px', minHeight: 'auto', padding: 0, borderRadius: '8px', fontSize: '16px' }}>−</button>
+                                                    <span style={{ fontWeight: 700, minWidth: '24px', textAlign: 'center', fontSize: '16px' }}>{item.qty}</span>
+                                                    <button onClick={() => addToCart(item.id)}
+                                                        style={{ width: '36px', height: '36px', minHeight: 'auto', padding: 0, borderRadius: '8px', fontSize: '16px' }}>+</button>
+                                                    <span className="cart-item-price" style={{ marginLeft: '8px' }}>${item.lineTotal.toFixed(2)}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <div className="cart-total">
+                                            <span>Total</span>
+                                            <span className="cart-total-amount">${cartTotal.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div style={{ marginTop: '12px' }}>
+                                    <textarea placeholder="Notes (optional)" rows="2"
+                                        style={{ minHeight: '50px' }}
+                                        value={customer.note}
+                                        onChange={e => setCustomer({...customer, note: e.target.value})}></textarea>
+                                </div>
+
+                                <button className="success" onClick={async () => {
+                                        if (!customer.name.trim() || cartItems.length === 0) {
+                                            toast('Add a name and pick some items', 'error');
+                                            return;
+                                        }
+                                        await submitOrder();
+                                        setMobileCartOpen(false);
+                                    }}
+                                    style={{ width: '100%', marginTop: '12px', padding: '14px', fontSize: '16px',
+                                        opacity: cartItems.length === 0 ? 0.5 : 1 }}>
+                                    {orderDate ? 'Place Order (' + orderDate + ')' : 'Place Order'} — ${cartTotal.toFixed(2)}
+                                </button>
+                                {cartItems.length > 0 && (
+                                    <button className="secondary" onClick={() => setCart({})}
+                                        style={{ width: '100%', marginTop: '8px', fontSize: '13px', minHeight: '36px' }}>Clear cart</button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {orders.length > 0 && (() => {
+                        const dayCounts = {};
+                        orders.forEach(o => {
+                            const d = (o.createdAt || '').substring(0, 10);
+                            if (!dayCounts[d]) dayCounts[d] = { count: 0, revenue: 0 };
+                            dayCounts[d].count++;
+                            dayCounts[d].revenue += o.total || 0;
+                        });
+                        const days = Object.entries(dayCounts).sort((a, b) => b[0].localeCompare(a[0]));
+                        return (
+                            <div className="card" style={{ marginTop: '16px' }}>
+                                <h3 className="section-title" style={{ marginTop: 0 }}>Orders by Day</h3>
+                                {days.map(([date, info]) => (
+                                    <div key={date} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                        padding: '8px 12px', background: 'var(--bg-tertiary)', borderRadius: '8px', marginBottom: '6px' }}>
+                                        <span style={{ fontWeight: 500, fontSize: '14px' }}>{date}</span>
+                                        <div style={{ display: 'flex', gap: '16px', fontSize: '13px' }}>
+                                            <span>{info.count} order{info.count !== 1 ? 's' : ''}</span>
+                                            <span style={{ fontWeight: 600, color: 'var(--success)' }}>${info.revenue.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        );
+                    })()}
+
+                    <div className="card" style={{ marginTop: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                            <h3 className="section-title" style={{ margin: 0 }}>Recent Orders</h3>
-                            <button className="secondary" onClick={() => setShowOrderHistory(!showOrderHistory)}>
-                                {showOrderHistory ? 'Hide' : 'Show'} All
-                            </button>
+                            <h3 className="section-title" style={{ margin: 0 }}>
+                                Recent Orders {orders.length > 0 && <span className="badge blue" style={{ marginLeft: '8px' }}>{orders.length}</span>}
+                            </h3>
+                            {orders.length > 5 && (
+                                <button className="secondary" onClick={() => setShowHistory(!showHistory)}
+                                    style={{ fontSize: '13px', padding: '6px 14px', minHeight: 'auto' }}>
+                                    {showHistory ? 'Show less' : `Show all (${orders.length})`}
+                                </button>
+                            )}
                         </div>
 
                         {orders.length === 0 ? (
-                            <div className="empty-state">
-                                <div className="empty-state-icon">📋</div>
-                                <div className="empty-state-text">No orders yet. Create one above!</div>
-                            </div>
+                            <div className="cart-empty">No orders yet</div>
                         ) : (
                             <div className="table-wrapper">
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th>Order ID</th>
+                                            <th>#</th>
                                             <th>Customer</th>
                                             <th>Items</th>
                                             <th>Total</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
+                                            <th>Date</th>
+                                            <th></th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {orders.slice(0, showOrderHistory ? orders.length : 5).map(order => (
+                                        {orders.slice(0, showHistory ? orders.length : 5).map(order => (
                                             <tr key={order.id}>
-                                                <td>#{order.id}</td>
+                                                <td style={{ color: 'var(--text-secondary)' }}>{order.orderNumber}</td>
                                                 <td>{order.customerName}</td>
                                                 <td>{order.items.length}</td>
-                                                <td>${order.total.toFixed(2)}</td>
-                                                <td><span className={`badge ${order.status === 'completed' ? 'green' : 'yellow'}`}>{order.status}</span></td>
+                                                <td style={{ fontWeight: 600 }}>${order.total.toFixed(2)}</td>
+                                                <td style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                                                    {order.createdAt ? order.createdAt.substring(0, 10) : ''}
+                                                </td>
                                                 <td>
-                                                    <button className="danger" onClick={() => deleteOrder(order.id)} style={{ width: '80px', padding: '6px 0', fontSize: '12px' }}>Delete</button>
+                                                    <button className="danger" onClick={() => deleteOrder(order.id)}
+                                                        style={{ padding: '4px 10px', fontSize: '12px', minHeight: 'auto' }}>✕</button>
                                                 </td>
                                             </tr>
                                         ))}
@@ -1232,287 +2131,272 @@
         function Purchases() {
             const [categories, setCategories] = useState([]);
             const [loading, setLoading] = useState(true);
-            const [error, setError] = useState(null);
-            const [expandedCategories, setExpandedCategories] = useState({});
-            const [showCategoryModal, setShowCategoryModal] = useState(false);
-            const [expandedItemForms, setExpandedItemForms] = useState({});
-            const [newCategoryName, setNewCategoryName] = useState('');
-            const [selectedEmoji, setSelectedEmoji] = useState('📦');
-            const [itemForm, setItemForm] = useState({
-                name: '',
-                price: '',
-                quantity: '',
-                unit: 'kg'
-            });
+            const [expanded, setExpanded] = useState({});
+            const [showNewCat, setShowNewCat] = useState(false);
+            const [newCat, setNewCat] = useState({ name: '', emoji: '📦' });
+            const [showBulkModal, setShowBulkModal] = useState(false);
+            const [bulkDate, setBulkDate] = useState('');
+            const [bulkItems, setBulkItems] = useState({});
 
-            const emojis = ['📦', '🥫', '🥘', '🍗', '🥬', '🧂', '🍯', '🧈', '🥛', '🧄', '🥕', '🍅'];
+            const emojis = ['📦', '🍗', '🥚', '🍚', '🍜', '🛢', '🥬', '🧂', '🥛', '🧄', '🥕', '🍅', '🛍', '🥄'];
+            const units = ['lbs', 'kg', 'pcs', 'dozen', 'gallon', 'count', 'box'];
 
-            useEffect(() => {
-                fetchPurchases();
-            }, []);
+            useEffect(() => { reload(); }, []);
 
-            const fetchPurchases = async () => {
-                try {
-                    const res = await fetch('/api/purchases');
-                    const json = await res.json();
-                    setCategories(json);
-                    setLoading(false);
-                    setError(null);
-                } catch (e) {
-                    setError('Failed to load purchases');
-                    setLoading(false);
-                }
-            };
+            const reload = () => fetch('/api/purchases').then(r => r.json()).then(data => {
+                setCategories(data);
+                setLoading(false);
+            }).catch(() => { toast('Failed to load purchases', 'error'); setLoading(false); });
 
-            const toggleCategory = (catId) => {
-                setExpandedCategories({
-                    ...expandedCategories,
-                    [catId]: !expandedCategories[catId]
-                });
-            };
+            const toggle = (id) => setExpanded({ ...expanded, [id]: !expanded[id] });
 
-            const toggleItemForm = (catId) => {
-                setExpandedItemForms({
-                    ...expandedItemForms,
-                    [catId]: !expandedItemForms[catId]
-                });
-                setItemForm({ name: '', price: '', quantity: '', unit: 'kg' });
-            };
-
-            const submitItem = async (catId) => {
-                if (!itemForm.name || !itemForm.price || !itemForm.quantity) {
-                    alert('Fill all fields');
-                    return;
-                }
-                try {
-                    const res = await fetch('/api/purchases/items', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            category_id: catId,
-                            name: itemForm.name,
-                            price: parseFloat(itemForm.price),
-                            quantity: parseFloat(itemForm.quantity),
-                            unit: itemForm.unit
-                        })
-                    });
-                    if (res.ok) {
-                        await fetchPurchases();
-                        toggleItemForm(catId);
-                    }
-                } catch (e) {
-                    alert('Error: ' + e.message);
-                }
-            };
-
-            const deleteItem = async (itemId) => {
-                if (!window.confirm('Delete this item?')) return;
-                try {
-                    const res = await fetch(`/api/purchases/items/${itemId}`, { method: 'DELETE' });
-                    if (res.ok) await fetchPurchases();
-                } catch (e) {
-                    alert('Failed to delete');
-                }
-            };
-
-            const submitCategory = async () => {
-                if (!newCategoryName.trim()) {
-                    alert('Enter category name');
-                    return;
-                }
+            const addCategory = async () => {
+                if (!newCat.name.trim()) return;
                 try {
                     const res = await fetch('/api/purchases/categories', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            name: newCategoryName,
-                            emoji: selectedEmoji
-                        })
+                        body: JSON.stringify({ name: newCat.name, emoji: newCat.emoji })
                     });
                     if (res.ok) {
-                        setNewCategoryName('');
-                        setSelectedEmoji('📦');
-                        setShowCategoryModal(false);
-                        await fetchPurchases();
-                    }
-                } catch (e) {
-                    alert('Error: ' + e.message);
-                }
+                        setNewCat({ name: '', emoji: '📦' });
+                        setShowNewCat(false);
+                        reload();
+                        toast('Category added');
+                    } else { toast('Failed to add category', 'error'); }
+                } catch (e) { toast('Network error', 'error'); }
             };
 
-            const deleteCategory = async (catId) => {
-                if (!window.confirm('Delete this category?')) return;
+            const deleteCategory = async (id) => {
+                if (!confirm('Delete this category and all its items?')) return;
                 try {
-                    const res = await fetch(`/api/purchases/categories/${catId}`, { method: 'DELETE' });
-                    if (res.ok) await fetchPurchases();
-                } catch (e) {
-                    alert('Failed to delete');
-                }
+                    const res = await fetch('/api/purchases/categories/' + id, { method: 'DELETE' });
+                    if (res.ok) { reload(); toast('Category deleted'); }
+                    else toast('Failed to delete', 'error');
+                } catch (e) { toast('Network error', 'error'); }
             };
 
-            if (loading) {
-                return (
-                    <div className="loading">
-                        <div className="loading-spinner"></div>
-                        <div>Loading purchases...</div>
-                    </div>
-                );
-            }
+            const deleteItem = async (id) => {
+                if (!confirm('Delete this item?')) return;
+                try {
+                    const res = await fetch('/api/purchases/items/' + id, { method: 'DELETE' });
+                    if (res.ok) { reload(); toast('Item deleted'); }
+                    else toast('Failed to delete', 'error');
+                } catch (e) { toast('Network error', 'error'); }
+            };
 
-            if (error) {
-                return <div className="error">{error}</div>;
-            }
+            // bulk purchase modal
+            const openBulkModal = () => {
+                setBulkItems({});
+                setBulkDate(new Date().toISOString().split('T')[0]);
+                setShowBulkModal(true);
+            };
+
+            const updateBulkItem = (catId, field, value) => {
+                setBulkItems(prev => ({
+                    ...prev,
+                    [catId]: { ...(prev[catId] || { name: '', quantity: '', price: '', unit: 'lbs' }), [field]: value }
+                }));
+            };
+
+            const submitBulk = async () => {
+                const items = [];
+                for (const [catId, form] of Object.entries(bulkItems)) {
+                    if (form.name && form.quantity && form.price) {
+                        items.push({
+                            category_id: parseInt(catId),
+                            name: form.name,
+                            quantity: parseFloat(form.quantity),
+                            price: parseFloat(form.price),
+                            unit: form.unit || 'lbs',
+                        });
+                    }
+                }
+                if (items.length === 0) {
+                    toast('Fill in at least one item (name, qty, and price)', 'error');
+                    return;
+                }
+                try {
+                    const res = await fetch('/api/purchases/bulk', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ items, purchase_date: bulkDate || null })
+                    });
+                    if (res.ok) {
+                        setShowBulkModal(false);
+                        setBulkItems({});
+                        reload();
+                        toast('Purchase recorded!');
+                    } else {
+                        toast('Failed to save purchase', 'error');
+                    }
+                } catch (e) { toast('Network error', 'error'); }
+            };
+
+            const totalSpend = categories.reduce((sum, c) =>
+                sum + (c.items || []).reduce((s, i) => s + (i.price || 0), 0), 0);
+
+            if (loading) return <div className="loading"><div className="loading-spinner"></div><div>Loading...</div></div>;
 
             return (
                 <div>
-                    <div style={{ marginBottom: '16px' }}>
-                        <button className="success" onClick={() => setShowCategoryModal(true)} style={{ width: '100%' }}>+ Add Category</button>
+                    <div className="tab-toolbar">
+                        <button className="success" onClick={openBulkModal}
+                            style={{ flex: 1, padding: '14px', fontSize: '16px' }}>
+                            + Add Purchase
+                        </button>
+                        <RefreshButton onRefresh={reload} />
                     </div>
 
-                    {showCategoryModal && (
-                        <div className="card" style={{ marginBottom: '16px', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderLeft: '3px solid var(--success)' }}>
-                            <h4 style={{ marginTop: 0 }}>New Category</h4>
-                            <div className="form-group">
-                                <label>Category Name</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g., Vegetables"
-                                    value={newCategoryName}
-                                    onChange={(e) => setNewCategoryName(e.target.value)}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Emoji</label>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px', marginTop: '8px' }}>
-                                    {emojis.map(emoji => (
-                                        <button
-                                            key={emoji}
-                                            className={`secondary ${selectedEmoji === emoji ? '' : ''}`}
-                                            onClick={() => setSelectedEmoji(emoji)}
-                                            style={{
-                                                fontSize: '24px',
-                                                padding: '8px',
-                                                backgroundColor: selectedEmoji === emoji ? 'var(--accent)' : 'var(--bg-tertiary)',
-                                                minHeight: 'auto'
-                                            }}
-                                        >
-                                            {emoji}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="action-buttons">
-                                <button className="success" onClick={submitCategory}>Create</button>
-                                <button className="secondary" onClick={() => setShowCategoryModal(false)}>Cancel</button>
-                            </div>
+                    <div className="grid-2" style={{ marginBottom: '16px' }}>
+                        <div className="stat-card warning">
+                            <div className="stat-label">Total Purchases</div>
+                            <div className="stat-value">${totalSpend.toFixed(2)}</div>
                         </div>
-                    )}
+                        <div className="stat-card info">
+                            <div className="stat-label">Categories</div>
+                            <div className="stat-value">{categories.length}</div>
+                        </div>
+                    </div>
 
-                    {categories.length === 0 ? (
-                        <div className="empty-state">
-                            <div className="empty-state-icon">📦</div>
-                            <div className="empty-state-text">No purchase categories yet. Create one!</div>
-                        </div>
-                    ) : (
-                        categories.map(category => (
-                            <div key={category.id} className="card">
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                    <h3 style={{ cursor: 'pointer', margin: 0, fontSize: '18px' }} onClick={() => toggleCategory(category.id)}>
-                                        {category.emoji} {category.name} ({category.items?.length || 0})
-                                    </h3>
-                                    <button className="danger" onClick={() => deleteCategory(category.id)} style={{ width: '80px', fontSize: '12px', padding: '6px 0' }}>Delete</button>
+                    {categories.map(cat => {
+                        const catTotal = (cat.items || []).reduce((s, i) => s + (i.price || 0), 0);
+                        const isOpen = expanded[cat.id];
+
+                        return (
+                            <div key={cat.id} className="card">
+                                <div className="purchase-cat-header" onClick={() => toggle(cat.id)}>
+                                    <div className="purchase-cat-title">
+                                        <span style={{ fontSize: '20px' }}>{cat.emoji}</span>
+                                        <span>{cat.name}</span>
+                                        <span className="purchase-cat-badge">{(cat.items || []).length}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        {catTotal > 0 && <span className="purchase-cat-total">${catTotal.toFixed(2)}</span>}
+                                        <span style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{isOpen ? '▲' : '▼'}</span>
+                                    </div>
                                 </div>
 
-                                {expandedCategories[category.id] && (
-                                    <>
-                                        {category.items && category.items.length > 0 && (
-                                            <div className="table-wrapper" style={{ marginBottom: '16px' }}>
-                                                <table>
-                                                    <thead>
-                                                        <tr>
-                                            <th>Item</th>
-                                            <th>Unit Price</th>
-                                            <th>Qty</th>
-                                            <th>Total</th>
-                                            <th>Action</th>
-                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {category.items.map(item => {
-                                                            const perUnit = ((item.price || 0) / (item.quantity || 1)).toFixed(2);
-                                                            return (
-                                                                <tr key={item.id}>
-                                                                    <td>{item.name}</td>
-                                                                    <td>${perUnit}/{item.unit}</td>
-                                                                    <td>{item.quantity} {item.unit}</td>
-                                                                    <td>${item.price.toFixed(2)}</td>
-                                                                    <td>
-                                                                        <button className="danger" onClick={() => deleteItem(item.id)} style={{ width: '60px', padding: '4px 0', fontSize: '11px' }}>Delete</button>
-                                                                    </td>
-                                                                </tr>
-                                                            );
-                                                        })}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        )}
-
-                                        {expandedItemForms[category.id] ? (
-                                            <div className="card" style={{ backgroundColor: 'var(--bg-tertiary)', marginBottom: '12px' }}>
-                                                <h4 style={{ marginTop: 0 }}>Add Item</h4>
-                                                <div className="form-group">
-                                                    <label>Item Name</label>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="e.g., Tomato"
-                                                        value={itemForm.name}
-                                                        onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })}
-                                                    />
-                                                </div>
-                                                <div className="grid-2">
-                                                    <div className="form-group">
-                                                        <label>Price ($)</label>
-                                                        <input
-                                                            type="number"
-                                                            placeholder="0.00"
-                                                            step="0.01"
-                                                            value={itemForm.price}
-                                                            onChange={(e) => setItemForm({ ...itemForm, price: e.target.value })}
-                                                        />
+                                {isOpen && (
+                                    <div style={{ marginTop: '12px' }}>
+                                        {(cat.items || []).length > 0 ? (
+                                            (cat.items || []).map(item => (
+                                                <div key={item.id} className="purchase-item-row">
+                                                    <div className="purchase-item-info">
+                                                        <div className="purchase-item-name">
+                                                            {item.name}
+                                                            {item.purchase_date && <span className="purchase-date-tag">{item.purchase_date}</span>}
+                                                        </div>
+                                                        <div className="purchase-item-detail">
+                                                            {item.quantity} {item.unit} — ${(item.price / Math.max(item.quantity, 1)).toFixed(2)}/{item.unit}
+                                                        </div>
                                                     </div>
-                                                    <div className="form-group">
-                                                        <label>Quantity</label>
-                                                        <input
-                                                            type="number"
-                                                            placeholder="0"
-                                                            step="0.1"
-                                                            value={itemForm.quantity}
-                                                            onChange={(e) => setItemForm({ ...itemForm, quantity: e.target.value })}
-                                                        />
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                        <span style={{ fontWeight: 600 }}>${item.price.toFixed(2)}</span>
+                                                        <button className="danger" onClick={() => deleteItem(item.id)}
+                                                            style={{ padding: '4px 8px', fontSize: '12px', minHeight: 'auto' }}>✕</button>
                                                     </div>
                                                 </div>
-                                                <div className="form-group">
-                                                    <label>Unit</label>
-                                                    <select value={itemForm.unit} onChange={(e) => setItemForm({ ...itemForm, unit: e.target.value })}>
-                                                        <option>kg</option>
-                                                        <option>l</option>
-                                                        <option>pcs</option>
-                                                        <option>dozen</option>
-                                                        <option>box</option>
-                                                    </select>
-                                                </div>
-                                                <div className="action-buttons">
-                                                    <button className="success" onClick={() => submitItem(category.id)}>Add Item</button>
-                                                    <button className="secondary" onClick={() => toggleItemForm(category.id)}>Cancel</button>
-                                                </div>
-                                            </div>
+                                            ))
                                         ) : (
-                                            <button className="secondary" onClick={() => toggleItemForm(category.id)} style={{ width: '100%' }}>+ Add Item</button>
+                                            <div style={{ color: 'var(--text-secondary)', fontSize: '13px', padding: '8px 0' }}>No items yet</div>
                                         )}
-                                    </>
+                                        <div style={{ marginTop: '10px' }}>
+                                            <button className="danger" onClick={() => deleteCategory(cat.id)}
+                                                style={{ width: '100%', fontSize: '13px', minHeight: '36px' }}>Delete Category</button>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
-                        ))
+                        );
+                    })}
+
+                    {showNewCat ? (
+                        <div className="card" style={{ borderLeft: '3px solid var(--success)' }}>
+                            <div className="form-group">
+                                <input type="text" placeholder="Category name" value={newCat.name}
+                                    onChange={e => setNewCat({...newCat, name: e.target.value})} />
+                            </div>
+                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                                {emojis.map(e => (
+                                    <button key={e} onClick={() => setNewCat({...newCat, emoji: e})}
+                                        style={{
+                                            fontSize: '20px', padding: '6px 8px', minHeight: 'auto',
+                                            background: newCat.emoji === e ? 'var(--accent)' : 'var(--bg-tertiary)',
+                                            borderRadius: '8px'
+                                        }}>{e}</button>
+                                ))}
+                            </div>
+                            <div className="action-buttons">
+                                <button className="success" onClick={addCategory}>Create</button>
+                                <button className="secondary" onClick={() => setShowNewCat(false)}>Cancel</button>
+                            </div>
+                        </div>
+                    ) : (
+                        <button onClick={() => setShowNewCat(true)}
+                            style={{ width: '100%', marginTop: '8px', background: 'transparent', border: '2px dashed var(--border)',
+                                color: 'var(--text-secondary)', borderRadius: '12px', padding: '14px', fontSize: '14px', cursor: 'pointer' }}>
+                            + New Category
+                        </button>
+                    )}
+
+                    {showBulkModal && (
+                        <div className="modal-overlay" onClick={() => setShowBulkModal(false)}>
+                            <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <span>Add Purchase</span>
+                                    <button className="modal-close" onClick={() => setShowBulkModal(false)}>×</button>
+                                </div>
+
+                                <div className="form-group" style={{ marginBottom: '14px' }}>
+                                    <label style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>
+                                        Purchase Date
+                                    </label>
+                                    <input type="date" value={bulkDate}
+                                        onChange={e => setBulkDate(e.target.value)}
+                                        style={{ width: '100%' }} />
+                                </div>
+
+                                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+                                    Fill in items you bought — leave blank to skip a category.
+                                </div>
+
+                                {categories.map(cat => {
+                                    const form = bulkItems[cat.id] || { name: '', quantity: '', price: '', unit: 'lbs' };
+                                    return (
+                                        <div key={cat.id} style={{ marginBottom: '10px' }}>
+                                            <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <span>{cat.emoji}</span> {cat.name}
+                                            </div>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px 70px 60px', gap: '6px' }}>
+                                                <input placeholder="Item name" value={form.name}
+                                                    onChange={e => updateBulkItem(cat.id, 'name', e.target.value)}
+                                                    style={{ fontSize: '13px', padding: '8px', minHeight: '36px' }} />
+                                                <input type="number" placeholder="Qty" step="0.1" value={form.quantity}
+                                                    onChange={e => updateBulkItem(cat.id, 'quantity', e.target.value)}
+                                                    style={{ fontSize: '13px', padding: '8px', minHeight: '36px' }} />
+                                                <input type="number" placeholder="Price" step="0.01" value={form.price}
+                                                    onChange={e => updateBulkItem(cat.id, 'price', e.target.value)}
+                                                    style={{ fontSize: '13px', padding: '8px', minHeight: '36px' }} />
+                                                <select value={form.unit}
+                                                    onChange={e => updateBulkItem(cat.id, 'unit', e.target.value)}
+                                                    style={{ fontSize: '13px', padding: '4px', minHeight: '36px' }}>
+                                                    {units.map(u => <option key={u}>{u}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                                <div className="action-buttons" style={{ marginTop: '16px' }}>
+                                    <button className="success" onClick={submitBulk} style={{ flex: 1, padding: '14px', fontSize: '15px' }}>
+                                        Add Purchase{bulkDate ? ` (${bulkDate})` : ''}
+                                    </button>
+                                </div>
+                                <button className="secondary" onClick={() => setShowBulkModal(false)}
+                                    style={{ width: '100%', marginTop: '8px', fontSize: '13px', minHeight: '36px' }}>Cancel</button>
+                            </div>
+                        </div>
                     )}
                 </div>
             );
@@ -1523,23 +2407,47 @@
             const [data, setData] = useState(null);
             const [loading, setLoading] = useState(true);
             const [error, setError] = useState(null);
+            const [dailyDate, setDailyDate] = useState(new Date().toISOString().split('T')[0]);
+            const [weekStart, setWeekStart] = useState('');
+            const [monthStr, setMonthStr] = useState(new Date().toISOString().slice(0, 7));
 
             useEffect(() => {
                 fetchReports();
             }, []);
 
-            const fetchReports = async () => {
+            const fetchReports = async (opts) => {
                 try {
-                    const res = await fetch('/api/reports');
+                    const dd = (opts && opts.dailyDate) || dailyDate;
+                    const ws = (opts && opts.weekStart) || weekStart;
+                    const ms = (opts && opts.monthStr) || monthStr;
+                    let url = '/api/reports?daily_date=' + dd;
+                    if (ws) {
+                        const we = new Date(new Date(ws).getTime() + 6 * 86400000).toISOString().split('T')[0];
+                        url += '&weekly_start=' + ws + '&weekly_end=' + we;
+                    }
+                    if (ms) url += '&month=' + ms;
+                    const res = await fetch(url);
                     const json = await res.json();
                     setData(json);
                     setError(null);
                 } catch (e) {
                     setError('Failed to load reports');
-                    console.error(e);
                 } finally {
                     setLoading(false);
                 }
+            };
+
+            const shiftDay = (days) => {
+                const d = new Date(dailyDate);
+                d.setDate(d.getDate() + days);
+                const newDate = d.toISOString().split('T')[0];
+                setDailyDate(newDate);
+                fetchReports({ dailyDate: newDate });
+            };
+
+            const changeMonth = (newMonth) => {
+                setMonthStr(newMonth);
+                fetchReports({ monthStr: newMonth });
             };
 
             if (loading) {
@@ -1559,6 +2467,9 @@
 
             return (
                 <div>
+                    <div className="tab-toolbar" style={{ justifyContent: 'flex-end' }}>
+                        <RefreshButton onRefresh={fetchReports} />
+                    </div>
                     <div className="card">
                         <div className="tab-bar">
                             <button className={`tab-button ${activeTab === 'daily' ? 'active' : ''}`} onClick={() => setActiveTab('daily')}>Daily</button>
@@ -1566,17 +2477,37 @@
                             <button className={`tab-button ${activeTab === 'monthly' ? 'active' : ''}`} onClick={() => setActiveTab('monthly')}>Monthly</button>
                         </div>
 
+                        {activeTab === 'daily' && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', justifyContent: 'center' }}>
+                                <button className="secondary" onClick={() => shiftDay(-1)}
+                                    style={{ padding: '6px 12px', minHeight: 'auto', fontSize: '16px' }}>‹</button>
+                                <input type="date" value={dailyDate}
+                                    onChange={e => { setDailyDate(e.target.value); fetchReports({ dailyDate: e.target.value }); }}
+                                    style={{ minHeight: '36px', fontSize: '14px', textAlign: 'center' }} />
+                                <button className="secondary" onClick={() => shiftDay(1)}
+                                    style={{ padding: '6px 12px', minHeight: 'auto', fontSize: '16px' }}>›</button>
+                            </div>
+                        )}
+
+                        {activeTab === 'monthly' && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', justifyContent: 'center' }}>
+                                <input type="month" value={monthStr}
+                                    onChange={e => changeMonth(e.target.value)}
+                                    style={{ minHeight: '36px', fontSize: '14px', textAlign: 'center' }} />
+                            </div>
+                        )}
+
                         <div className="grid-3">
                             <div className="stat-card success">
-                                <div className="stat-label">Total Revenue</div>
+                                <div className="stat-label">Revenue</div>
                                 <div className="stat-value">${reportData.revenue.toFixed(2)}</div>
                             </div>
                             <div className="stat-card warning">
-                                <div className="stat-label">Total Orders</div>
+                                <div className="stat-label">Orders</div>
                                 <div className="stat-value">{reportData.orders}</div>
                             </div>
                             <div className="stat-card info">
-                                <div className="stat-label">Avg Order Value</div>
+                                <div className="stat-label">Avg Order</div>
                                 <div className="stat-value">${(reportData.revenue / Math.max(reportData.orders, 1)).toFixed(2)}</div>
                             </div>
                         </div>
@@ -1647,6 +2578,9 @@
 
             return (
                 <div>
+                    <div className="tab-toolbar" style={{ justifyContent: 'flex-end' }}>
+                        <RefreshButton onRefresh={fetchProfits} />
+                    </div>
                     <div className="grid-2">
                         <div className="stat-card success">
                             <div className="stat-label">Total Profit</div>
@@ -1728,6 +2662,9 @@
 
             return (
                 <div>
+                    <div className="tab-toolbar" style={{ justifyContent: 'flex-end' }}>
+                        <RefreshButton onRefresh={fetchCostAnalysis} />
+                    </div>
                     <div className="grid-2">
                         <div className="stat-card warning">
                             <div className="stat-label">Total Cost</div>
@@ -1770,6 +2707,424 @@
             );
         }
 
+        // ─── Finance ───
+        function Finance() {
+            const [tab, setTab] = useState('overview');
+            const [data, setData] = useState(null);
+            const [cycle, setCycle] = useState(null);
+            const [eod, setEod] = useState(null);
+            const [eodDate, setEodDate] = useState(new Date().toISOString().slice(0, 10));
+            const [loading, setLoading] = useState(true);
+            const [editCash, setEditCash] = useState(false);
+            const [cashVal, setCashVal] = useState('');
+
+            const load = () => {
+                setLoading(true);
+                Promise.all([
+                    fetch('/api/finance').then(r => r.json()),
+                    fetch('/api/finance/weekly-cycle').then(r => r.json()),
+                    fetch('/api/finance/end-of-day?date=' + eodDate).then(r => r.json()),
+                ]).then(([fin, cyc, day]) => {
+                    setData(fin); setCycle(cyc); setEod(day); setCashVal(String(fin.cashInHand)); setLoading(false);
+                }).catch(() => setLoading(false));
+            };
+            useEffect(() => { load(); }, []);
+
+            const loadEod = (d) => {
+                setEodDate(d);
+                fetch('/api/finance/end-of-day?date=' + d).then(r => r.json()).then(setEod);
+            };
+
+            const saveCash = async () => {
+                try {
+                    const res = await fetch('/api/finance/cash', { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({amount: parseFloat(cashVal)}) });
+                    if (res.ok) { toast('Cash updated!'); setEditCash(false); load(); }
+                    else toast('Failed to update cash', 'error');
+                } catch (e) { toast('Network error', 'error'); }
+            };
+
+            if (loading || !data) return <div className="loading"><div className="loading-spinner"></div><div>Loading finance...</div></div>;
+
+            const fmt = (v) => '$' + (v || 0).toFixed(2);
+            const tabs = [{id:'overview',label:'Overview'},{id:'weekly',label:'Weekly Cycle'},{id:'eod',label:'End of Day'},{id:'ledger',label:'Ledger'}];
+
+            return (
+                <div>
+                    <div className="tab-toolbar" style={{ justifyContent: 'space-between' }}>
+                        <div className="tab-bar" style={{ marginBottom: 0 }}>
+                            {tabs.map(t => <button key={t.id} className={`tab-button ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id)}>{t.label}</button>)}
+                        </div>
+                        <RefreshButton onRefresh={load} />
+                    </div>
+
+                    {tab === 'overview' && (
+                        <div>
+                            {/* Cash in Hand - Hero */}
+                            <div className="card" style={{ textAlign: 'center', padding: '28px 20px', background: 'linear-gradient(135deg, rgba(129,140,248,0.15), rgba(99,102,241,0.05))', border: '1px solid rgba(129,140,248,0.2)', marginBottom: '16px' }}>
+                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px' }}>Cash in Hand</div>
+                                {editCash ? (
+                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
+                                        <input type="number" value={cashVal} onChange={e => setCashVal(e.target.value)} style={{ width: '140px', textAlign: 'center', fontSize: '20px', fontWeight: '700' }} />
+                                        <button className="success" onClick={saveCash} style={{ padding: '8px 16px', minHeight: 'auto' }}>Save</button>
+                                        <button className="secondary" onClick={() => setEditCash(false)} style={{ padding: '8px 12px', minHeight: 'auto' }}>Cancel</button>
+                                    </div>
+                                ) : (
+                                    <div onClick={() => setEditCash(true)} style={{ cursor: 'pointer' }}>
+                                        <div style={{ fontSize: '38px', fontWeight: '800', color: 'var(--accent)', letterSpacing: '-1px' }}>{fmt(data.cashInHand)}</div>
+                                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>Tap to edit</div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: '10px', marginBottom: '16px' }}>
+                                {[
+                                    { label: 'Revenue', value: data.totalRevenue, color: 'var(--success)', bg: 'rgba(52,211,153,0.08)', border: 'rgba(52,211,153,0.2)' },
+                                    { label: 'Spent', value: data.totalSpent, color: 'var(--danger)', bg: 'rgba(248,113,113,0.08)', border: 'rgba(248,113,113,0.2)' },
+                                    { label: 'Profit', value: data.profit, color: data.profit >= 0 ? 'var(--success)' : 'var(--danger)', bg: 'rgba(129,140,248,0.08)', border: 'rgba(129,140,248,0.2)' },
+                                    { label: 'Net Cash Flow', value: data.cashPosition, color: 'var(--accent)', bg: 'rgba(129,140,248,0.08)', border: 'rgba(129,140,248,0.2)' },
+                                ].map(c => (
+                                    <div key={c.label} style={{ padding: '16px 12px', borderRadius: '12px', background: c.bg, border: '1px solid ' + c.border, textAlign: 'center' }}>
+                                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px' }}>{c.label}</div>
+                                        <div style={{ fontSize: '20px', fontWeight: '700', color: c.color }}>{fmt(c.value)}</div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="card" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                                <div style={{ textAlign: 'center', padding: '12px 0' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Purchases</div>
+                                    <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--warning)' }}>{fmt(data.totalPurchases)}</div>
+                                </div>
+                                <div style={{ textAlign: 'center', padding: '12px 0', borderLeft: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Payouts</div>
+                                    <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--danger)' }}>{fmt(data.totalExpenses)}</div>
+                                </div>
+                                <div style={{ textAlign: 'center', padding: '12px 0' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Orders</div>
+                                    <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--accent)' }}>{data.totalOrders}</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {tab === 'weekly' && cycle && (
+                        <div>
+                            <div className="card" style={{ textAlign: 'center', padding: '20px', background: 'linear-gradient(135deg, rgba(251,191,36,0.1), rgba(251,191,36,0.02))', border: '1px solid rgba(251,191,36,0.2)', marginBottom: '16px' }}>
+                                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Weekly Cycle: {cycle.cycleStart} to {cycle.cycleEnd}</div>
+                                <div style={{ fontSize: '13px', color: 'var(--warning)', marginBottom: '12px' }}>Start $400 Thu → Collect excess Mon → Reset $400</div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                                    <div><div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Starting</div><div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>{fmt(cycle.weeklyStartAmount)}</div></div>
+                                    <div><div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Net This Week</div><div style={{ fontSize: '20px', fontWeight: '700', color: cycle.cycleNet >= 0 ? 'var(--success)' : 'var(--danger)' }}>{fmt(cycle.cycleNet)}</div></div>
+                                    <div><div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Projected End</div><div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--accent)' }}>{fmt(cycle.projectedEnd)}</div></div>
+                                </div>
+                            </div>
+
+                            {cycle.excess > 0 && (
+                                <div className="card" style={{ textAlign: 'center', padding: '16px', background: 'linear-gradient(135deg, rgba(52,211,153,0.12), rgba(52,211,153,0.03))', border: '1px solid rgba(52,211,153,0.25)', marginBottom: '16px' }}>
+                                    <div style={{ fontSize: '12px', color: 'var(--success)', fontWeight: '600', marginBottom: '4px' }}>Excess to Collect on Monday</div>
+                                    <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--success)' }}>{fmt(cycle.excess)}</div>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>Take this out, keep $400 for next week</div>
+                                </div>
+                            )}
+
+                            <div className="card">
+                                <h3 className="section-title">Day-by-Day Breakdown</h3>
+                                <div className="table-wrapper">
+                                    <table>
+                                        <thead><tr><th>Day</th><th>Orders</th><th>Revenue</th><th>Spent</th><th>Net</th></tr></thead>
+                                        <tbody>
+                                            {cycle.daily.map(d => (
+                                                <tr key={d.date}>
+                                                    <td><div style={{fontWeight:'600'}}>{d.dayName}</div><div style={{fontSize:'11px',color:'var(--text-secondary)'}}>{d.date}</div></td>
+                                                    <td>{d.orders}</td>
+                                                    <td style={{color:'var(--success)', fontWeight:'600'}}>{fmt(d.revenue)}</td>
+                                                    <td style={{color:'var(--danger)'}}>{fmt(d.spent)}</td>
+                                                    <td style={{color: d.net >= 0 ? 'var(--success)' : 'var(--danger)', fontWeight:'700'}}>{fmt(d.net)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div className="card" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                <div style={{ padding: '12px', background: 'var(--bg-primary)', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Week Revenue</div>
+                                    <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--success)' }}>{fmt(cycle.cycleRevenue)}</div>
+                                </div>
+                                <div style={{ padding: '12px', background: 'var(--bg-primary)', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Week Purchases</div>
+                                    <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--warning)' }}>{fmt(cycle.cyclePurchases)}</div>
+                                </div>
+                                <div style={{ padding: '12px', background: 'var(--bg-primary)', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Week Payouts</div>
+                                    <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--danger)' }}>{fmt(cycle.cyclePayouts)}</div>
+                                </div>
+                                <div style={{ padding: '12px', background: 'var(--bg-primary)', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Gross Profit</div>
+                                    <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--accent)' }}>{fmt(cycle.cycleRevenue - cycle.cycleCost)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {tab === 'eod' && eod && (
+                        <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                                <button className="secondary" style={{ padding: '8px 12px', minHeight: 'auto' }} onClick={() => { const d = new Date(eodDate); d.setDate(d.getDate()-1); loadEod(d.toISOString().slice(0,10)); }}>&#9664;</button>
+                                <input type="date" value={eodDate} onChange={e => loadEod(e.target.value)} style={{ flex: 1, textAlign: 'center' }} />
+                                <button className="secondary" style={{ padding: '8px 12px', minHeight: 'auto' }} onClick={() => { const d = new Date(eodDate); d.setDate(d.getDate()+1); loadEod(d.toISOString().slice(0,10)); }}>&#9654;</button>
+                            </div>
+
+                            <div className="card" style={{ textAlign: 'center', padding: '20px', marginBottom: '16px', background: 'linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary))' }}>
+                                <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '4px' }}>{eod.dayName}</div>
+                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px' }}>{eod.date}</div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                                    <div><div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Orders</div><div style={{ fontSize: '22px', fontWeight: '700', color: 'var(--accent)' }}>{eod.totalOrders}</div></div>
+                                    <div><div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Income</div><div style={{ fontSize: '22px', fontWeight: '700', color: 'var(--success)' }}>{fmt(eod.revenue)}</div></div>
+                                    <div><div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Profit</div><div style={{ fontSize: '22px', fontWeight: '700', color: eod.profit >= 0 ? 'var(--success)' : 'var(--danger)' }}>{fmt(eod.profit)}</div></div>
+                                </div>
+                            </div>
+
+                            <div className="card" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                                <div style={{ padding: '12px', background: 'var(--bg-primary)', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Cost of Goods</div>
+                                    <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--warning)' }}>{fmt(eod.costOfGoods)}</div>
+                                </div>
+                                <div style={{ padding: '12px', background: 'var(--bg-primary)', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Purchases</div>
+                                    <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--warning)' }}>{fmt(eod.purchases)}</div>
+                                </div>
+                                <div style={{ padding: '12px', background: 'var(--bg-primary)', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Payouts</div>
+                                    <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--danger)' }}>{fmt(eod.payouts)}</div>
+                                </div>
+                            </div>
+
+                            {eod.items.length > 0 && (
+                                <div className="card">
+                                    <h3 className="section-title">Items Sold</h3>
+                                    <div className="table-wrapper">
+                                        <table>
+                                            <thead><tr><th>Item</th><th>Qty</th><th>Revenue</th><th>Cost</th><th>Profit</th></tr></thead>
+                                            <tbody>
+                                                {eod.items.map((item, i) => (
+                                                    <tr key={i}>
+                                                        <td style={{fontWeight:'500'}}>{item.name}</td>
+                                                        <td>{item.qty}</td>
+                                                        <td style={{color:'var(--success)'}}>{fmt(item.revenue)}</td>
+                                                        <td style={{color:'var(--text-secondary)'}}>{fmt(item.cost)}</td>
+                                                        <td style={{color:'var(--success)', fontWeight:'600'}}>{fmt(item.profit)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '12px', borderTop: '2px solid var(--border)', marginTop: '8px', gap: '20px' }}>
+                                        <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Net Cash: <strong style={{ color: eod.netCash >= 0 ? 'var(--success)' : 'var(--danger)' }}>{fmt(eod.netCash)}</strong></span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {eod.totalOrders === 0 && (
+                                <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
+                                    <div style={{ fontSize: '40px', marginBottom: '8px' }}>📭</div>
+                                    <div style={{ color: 'var(--text-secondary)' }}>No orders on this day</div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {tab === 'ledger' && (
+                        <div className="card">
+                            <h3 className="section-title">Transaction Ledger</h3>
+                            {data.transactions.length === 0 ? (
+                                <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '20px' }}>No transactions yet</p>
+                            ) : (
+                                <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                                    {data.transactions.map((tx, i) => (
+                                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontWeight: '500', fontSize: '14px' }}>{tx.label}</div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{tx.date}</div>
+                                            </div>
+                                            <div style={{ fontWeight: '600', color: tx.type === 'income' ? 'var(--success)' : 'var(--danger)', fontSize: '14px' }}>
+                                                {tx.type === 'income' ? '+' : '-'}{fmt(tx.amount)}
+                                            </div>
+                                            <span style={{ marginLeft: '8px', fontSize: '10px', padding: '2px 8px', borderRadius: '10px',
+                                                background: tx.type === 'income' ? 'rgba(52,211,153,0.12)' : tx.type === 'purchase' ? 'rgba(251,191,36,0.12)' : 'rgba(248,113,113,0.12)',
+                                                color: tx.type === 'income' ? 'var(--success)' : tx.type === 'purchase' ? 'var(--warning)' : 'var(--danger)'
+                                            }}>{tx.type}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // ─── Stock ───
+        function Stock() {
+            const [levels, setLevels] = useState([]);
+            const [loading, setLoading] = useState(true);
+
+            const load = () => {
+                setLoading(true);
+                fetch('/api/stock').then(r => r.json()).then(d => { setLevels(d); setLoading(false); }).catch(() => setLoading(false));
+            };
+            useEffect(() => { load(); }, []);
+
+            if (loading) return <div className="loading"><div className="loading-spinner"></div><div>Loading stock...</div></div>;
+
+            const totalItems = levels.reduce((s, l) => s + l.quantity, 0);
+
+            return (
+                <div>
+                    <div className="tab-toolbar" style={{ justifyContent: 'flex-end' }}>
+                        <RefreshButton onRefresh={load} />
+                    </div>
+
+                    {levels.length === 0 ? (
+                        <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
+                            <div style={{ fontSize: '48px', marginBottom: '12px' }}>🏪</div>
+                            <h3 style={{ color: 'var(--text-secondary)', margin: '0 0 8px' }}>No Stock Data Yet</h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>Stock levels update automatically when you add purchases.</p>
+                        </div>
+                    ) : (
+                        <div>
+                            <div className="card" style={{ textAlign: 'center', padding: '18px', marginBottom: '16px', background: 'linear-gradient(135deg, rgba(129,140,248,0.12), rgba(129,140,248,0.03))', border: '1px solid rgba(129,140,248,0.2)' }}>
+                                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Total Stock Categories</div>
+                                <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--accent)' }}>{levels.length}</div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
+                                {levels.map(s => {
+                                    const low = s.quantity <= 5;
+                                    return (
+                                        <div key={s.category_id} className="card" style={{ padding: '18px', background: low ? 'linear-gradient(135deg, rgba(248,113,113,0.08), var(--bg-secondary))' : 'linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary))', border: low ? '1px solid rgba(248,113,113,0.3)' : '1px solid var(--border)' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                                                <span style={{ fontSize: '26px' }}>{s.emoji || '📦'}</span>
+                                                <div>
+                                                    <div style={{ fontWeight: '600', fontSize: '14px' }}>{s.category_name}</div>
+                                                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{s.item_name || ''}</div>
+                                                </div>
+                                            </div>
+                                            <div style={{ fontSize: '24px', fontWeight: '700', color: low ? 'var(--danger)' : 'var(--accent)' }}>
+                                                {s.quantity}<span style={{ fontSize: '12px', fontWeight: '400', color: 'var(--text-secondary)', marginLeft: '4px' }}>{s.unit || 'pcs'}</span>
+                                            </div>
+                                            {low && <div style={{ fontSize: '10px', color: 'var(--danger)', marginTop: '6px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Low Stock</div>}
+                                            <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '6px' }}>Updated: {s.last_updated || '—'}</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // ─── Payouts (Expenses) ───
+        function Payouts() {
+            const [expenses, setExpenses] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [showForm, setShowForm] = useState(false);
+            const [desc, setDesc] = useState('');
+            const [amount, setAmount] = useState('');
+            const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+
+            const load = () => {
+                setLoading(true);
+                fetch('/api/expenses').then(r => r.json()).then(d => { setExpenses(d); setLoading(false); }).catch(() => setLoading(false));
+            };
+            useEffect(() => { load(); }, []);
+
+            const addPayout = async () => {
+                if (!desc.trim() || !amount) { toast('Fill in description and amount', 'error'); return; }
+                try {
+                    const res = await fetch('/api/expenses', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ description: desc.trim(), amount: parseFloat(amount), expense_date: date }),
+                    });
+                    if (res.ok) { toast('Payout recorded!'); setDesc(''); setAmount(''); setShowForm(false); load(); }
+                } catch (e) { toast('Failed to add payout', 'error'); }
+            };
+
+            const removePayout = async (id) => {
+                try { await fetch('/api/expenses/' + id, { method: 'DELETE' }); toast('Payout deleted'); load(); }
+                catch (e) { toast('Failed to delete', 'error'); }
+            };
+
+            const total = expenses.reduce((s, e) => s + e.amount, 0);
+            const fmt = (v) => '$' + (v || 0).toFixed(2);
+
+            if (loading) return <div className="loading"><div className="loading-spinner"></div><div>Loading payouts...</div></div>;
+
+            return (
+                <div>
+                    <div className="tab-toolbar" style={{ justifyContent: 'space-between' }}>
+                        <button onClick={() => setShowForm(!showForm)} style={{ background: showForm ? 'var(--bg-tertiary)' : 'linear-gradient(135deg, var(--accent), #6366f1)' }}>
+                            {showForm ? '✕ Cancel' : '+ Add Payout'}
+                        </button>
+                        <RefreshButton onRefresh={load} />
+                    </div>
+
+                    {showForm && (
+                        <div className="card" style={{ marginBottom: '16px', border: '1px solid rgba(129,140,248,0.3)', boxShadow: '0 0 25px var(--accent-glow)' }}>
+                            <h3 className="section-title" style={{ marginTop: '0' }}>New Payout</h3>
+                            <div className="form-group">
+                                <label>Description</label>
+                                <input type="text" placeholder="e.g. Rent, Electricity, Salary..." value={desc} onChange={e => setDesc(e.target.value)} autoFocus />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                <div className="form-group">
+                                    <label>Amount ($)</label>
+                                    <input type="number" step="0.01" placeholder="0.00" value={amount} onChange={e => setAmount(e.target.value)} />
+                                </div>
+                                <div className="form-group">
+                                    <label>Date</label>
+                                    <input type="date" value={date} onChange={e => setDate(e.target.value)} />
+                                </div>
+                            </div>
+                            <div className="action-buttons">
+                                <button className="success" onClick={addPayout}>Record Payout</button>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="card" style={{ marginBottom: '16px', textAlign: 'center', padding: '20px', background: 'linear-gradient(135deg, rgba(248,113,113,0.1), rgba(248,113,113,0.02))', border: '1px solid rgba(248,113,113,0.2)' }}>
+                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Total Payouts</div>
+                        <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--danger)' }}>{fmt(total)}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>{expenses.length} payout{expenses.length !== 1 ? 's' : ''}</div>
+                    </div>
+
+                    {expenses.length === 0 ? (
+                        <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
+                            <div style={{ fontSize: '48px', marginBottom: '12px' }}>💸</div>
+                            <h3 style={{ color: 'var(--text-secondary)', margin: '0 0 8px' }}>No Payouts Yet</h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>Record rent, utilities, salaries, and other expenses here.</p>
+                        </div>
+                    ) : (
+                        <div className="card">
+                            <h3 className="section-title">Payout History</h3>
+                            {expenses.map(e => (
+                                <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontWeight: '500', fontSize: '14px' }}>{e.description}</div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{e.expense_date || (e.created_at || '').slice(0, 10)}</div>
+                                    </div>
+                                    <div style={{ fontWeight: '600', color: 'var(--danger)', fontSize: '15px', marginRight: '12px' }}>-{fmt(e.amount)}</div>
+                                    <button onClick={() => removePayout(e.id)} style={{ background: 'rgba(248,113,113,0.1)', color: 'var(--danger)', border: 'none', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer', fontSize: '12px', minHeight: 'auto' }}>✕</button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
         function Settings() {
             const [form, setForm] = useState({
                 business_name: '',
@@ -1781,15 +3136,15 @@
             const [loading, setLoading] = useState(true);
             const [saved, setSaved] = useState(false);
 
-            useEffect(() => {
-                fetch('/api/settings')
-                    .then(r => r.json())
-                    .then(data => {
-                        setForm(prev => ({ ...prev, ...data }));
-                        setLoading(false);
-                    })
-                    .catch(() => setLoading(false));
-            }, []);
+            const loadSettings = () => fetch('/api/settings')
+                .then(r => r.json())
+                .then(data => {
+                    setForm(prev => ({ ...prev, ...data }));
+                    setLoading(false);
+                })
+                .catch(() => setLoading(false));
+
+            useEffect(() => { loadSettings(); }, []);
 
             const saveSettings = async () => {
                 try {
@@ -1801,9 +3156,10 @@
                     if (res.ok) {
                         setSaved(true);
                         setTimeout(() => setSaved(false), 2000);
+                        toast('Settings saved!');
                     }
                 } catch (e) {
-                    alert('Failed to save settings');
+                    toast('Failed to save settings', 'error');
                 }
             };
 
@@ -1813,6 +3169,9 @@
 
             return (
                 <div>
+                    <div className="tab-toolbar" style={{ justifyContent: 'flex-end' }}>
+                        <RefreshButton onRefresh={loadSettings} />
+                    </div>
                     <div className="card">
                         <h3 className="section-title">App Settings</h3>
                         <div className="form-group">
@@ -1901,7 +3260,7 @@
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        root.render(<ToastProvider><App /></ToastProvider>);
     </script>
 </body>
 </html>

@@ -1,13 +1,29 @@
+# Database
+vendorvault.db
+vendorvault.db-wal
+vendorvault.db-shm
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
-vendorvault.db
+
+# Environment
 .env
+venv/
+
+# OS
 .DS_Store
 *.swp
 *.swo
 *~
+Thumbs.db
+
+# Old/unused directories
 data/
 routes/
 static/
 templates/
+
+# Reference docs (not part of the app)
+VendorVault_Complete_Reference.md
