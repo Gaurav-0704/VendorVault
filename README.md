@@ -4,8 +4,6 @@ Restaurant management system for tracking orders, purchases, finances, and profi
 
 Flask backend, React frontend (single-file, no build step), SQLite database. Runs locally and works on your phone over WiFi.
 
-Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
-
 
 ## Quick Start
 
@@ -25,6 +23,8 @@ To start fresh, delete `vendorvault.db` and run `seed.py` again.
 **Dashboard** — today/week/month stats, hourly revenue chart, top-selling items, recent orders at a glance.
 
 **Orders** — tap items from the menu grid, set quantities, enter customer name, place order. Works on desktop and mobile. Supports backdating orders to a specific date.
+
+**WhatsApp** — webhook endpoint receives messages from Meta's WhatsApp Business API and parses free-text order messages into structured order objects (item, quantity, customer name) using fuzzy menu matching. POST `/api/whatsapp/parse` to test the parser directly.
 
 **Purchases** — log vendor purchases by category (chicken, eggs, rice, etc.) with quantities, units, and prices. Bulk entry mode for restocking days.
 
@@ -46,14 +46,29 @@ To start fresh, delete `vendorvault.db` and run `seed.py` again.
 ## Files
 
 ```
-app.py             Flask routes and server entry point
-database.py        All SQLite queries and business logic
-index.html         React frontend (single file, no build step)
-seed.py            One-time menu and purchase category loader
-seed_orders.py     Sample order data for testing
-seed_purchases.py  Sample purchase data for testing
-requirements.txt   Python dependencies (just Flask)
-.gitignore         Ignores database, cache, env files
+app.py                Flask server entry point and route registration
+database.py           Compatibility shim — re-exports everything from db/
+db/                   Database layer, split by concern:
+  connection.py         SQLite connection helpers
+  schema.py             Table creation (init_db)
+  menu.py               Menu categories and items
+  orders.py             Order creation and retrieval
+  purchases.py          Purchases, categories, stock levels
+  expenses.py           Expenses / payouts
+  reports.py            Daily, weekly, monthly reports; profits; cost analysis
+  finance.py            Cash-in-hand, weekly cycle, finance summary
+  dashboard.py          Aggregated dashboard stats
+  settings.py           App settings key-value store
+routes/               Blueprint modules (one file per feature area)
+services/
+  order_parser.py       Free-text → structured ParsedOrder (no external deps)
+tests/
+  test_order_parser.py  21 tests covering clean + messy WhatsApp inputs
+index.html            React frontend (single file, no build step)
+seed.py               One-time menu and purchase category loader
+seed_orders.py        Sample order data for testing
+seed_purchases.py     Sample purchase data for testing
+requirements.txt      Python dependencies (just Flask)
 ```
 
 
@@ -91,6 +106,12 @@ requirements.txt   Python dependencies (just Flask)
 | GET | `/api/cost-analysis` | Costs grouped by purchase category |
 | GET, PUT | `/api/settings` | Read or update app settings |
 | GET | `/api/network-info` | Local IP and access URLs |
+| GET | `/api/whatsapp/config` | WhatsApp integration settings |
+| PUT | `/api/whatsapp/config` | Update WhatsApp settings |
+| GET | `/api/whatsapp/webhook` | Meta webhook verification handshake |
+| POST | `/api/whatsapp/webhook` | Receive incoming WhatsApp messages |
+| POST | `/api/whatsapp/parse` | Parse a free-text order message into structured JSON |
+| GET | `/api/whatsapp/messages` | List recent parsed WhatsApp messages |
 
 
 ## Environment Variables
@@ -98,7 +119,7 @@ requirements.txt   Python dependencies (just Flask)
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT` | `5000` | Server port |
-| `DEBUG` | `true` | Flask debug mode |
+| `DEBUG` | `false` | Flask debug mode — set to `true` only in development |
 
 
 ## How Cash-in-Hand Works

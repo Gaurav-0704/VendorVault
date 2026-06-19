@@ -548,6 +548,6 @@ def server_error(error):
 if __name__ == '__main__':
     init_db()
     port = int(os.environ.get('PORT', 5000))
-    debug = os.environ.get('DEBUG', 'true').lower() == 'true'
+    debug = os.environ.get('DEBUG', 'false').lower() == 'true'
     print(f'VendorVault running on http://0.0.0.0:{port}')
     app.run(host='0.0.0.0', port=port, debug=debug)
