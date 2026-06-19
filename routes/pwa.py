@@ -1,11 +1,21 @@
 # Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
 
 import json
-from flask import Blueprint, Response, send_from_directory
 import os
-import config
+import socket
+from flask import Blueprint, Response, send_from_directory
 
 pwa_bp = Blueprint('pwa', __name__)
+
+_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_PORT = int(os.environ.get('PORT', 5000))
+
+
+def _local_ip():
+    try:
+        return socket.gethostbyname(socket.gethostname())
+    except Exception:
+        return '127.0.0.1'
 
 
 @pwa_bp.route('/manifest.json')
@@ -87,16 +97,5 @@ self.addEventListener('fetch', event => {
 @pwa_bp.route('/static/icons/<path:filename>')
 def serve_icon(filename):
     """Serve PWA icon files."""
-    icons_dir = os.path.join(config.BASE_DIR, 'static', 'icons')
+    icons_dir = os.path.join(_BASE_DIR, 'static', 'icons')
     return send_from_directory(icons_dir, filename)
-
-
-@pwa_bp.route('/api/network-info')
-def network_info():
-    """Return the local IP address for WiFi connection sharing."""
-    local_ip = config.get_local_ip()
-    return {
-        'ip': local_ip,
-        'port': config.PORT,
-        'url': f'http://{local_ip}:{config.PORT}'
-    }
