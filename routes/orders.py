@@ -1,4 +1,4 @@
-# Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
+# Gaurav Singh Thakur — MIT License
 
 from flask import Blueprint, request, jsonify, Response
 from database import get_db
@@ -10,7 +10,7 @@ orders_bp = Blueprint('orders', __name__)
 
 
 def generate_order_number(db):
-    """Create a unique order number like ORD-20260410-001."""
+    """I format order numbers as ORD-YYYYMMDD-NNN so they're easy to read at a glance."""
     today = datetime.now().strftime('%Y%m%d')
     prefix = f'ORD-{today}-'
     last = db.execute(
@@ -28,7 +28,7 @@ def generate_order_number(db):
 
 @orders_bp.route('/api/orders', methods=['GET'])
 def list_orders():
-    """List orders with optional date filtering."""
+    """I can filter by date range or source — handy for checking a specific day's orders."""
     db = get_db()
     date_from = request.args.get('from', '')
     date_to = request.args.get('to', '')
@@ -71,7 +71,7 @@ def list_orders():
 
 @orders_bp.route('/api/orders', methods=['POST'])
 def create_order():
-    """Create a new order with line items."""
+    """Places a new order and locks in the current menu prices at time of sale."""
     data = request.json
     db = get_db()
     order_num = generate_order_number(db)
@@ -115,7 +115,6 @@ def create_order():
 
 @orders_bp.route('/api/orders/<int:order_id>', methods=['PUT'])
 def update_order(order_id):
-    """Update order status or notes."""
     data = request.json
     db = get_db()
     db.execute("UPDATE orders SET status = ?, notes = ? WHERE id = ?",
@@ -127,7 +126,6 @@ def update_order(order_id):
 
 @orders_bp.route('/api/orders/<int:order_id>', methods=['DELETE'])
 def delete_order(order_id):
-    """Delete an order and its line items."""
     db = get_db()
     db.execute("DELETE FROM order_items WHERE order_id = ?", (order_id,))
     db.execute("DELETE FROM orders WHERE id = ?", (order_id,))
@@ -138,7 +136,7 @@ def delete_order(order_id):
 
 @orders_bp.route('/api/export/orders')
 def export_orders():
-    """Export orders to CSV format."""
+    """Dumps everything to CSV — I use this when I need to review a period in a spreadsheet."""
     db = get_db()
     orders = db.execute("""
         SELECT o.order_number, o.source, o.customer_name, o.created_at,

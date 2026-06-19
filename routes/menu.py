@@ -1,4 +1,4 @@
-# Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
+# Gaurav Singh Thakur — MIT License
 
 from flask import Blueprint, request, jsonify
 from database import get_db
@@ -8,7 +8,7 @@ menu_bp = Blueprint('menu', __name__)
 
 @menu_bp.route('/api/menu', methods=['GET'])
 def list_menu():
-    """List all menu items grouped by category."""
+    """Returns the full menu grouped by category — this is what the order screen loads."""
     db = get_db()
     categories = db.execute("SELECT * FROM menu_categories ORDER BY name").fetchall()
     result = []
@@ -29,7 +29,6 @@ def list_menu():
 
 @menu_bp.route('/api/menu/items', methods=['POST'])
 def add_menu_item():
-    """Add a new menu item."""
     data = request.json
     db = get_db()
     db.execute(
@@ -44,7 +43,6 @@ def add_menu_item():
 
 @menu_bp.route('/api/menu/items/<int:item_id>', methods=['PUT'])
 def update_menu_item(item_id):
-    """Update a menu item's price, cost, or availability."""
     data = request.json
     db = get_db()
     db.execute(
@@ -58,7 +56,6 @@ def update_menu_item(item_id):
 
 @menu_bp.route('/api/menu/items/<int:item_id>', methods=['DELETE'])
 def delete_menu_item(item_id):
-    """Remove a menu item."""
     db = get_db()
     db.execute("DELETE FROM menu_items WHERE id = ?", (item_id,))
     db.commit()
@@ -68,7 +65,6 @@ def delete_menu_item(item_id):
 
 @menu_bp.route('/api/menu/categories', methods=['POST'])
 def add_menu_category():
-    """Create a new menu category."""
     data = request.json
     db = get_db()
     db.execute("INSERT INTO menu_categories (name) VALUES (?)", (data['name'],))
@@ -80,7 +76,6 @@ def add_menu_category():
 
 @menu_bp.route('/api/menu/categories/<int:cat_id>', methods=['DELETE'])
 def delete_menu_category(cat_id):
-    """Delete a menu category and its items."""
     db = get_db()
     db.execute("DELETE FROM menu_items WHERE category_id = ?", (cat_id,))
     db.execute("DELETE FROM menu_categories WHERE id = ?", (cat_id,))
@@ -91,12 +86,12 @@ def delete_menu_category(cat_id):
 
 @menu_bp.route('/api/menu/cost-breakdown')
 def cost_breakdown():
-    """Show ingredient-level cost breakdown for each menu item."""
+    """I calculate per-unit ingredient costs from my purchase records and map them
+    to each menu item so I know what each dish actually costs me to make."""
     db = get_db()
     purchases = db.execute("SELECT name, price, quantity, unit FROM purchase_items").fetchall()
     menu_items = db.execute("SELECT id, name, cost FROM menu_items").fetchall()
 
-    # Calculate per-unit costs for each ingredient
     ingredients = {}
     for item in purchases:
         name = item['name'].lower()

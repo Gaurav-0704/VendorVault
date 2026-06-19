@@ -19,11 +19,8 @@ venv/
 *~
 Thumbs.db
 
-# Old/unused directories
+# Data directory (contains only the sqlite db)
 data/
-routes/
-static/
-templates/
 
 # Reference docs (not part of the app)
 VendorVault_Complete_Reference.md

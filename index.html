@@ -2408,8 +2408,17 @@
             const [loading, setLoading] = useState(true);
             const [error, setError] = useState(null);
             const [dailyDate, setDailyDate] = useState(new Date().toISOString().split('T')[0]);
-            const [weekStart, setWeekStart] = useState('');
             const [monthStr, setMonthStr] = useState(new Date().toISOString().slice(0, 7));
+
+            // Weekly: compute current week's Monday as default
+            const getMonday = (d) => {
+                const dt = new Date(d);
+                const day = dt.getDay();
+                const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
+                dt.setDate(diff);
+                return dt.toISOString().split('T')[0];
+            };
+            const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
 
             useEffect(() => {
                 fetchReports();
@@ -2421,10 +2430,8 @@
                     const ws = (opts && opts.weekStart) || weekStart;
                     const ms = (opts && opts.monthStr) || monthStr;
                     let url = '/api/reports?daily_date=' + dd;
-                    if (ws) {
-                        const we = new Date(new Date(ws).getTime() + 6 * 86400000).toISOString().split('T')[0];
-                        url += '&weekly_start=' + ws + '&weekly_end=' + we;
-                    }
+                    const we = new Date(new Date(ws).getTime() + 6 * 86400000).toISOString().split('T')[0];
+                    url += '&weekly_start=' + ws + '&weekly_end=' + we;
                     if (ms) url += '&month=' + ms;
                     const res = await fetch(url);
                     const json = await res.json();
@@ -2443,6 +2450,14 @@
                 const newDate = d.toISOString().split('T')[0];
                 setDailyDate(newDate);
                 fetchReports({ dailyDate: newDate });
+            };
+
+            const shiftWeek = (weeks) => {
+                const d = new Date(weekStart);
+                d.setDate(d.getDate() + weeks * 7);
+                const newStart = d.toISOString().split('T')[0];
+                setWeekStart(newStart);
+                fetchReports({ weekStart: newStart });
             };
 
             const changeMonth = (newMonth) => {
@@ -2489,6 +2504,20 @@
                             </div>
                         )}
 
+                        {activeTab === 'weekly' && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', justifyContent: 'center' }}>
+                                <button className="secondary" onClick={() => shiftWeek(-1)}
+                                    style={{ padding: '6px 12px', minHeight: 'auto', fontSize: '16px' }}>‹</button>
+                                <div style={{ minHeight: '36px', fontSize: '14px', textAlign: 'center', padding: '8px 14px',
+                                    background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border)',
+                                    fontWeight: '600', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+                                    {weekStart} — {new Date(new Date(weekStart).getTime() + 6 * 86400000).toISOString().split('T')[0]}
+                                </div>
+                                <button className="secondary" onClick={() => shiftWeek(1)}
+                                    style={{ padding: '6px 12px', minHeight: 'auto', fontSize: '16px' }}>›</button>
+                            </div>
+                        )}
+
                         {activeTab === 'monthly' && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', justifyContent: 'center' }}>
                                 <input type="month" value={monthStr}
@@ -2497,18 +2526,22 @@
                             </div>
                         )}
 
-                        <div className="grid-3">
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '16px' }}>
                             <div className="stat-card success">
                                 <div className="stat-label">Revenue</div>
                                 <div className="stat-value">${reportData.revenue.toFixed(2)}</div>
                             </div>
                             <div className="stat-card warning">
-                                <div className="stat-label">Orders</div>
-                                <div className="stat-value">{reportData.orders}</div>
+                                <div className="stat-label">Cost</div>
+                                <div className="stat-value">${(reportData.expenses || 0).toFixed(2)}</div>
                             </div>
                             <div className="stat-card info">
-                                <div className="stat-label">Avg Order</div>
-                                <div className="stat-value">${(reportData.revenue / Math.max(reportData.orders, 1)).toFixed(2)}</div>
+                                <div className="stat-label">Profit</div>
+                                <div className="stat-value">${(reportData.profit || 0).toFixed(2)}</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-label">Orders</div>
+                                <div className="stat-value">{reportData.orders}</div>
                             </div>
                         </div>
 
@@ -2519,6 +2552,7 @@
                                     <tr>
                                         <th>{activeTab === 'daily' ? 'Item' : activeTab === 'weekly' ? 'Date' : 'Week'}</th>
                                         <th>Revenue</th>
+                                        {activeTab !== 'daily' && <th>Profit</th>}
                                         <th>{activeTab === 'daily' ? 'Qty Sold' : 'Orders'}</th>
                                     </tr>
                                 </thead>
@@ -2526,12 +2560,13 @@
                                     {reportData.breakdown && reportData.breakdown.map((item, idx) => (
                                         <tr key={idx}>
                                             <td>{item.name || item.date || item.week || '-'}</td>
-                                            <td>${(item.revenue || 0).toFixed(2)}</td>
+                                            <td style={{color:'var(--success)', fontWeight:'600'}}>${(item.revenue || 0).toFixed(2)}</td>
+                                            {activeTab !== 'daily' && <td style={{color: (item.profit||0) >= 0 ? 'var(--accent)' : 'var(--danger)', fontWeight:'600'}}>${(item.profit || 0).toFixed(2)}</td>}
                                             <td>{item.qty || item.orders || 0}</td>
                                         </tr>
                                     ))}
                                     {(!reportData.breakdown || reportData.breakdown.length === 0) && (
-                                        <tr><td colSpan="3" style={{textAlign:'center', color:'var(--text-secondary)', padding:'20px'}}>No data for this period</td></tr>
+                                        <tr><td colSpan={activeTab === 'daily' ? 3 : 4} style={{textAlign:'center', color:'var(--text-secondary)', padding:'20px'}}>No data for this period</td></tr>
                                     )}
                                 </tbody>
                             </table>
@@ -2738,8 +2773,8 @@
             const saveCash = async () => {
                 try {
                     const res = await fetch('/api/finance/cash', { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({amount: parseFloat(cashVal)}) });
-                    if (res.ok) { toast('Cash updated!'); setEditCash(false); load(); }
-                    else toast('Failed to update cash', 'error');
+                    if (res.ok) { toast('Weekly start amount updated!'); setEditCash(false); load(); }
+                    else toast('Failed to update', 'error');
                 } catch (e) { toast('Network error', 'error'); }
             };
 
@@ -2761,17 +2796,19 @@
                         <div>
                             {/* Cash in Hand - Hero */}
                             <div className="card" style={{ textAlign: 'center', padding: '28px 20px', background: 'linear-gradient(135deg, rgba(129,140,248,0.15), rgba(99,102,241,0.05))', border: '1px solid rgba(129,140,248,0.2)', marginBottom: '16px' }}>
-                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px' }}>Cash in Hand</div>
+                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '4px' }}>Cash in Hand</div>
+                                <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '10px' }}>Resets to ${fmt(data.weeklyStartAmount || 400)} every Thursday</div>
+                                <div style={{ fontSize: '38px', fontWeight: '800', color: 'var(--accent)', letterSpacing: '-1px' }}>{fmt(data.cashInHand)}</div>
                                 {editCash ? (
-                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
-                                        <input type="number" value={cashVal} onChange={e => setCashVal(e.target.value)} style={{ width: '140px', textAlign: 'center', fontSize: '20px', fontWeight: '700' }} />
-                                        <button className="success" onClick={saveCash} style={{ padding: '8px 16px', minHeight: 'auto' }}>Save</button>
-                                        <button className="secondary" onClick={() => setEditCash(false)} style={{ padding: '8px 12px', minHeight: 'auto' }}>Cancel</button>
+                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center', marginTop: '12px' }}>
+                                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Weekly start $</span>
+                                        <input type="number" value={cashVal} onChange={e => setCashVal(e.target.value)} style={{ width: '100px', textAlign: 'center', fontSize: '16px', fontWeight: '700' }} />
+                                        <button className="success" onClick={saveCash} style={{ padding: '6px 14px', minHeight: 'auto', fontSize: '13px' }}>Save</button>
+                                        <button className="secondary" onClick={() => setEditCash(false)} style={{ padding: '6px 10px', minHeight: 'auto', fontSize: '13px' }}>Cancel</button>
                                     </div>
                                 ) : (
-                                    <div onClick={() => setEditCash(true)} style={{ cursor: 'pointer' }}>
-                                        <div style={{ fontSize: '38px', fontWeight: '800', color: 'var(--accent)', letterSpacing: '-1px' }}>{fmt(data.cashInHand)}</div>
-                                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>Tap to edit</div>
+                                    <div onClick={() => { setEditCash(true); setCashVal(String(data.weeklyStartAmount || 400)); }} style={{ cursor: 'pointer', marginTop: '6px' }}>
+                                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Tap to change weekly start amount</div>
                                     </div>
                                 )}
                             </div>

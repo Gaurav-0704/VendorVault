@@ -1,4 +1,4 @@
-# Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
+# Gaurav Singh Thakur — MIT License
 
 from flask import Blueprint, request, jsonify
 from database import get_db
@@ -9,7 +9,7 @@ reports_bp = Blueprint('reports', __name__)
 
 @reports_bp.route('/api/reports/daily')
 def daily_report():
-    """Daily sales summary for a given date."""
+    """Pass ?date=YYYY-MM-DD to look at a specific day, or leave it blank for today."""
     db = get_db()
     date = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
 
@@ -38,13 +38,13 @@ def daily_report():
                      'cost': round(summary['cost'], 2), 'profit': round(summary['profit'], 2)},
         'by_source': [{'source': r['source'], 'orders': r['orders'], 'revenue': round(r['revenue'], 2)} for r in by_source],
         'items': [{'name': r['item_name'], 'qty': r['qty'], 'revenue': round(r['revenue'], 2),
-                    'cost': round(r['cost'], 2)} for r in items]
+                    'cost': round(r['cost'], 2)} for r in items],
     })
 
 
 @reports_bp.route('/api/reports/weekly')
 def weekly_report():
-    """Weekly sales summary."""
+    """Defaults to the last 7 days. Pass ?start= and ?end= to look at a custom range."""
     db = get_db()
     end = request.args.get('end', datetime.now().strftime('%Y-%m-%d'))
     start = request.args.get('start', (datetime.strptime(end, '%Y-%m-%d') - timedelta(days=6)).strftime('%Y-%m-%d'))
@@ -66,13 +66,13 @@ def weekly_report():
     return jsonify({
         'start': start, 'end': end,
         'totals': {'orders': totals['orders'], 'revenue': round(totals['revenue'], 2), 'profit': round(totals['profit'], 2)},
-        'daily': [{'date': r['date'], 'orders': r['orders'], 'revenue': round(r['revenue'], 2), 'profit': round(r['profit'], 2)} for r in daily]
+        'daily': [{'date': r['date'], 'orders': r['orders'], 'revenue': round(r['revenue'], 2), 'profit': round(r['profit'], 2)} for r in daily],
     })
 
 
 @reports_bp.route('/api/reports/monthly')
 def monthly_report():
-    """Monthly aggregated report."""
+    """Pass ?month=YYYY-MM or leave blank for the current month."""
     db = get_db()
     month = request.args.get('month', datetime.now().strftime('%Y-%m'))
 
@@ -101,13 +101,13 @@ def monthly_report():
                     'expenses': round(expenses['total'], 2),
                     'net_profit': round(totals['profit'] - expenses['total'], 2)},
         'weekly': [{'week': r['week'], 'orders': r['orders'], 'revenue': round(r['revenue'], 2),
-                     'profit': round(r['profit'], 2)} for r in weekly]
+                     'profit': round(r['profit'], 2)} for r in weekly],
     })
 
 
 @reports_bp.route('/api/reports/items')
 def item_performance():
-    """Item-level sales performance ranking."""
+    """How each item has performed over the last N days (default 30). Good for menu decisions."""
     db = get_db()
     period = request.args.get('period', '30')
     cutoff = (datetime.now() - timedelta(days=int(period))).strftime('%Y-%m-%d')
@@ -125,5 +125,5 @@ def item_performance():
     return jsonify([{
         'name': r['item_name'], 'qty': r['total_qty'],
         'revenue': round(r['total_revenue'], 2), 'cost': round(r['total_cost'], 2),
-        'profit': round(r['total_profit'], 2)
+        'profit': round(r['total_profit'], 2),
     } for r in items])
