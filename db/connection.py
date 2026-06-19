@@ -1,3 +1,7 @@
+# Gaurav Singh Thakur — MIT License
+#
+# Low-level connection setup. Everything else in db/ imports from here.
+
 import sqlite3
 import os
 from contextlib import contextmanager
@@ -11,7 +15,8 @@ def _local_now():
 
 
 def get_db():
-    """Return a bare sqlite3 connection (caller must commit/close)."""
+    """Opens a bare connection — caller is responsible for commit and close.
+    I use this in routes that need to hold a connection across several statements."""
     conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
     conn.execute('PRAGMA journal_mode=WAL')
@@ -21,7 +26,7 @@ def get_db():
 
 @contextmanager
 def _connect():
-    """Context manager: auto-commit on success, rollback on exception."""
+    """My go-to for everything in db/. Auto-commits on success, rolls back if something blows up."""
     conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
     conn.execute('PRAGMA journal_mode=WAL')

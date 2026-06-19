@@ -1,8 +1,12 @@
+# Gaurav Singh Thakur — MIT License
+#
+# I call init_db() once at startup. It creates every table the app needs
+# and won't touch anything if the tables already exist.
+
 from db.connection import _connect
 
 
 def init_db():
-    """Initialize all database tables and default settings."""
     with _connect() as conn:
         c = conn.cursor()
 
@@ -61,6 +65,7 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (category_id) REFERENCES purchase_categories(id) ON DELETE CASCADE)''')
 
+        # migration guard for older databases that didn't have this column
         cols = [row[1] for row in c.execute('PRAGMA table_info(purchase_items)').fetchall()]
         if 'purchase_date' not in cols:
             c.execute('ALTER TABLE purchase_items ADD COLUMN purchase_date TEXT')

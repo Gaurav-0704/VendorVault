@@ -1,4 +1,8 @@
-"""Tests for the free-text order parser (services/order_parser.py).
+"""Tests for services/order_parser.py
+
+I want to make sure the parser handles the kinds of messages I actually get —
+clean ones, ones with typos, ones using "n" instead of "and", word quantities,
+customer names in different positions, and edge cases like empty strings.
 
 Run with:  python -m pytest tests/
 """
@@ -10,6 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pytest
 from services.order_parser import parse_order_text, ParsedOrder, OrderLine
 
+# My current menu — I pass this in so the tests don't need a database
 MENU = [
     "Veg Noodles",
     "Egg Noodles",
@@ -89,7 +94,7 @@ def test_no_customer_when_absent():
 
 
 # ---------------------------------------------------------------------------
-# Messy / informal inputs
+# Messy / informal inputs — this is the real-world stuff I care about
 # ---------------------------------------------------------------------------
 
 def test_noise_words_stripped():
@@ -111,9 +116,8 @@ def test_typo_chicken():
     assert result.lines[0].item == "Chicken 65"
 
 
-def test_informal_abbreviation():
+def test_informal_n_separator():
     result = parse_order_text("2 veg noodles n 1 egg rice", menu_names=MENU)
-    # At least veg noodles parsed
     item_names = [l.item for l in result.lines]
     assert "Veg Noodles" in item_names
 
@@ -125,6 +129,7 @@ def test_hi_greeting_ignored():
 
 
 def test_full_messy_order():
+    """The kind of message I actually get on WhatsApp."""
     text = "plz send 3 chiken 65 n 2 veg noddles from Rahul"
     result = parse_order_text(text, menu_names=MENU)
     assert result.customer == "Rahul"

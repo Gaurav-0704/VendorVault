@@ -1,3 +1,5 @@
+# Gaurav Singh Thakur — MIT License
+
 from datetime import datetime, timedelta
 from db.connection import _connect
 from db.reports import _orders_in_range, _revenue_and_cost
@@ -5,11 +7,14 @@ from db.settings import set_setting
 
 
 def update_cash_in_hand(amount):
+    """I call this when I manually correct the cash balance from the Finance tab."""
     set_setting('weekly_start_amount', str(round(float(amount), 2)))
 
 
 def compute_cash_in_hand():
-    """Live cash = weekly_start + cycle_revenue - cycle_purchases - cycle_payouts."""
+    """Live cash for the current weekly cycle.
+    Formula: weekly start ($400) + revenue this cycle - purchases - payouts.
+    Resets every Thursday."""
     now = datetime.now()
     days_since_thu = (now.weekday() - 3) % 7
     this_thursday = (now - timedelta(days=days_since_thu)).strftime('%Y-%m-%d')
@@ -36,6 +41,7 @@ def compute_cash_in_hand():
 
 
 def get_weekly_cycle_data():
+    """Full breakdown of the current Thu–Sun cycle — revenue, purchases, payouts, day by day."""
     with _connect() as conn:
         cash_in_hand = compute_cash_in_hand()
         weekly_start = float(conn.execute(
@@ -112,6 +118,7 @@ def get_weekly_cycle_data():
 
 
 def get_end_of_day_report(date_str=None):
+    """Everything I need at close — orders, items sold, what I made, what I spent."""
     if not date_str:
         date_str = datetime.now().strftime('%Y-%m-%d')
     dt = datetime.strptime(date_str, '%Y-%m-%d')
@@ -162,6 +169,7 @@ def get_end_of_day_report(date_str=None):
 
 
 def get_finance_summary():
+    """Big-picture financial overview — totals, live cash, and the last 30 transactions."""
     with _connect() as conn:
         rev_cog = conn.execute(
             'SELECT COALESCE(SUM(oi.price * oi.quantity), 0) as revenue, '

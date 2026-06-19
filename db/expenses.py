@@ -1,3 +1,5 @@
+# Gaurav Singh Thakur — MIT License
+
 from datetime import datetime
 from db.connection import _connect, _local_now
 

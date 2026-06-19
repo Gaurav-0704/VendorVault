@@ -1,12 +1,15 @@
+# Gaurav Singh Thakur — MIT License
+
 from datetime import datetime, timedelta
 from db.connection import _connect
 
 
 # ---------------------------------------------------------------------------
-# Internal query helpers (used by reports, finance, dashboard)
+# Shared query helpers — I use these in finance.py and dashboard.py too
 # ---------------------------------------------------------------------------
 
 def _orders_in_range(conn, start_dt, end_dt):
+    """Grabs all order IDs and sources between two datetimes on an open connection."""
     return [dict(r) for r in conn.execute(
         'SELECT id, source FROM orders WHERE created_at >= ? AND created_at <= ?',
         (start_dt, end_dt),
@@ -14,6 +17,7 @@ def _orders_in_range(conn, start_dt, end_dt):
 
 
 def _revenue_and_cost(conn, order_ids):
+    """Sums revenue and cost for a list of order IDs. Returns (0, 0) if the list is empty."""
     if not order_ids:
         return 0.0, 0.0
     ph = ','.join('?' * len(order_ids))
@@ -27,10 +31,11 @@ def _revenue_and_cost(conn, order_ids):
 
 
 # ---------------------------------------------------------------------------
-# Public report functions
+# Daily / Weekly / Monthly reports
 # ---------------------------------------------------------------------------
 
 def get_daily_report(date_str=None):
+    """Today's numbers by default, or whatever date I pass in."""
     if not date_str:
         date_str = datetime.now().strftime('%Y-%m-%d')
     dt = datetime.strptime(date_str, '%Y-%m-%d')
@@ -64,6 +69,7 @@ def get_daily_report(date_str=None):
 
 
 def get_weekly_report(start_str=None, end_str=None):
+    """Defaults to the current Mon–Sun week if I don't pass dates."""
     if not start_str or not end_str:
         today = datetime.now()
         monday = today - timedelta(days=today.weekday())
@@ -100,6 +106,7 @@ def get_weekly_report(start_str=None, end_str=None):
 
 
 def get_monthly_report(month_str=None):
+    """Current month by default. Breaks it down week by week."""
     if not month_str:
         month_str = datetime.now().strftime('%Y-%m')
     year, month = [int(x) for x in month_str.split('-')]
@@ -137,6 +144,7 @@ def get_monthly_report(month_str=None):
 
 
 def get_profits_data():
+    """Overall profit margin and a breakdown by menu item, sorted by most profitable."""
     with _connect() as conn:
         row = conn.execute(
             'SELECT COALESCE(SUM(oi.price * oi.quantity), 0) as rev, '
@@ -177,6 +185,7 @@ def get_profits_data():
 
 
 def get_cost_analysis():
+    """How much I've spent on purchases, grouped by category."""
     with _connect() as conn:
         total_row = conn.execute(
             'SELECT COALESCE(SUM(price), 0) as total, COUNT(*) as cnt FROM purchase_items'

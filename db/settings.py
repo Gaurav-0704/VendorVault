@@ -1,3 +1,5 @@
+# Gaurav Singh Thakur — MIT License
+
 from db.connection import _connect
 
 

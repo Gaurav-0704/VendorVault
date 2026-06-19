@@ -1,3 +1,5 @@
+# Gaurav Singh Thakur — MIT License
+
 from datetime import datetime
 from db.connection import _connect, _local_now
 
@@ -23,6 +25,7 @@ def delete_purchase_category(category_id):
 
 
 def add_purchase_item(category_id, name, quantity, unit, price, notes=None, purchase_date=None):
+    """Logs a purchase and updates the stock level for that category at the same time."""
     with _connect() as conn:
         ts = f'{purchase_date} 12:00:00' if purchase_date else _local_now()
         date_str = purchase_date or datetime.now().strftime('%Y-%m-%d')
@@ -40,6 +43,7 @@ def add_purchase_item(category_id, name, quantity, unit, price, notes=None, purc
 
 
 def add_purchase_items_bulk(items, purchase_date=None):
+    """Same as add_purchase_item but for a whole shopping run at once."""
     with _connect() as conn:
         ts = f'{purchase_date} 12:00:00' if purchase_date else _local_now()
         date_str = purchase_date or datetime.now().strftime('%Y-%m-%d')

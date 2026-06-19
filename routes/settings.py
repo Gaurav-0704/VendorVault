@@ -1,4 +1,4 @@
-# Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
+# Gaurav Singh Thakur — MIT License
 
 from flask import Blueprint, request, jsonify
 from database import get_db
@@ -8,7 +8,6 @@ settings_bp = Blueprint('settings', __name__)
 
 @settings_bp.route('/api/settings', methods=['GET'])
 def get_settings():
-    """Get all application settings."""
     db = get_db()
     rows = db.execute("SELECT key, value FROM settings").fetchall()
     db.close()
@@ -17,7 +16,7 @@ def get_settings():
 
 @settings_bp.route('/api/settings', methods=['PUT'])
 def update_settings():
-    """Update application settings (key-value pairs)."""
+    """I upsert each key individually so I can send partial updates without wiping everything."""
     data = request.json
     db = get_db()
     for key, value in data.items():

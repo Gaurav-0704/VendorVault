@@ -1,5 +1,8 @@
-# Compatibility shim — imports re-exported here so existing callers of
-# `from database import ...` continue to work unchanged.
+# Gaurav Singh Thakur — MIT License
+#
+# I moved all the database logic into the db/ package to keep things organized.
+# This file just re-exports everything so existing imports don't break.
+
 from db import (
     get_db,
     init_db,

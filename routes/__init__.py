@@ -1,4 +1,6 @@
-# Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
+# Gaurav Singh Thakur — MIT License
+#
+# Collects all blueprints so app.py can register them with one call.
 
 from routes.dashboard import dashboard_bp
 from routes.orders import orders_bp
@@ -12,7 +14,6 @@ from routes.pwa import pwa_bp
 
 
 def register_all(app):
-    """Register all route blueprints with the Flask app."""
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(orders_bp)
     app.register_blueprint(menu_bp)

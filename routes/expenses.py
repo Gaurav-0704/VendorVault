@@ -1,4 +1,4 @@
-# Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
+# Gaurav Singh Thakur — MIT License
 
 from flask import Blueprint, request, jsonify
 from database import get_db
@@ -9,7 +9,7 @@ expenses_bp = Blueprint('expenses', __name__)
 
 @expenses_bp.route('/api/expenses', methods=['GET'])
 def list_expenses():
-    """List expenses with optional month filtering."""
+    """Defaults to the current month. I can pass ?month=YYYY-MM to look at older ones."""
     db = get_db()
     month = request.args.get('month', datetime.now().strftime('%Y-%m'))
 
@@ -34,13 +34,12 @@ def list_expenses():
         'expenses': [{'id': e['id'], 'category': e['category'], 'description': e['description'],
                        'amount': e['amount'], 'date': e['date'], 'notes': e['notes']} for e in expenses],
         'total': round(total['total'], 2),
-        'by_category': [{'category': c['category'], 'total': round(c['total'], 2), 'count': c['count']} for c in by_category]
+        'by_category': [{'category': c['category'], 'total': round(c['total'], 2), 'count': c['count']} for c in by_category],
     })
 
 
 @expenses_bp.route('/api/expenses', methods=['POST'])
 def add_expense():
-    """Record a new expense."""
     data = request.json
     db = get_db()
     db.execute(
@@ -57,7 +56,6 @@ def add_expense():
 
 @expenses_bp.route('/api/expenses/<int:expense_id>', methods=['PUT'])
 def update_expense(expense_id):
-    """Update an existing expense."""
     data = request.json
     db = get_db()
     db.execute(
@@ -72,7 +70,6 @@ def update_expense(expense_id):
 
 @expenses_bp.route('/api/expenses/<int:expense_id>', methods=['DELETE'])
 def delete_expense(expense_id):
-    """Delete an expense record."""
     db = get_db()
     db.execute("DELETE FROM expenses WHERE id = ?", (expense_id,))
     db.commit()

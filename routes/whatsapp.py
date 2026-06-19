@@ -1,4 +1,9 @@
-# Copyright (c) 2026 Gaurav Singh Thakur. MIT License.
+# Gaurav Singh Thakur — MIT License
+#
+# WhatsApp Business API integration. Incoming messages hit the webhook,
+# I parse them with my order parser, and store the result as JSON.
+# I also expose /api/whatsapp/parse so I can test the parser without
+# needing an actual WhatsApp message coming in.
 
 import json
 from flask import Blueprint, request, jsonify
@@ -9,7 +14,7 @@ whatsapp_bp = Blueprint('whatsapp', __name__)
 
 
 # ---------------------------------------------------------------------------
-# Configuration
+# Config — stored in the DB so I can update it from the Settings tab
 # ---------------------------------------------------------------------------
 
 @whatsapp_bp.route('/api/whatsapp/config', methods=['GET'])
@@ -22,7 +27,7 @@ def get_config():
     return jsonify({
         'phone_number_id': config['phone_number_id'] or '',
         'business_account_id': config['business_account_id'] or '',
-        'access_token': '***' if config['access_token'] else '',
+        'access_token': '***' if config['access_token'] else '',  # never send the real token back
         'verify_token': config['verify_token'] or '',
         'enabled': bool(config['enabled']),
     })
@@ -36,6 +41,7 @@ def update_config():
 
     access_token = data.get('access_token', '')
     if access_token == '***' and existing:
+        # keep the saved token if the frontend just sent back the masked value
         access_token = existing['access_token']
 
     if existing:
@@ -59,7 +65,7 @@ def update_config():
 
 
 # ---------------------------------------------------------------------------
-# Meta webhook handshake
+# Meta webhook handshake — Meta hits this before sending messages
 # ---------------------------------------------------------------------------
 
 @whatsapp_bp.route('/api/whatsapp/webhook', methods=['GET'])
@@ -78,12 +84,13 @@ def verify_webhook():
 
 
 # ---------------------------------------------------------------------------
-# Incoming message webhook
+# Incoming messages
 # ---------------------------------------------------------------------------
 
 @whatsapp_bp.route('/api/whatsapp/webhook', methods=['POST'])
 def receive_message():
-    """Receive a WhatsApp message, parse it into a structured order, and store it."""
+    """Meta sends the message payload here. I extract the text, run it through
+    my parser, and save the structured result as JSON alongside the raw message."""
     data = request.json or {}
     db = get_db()
 
@@ -112,16 +119,14 @@ def receive_message():
 
 
 # ---------------------------------------------------------------------------
-# Stand-alone parser endpoint (for testing / integrations)
+# Direct parser endpoint — handy for testing without a live WhatsApp connection
 # ---------------------------------------------------------------------------
 
 @whatsapp_bp.route('/api/whatsapp/parse', methods=['POST'])
 def parse_message():
-    """Parse a free-text order message and return a structured order object.
-
-    POST body: {"text": "2 veg noodles and 1 egg fried rice for Rahul"}
-    Response:  {"customer": "Rahul", "lines": [...], "raw_text": "...", "unrecognized": []}
-    """
+    """I use this to test the parser directly.
+    Send { "text": "2 veg noodles and 1 egg fried rice for Rahul" }
+    and get back a structured order object."""
     body = request.get_json(silent=True) or {}
     text = body.get('text', '')
     if not text:

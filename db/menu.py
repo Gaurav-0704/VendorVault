@@ -1,3 +1,5 @@
+# Gaurav Singh Thakur — MIT License
+
 from db.connection import _connect
 
 
@@ -74,6 +76,7 @@ def update_menu_item(item_id, name=None, price=None, cost=None):
 
 
 def get_menu_with_categories():
+    """Builds the nested structure the frontend expects — categories with their items inside."""
     cats = get_menu_categories()
     for cat in cats:
         cat['items'] = get_menu_items(cat['id'])

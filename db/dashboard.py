@@ -1,3 +1,5 @@
+# Gaurav Singh Thakur — MIT License
+
 from datetime import datetime, timedelta
 from db.connection import _connect
 from db.reports import get_daily_report, get_weekly_report, get_monthly_report, _orders_in_range, _revenue_and_cost
@@ -5,6 +7,8 @@ from db.finance import compute_cash_in_hand
 
 
 def get_dashboard_stats():
+    """Everything the dashboard needs in one call — today, week, month, recent orders,
+    hourly chart data, and top sellers. I keep it as one round-trip to keep the page fast."""
     now = datetime.now()
     today_str = now.strftime('%Y-%m-%d')
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -43,6 +47,8 @@ def get_dashboard_stats():
             'SELECT id, created_at FROM orders WHERE created_at >= ? AND created_at <= ?',
             (today_start, today_end),
         ).fetchall()
+
+        # Build hourly revenue buckets for the chart
         hour_map = {}
         for o in today_orders:
             try:
@@ -58,6 +64,7 @@ def get_dashboard_stats():
             ).fetchone()
             hour_map[h]['revenue'] += rev['r']
 
+        # I show 8am–10pm even on slow days so the chart isn't empty
         hourly = []
         for h in range(24):
             if h in hour_map or (8 <= h <= 22):

@@ -1,4 +1,7 @@
-# Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
+# Gaurav Singh Thakur — MIT License
+#
+# PWA plumbing — manifest, service worker, and icon serving.
+# This is what lets me install the app on my phone's home screen.
 
 import json
 import os
@@ -20,7 +23,6 @@ def _local_ip():
 
 @pwa_bp.route('/manifest.json')
 def manifest():
-    """Serve the PWA manifest for mobile app installation."""
     data = {
         "name": "VendorVault",
         "short_name": "VendorVault",
@@ -32,17 +34,17 @@ def manifest():
         "orientation": "portrait-primary",
         "icons": [
             {"src": "/static/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
-            {"src": "/static/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+            {"src": "/static/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"},
         ],
         "categories": ["business", "finance", "productivity"],
-        "screenshots": []
+        "screenshots": [],
     }
     return Response(json.dumps(data), mimetype='application/manifest+json')
 
 
 @pwa_bp.route('/sw.js')
 def service_worker():
-    """Serve the service worker from root scope."""
+    """Simple service worker — network-first for API calls, cache-first for static assets."""
     sw_code = """
 const CACHE_NAME = 'vendorvault-v1';
 const STATIC_ASSETS = [
@@ -71,7 +73,6 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
     if (event.request.method !== 'GET') return;
 
-    // Network-first for API calls
     if (event.request.url.includes('/api/')) {
         event.respondWith(
             fetch(event.request)
@@ -85,7 +86,6 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // Cache-first for static assets
     event.respondWith(
         caches.match(event.request).then(cached => cached || fetch(event.request))
     );
@@ -96,6 +96,5 @@ self.addEventListener('fetch', event => {
 
 @pwa_bp.route('/static/icons/<path:filename>')
 def serve_icon(filename):
-    """Serve PWA icon files."""
     icons_dir = os.path.join(_BASE_DIR, 'static', 'icons')
     return send_from_directory(icons_dir, filename)

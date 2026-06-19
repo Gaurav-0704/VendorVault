@@ -1,32 +1,33 @@
-# Copyright (c) 2026 Gaurav Singh Thakur. MIT License.
-"""
-Free-text order parser: natural-language-in / structured-data-out.
-
-Accepts a raw WhatsApp message and returns a ParsedOrder with typed fields
-(customer name, line items with quantities and fuzzy-matched menu names).
-No external dependencies — uses stdlib re and difflib only.
-
-Usage:
-    from services.order_parser import parse_order_text, ParsedOrder
-    result = parse_order_text("2 veg noodles and 1 egg fried rice for Rahul", menu_names=["Veg Noodles", ...])
-    result.to_dict()  # → {"customer": "Rahul", "lines": [...], ...}
-"""
+# Gaurav Singh Thakur — MIT License
+#
+# This is the parser I wrote to handle WhatsApp order messages. Customers text in
+# things like "2 veg noddles n 1 chiken 65 for Rahul" and I need to turn that into
+# a clean structured object I can actually work with.
+#
+# I deliberately kept this dependency-free (just stdlib re and difflib) so it
+# runs anywhere without any pip install. The fuzzy matching handles typos well
+# enough for a small fixed menu.
+#
+# Usage:
+#   from services.order_parser import parse_order_text
+#   result = parse_order_text("2 veg noodles for Rahul", menu_names=["Veg Noodles", ...])
+#   result.to_dict()
 
 import re
 import difflib
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 
 # ---------------------------------------------------------------------------
-# Data model
+# Output types
 # ---------------------------------------------------------------------------
 
 @dataclass
 class OrderLine:
-    item: str           # matched (or raw) item name
+    item: str           # matched menu item name (or raw fragment if no menu given)
     quantity: int
-    confidence: float   # 0.0–1.0; 1.0 = exact match, <1.0 = fuzzy
+    confidence: float   # 1.0 = exact match, lower = fuzzy
 
 
 @dataclass
@@ -34,7 +35,7 @@ class ParsedOrder:
     customer: Optional[str]
     lines: list          # list[OrderLine]
     raw_text: str
-    unrecognized: list   # fragments that looked like items but didn't match
+    unrecognized: list   # fragments that looked like items but didn't match anything
 
     def to_dict(self) -> dict:
         return {
@@ -58,7 +59,7 @@ _WORD_TO_INT = {
     "a": 1, "an": 1,
 }
 
-# Patterns that introduce a customer name; capture group 1 = the name.
+# Patterns I use to find the customer name in a message
 _CUSTOMER_PATTERNS = [
     r"\bfor\s+([A-Za-z][a-z]+(?: [A-Za-z][a-z]+)?)\b",
     r"\bfrom\s+([A-Za-z][a-z]+(?: [A-Za-z][a-z]+)?)\b",
@@ -68,15 +69,14 @@ _CUSTOMER_PATTERNS = [
     r"\bname[:\s]+([A-Za-z][a-z]+(?: [A-Za-z][a-z]+)?)\b",
 ]
 
-# Noise words to strip per-chunk after splitting (do NOT include "and"/"n" here
-# because they are used as delimiters before noise stripping).
+# Words I strip out before trying to match item names
 _NOISE = re.compile(
     r"\b(please|plz|pls|send|get|need|want|give|order|hi|hello|"
     r"can i|i want|i need|could you|kindly|just|also|plus|with|add)\b",
     re.IGNORECASE,
 )
 
-# Quantity token: digit(s) optionally followed by 'x', or a word-number.
+# Matches digit quantities like "2", "3x", or word quantities like "two"
 _QTY_RE = re.compile(
     r"(\d+)\s*x?|(" + "|".join(_WORD_TO_INT) + r")\b",
     re.IGNORECASE,
@@ -84,12 +84,13 @@ _QTY_RE = re.compile(
 
 
 def _extract_customer(text: str) -> tuple[Optional[str], str]:
-    """Return (customer_name_or_None, text_with_customer_phrase_removed)."""
+    """Tries each customer pattern in order and returns the first name it finds,
+    along with the text with that phrase removed."""
     for pat in _CUSTOMER_PATTERNS:
         m = re.search(pat, text, re.IGNORECASE)
         if m:
             name = m.group(1).strip().title()
-            # Don't mistake menu words for names
+            # don't accidentally treat a food word as a name
             if name.lower() in {"noodles", "rice", "chicken", "egg", "veg"}:
                 continue
             cleaned = text[:m.start()] + text[m.end():]
@@ -98,26 +99,25 @@ def _extract_customer(text: str) -> tuple[Optional[str], str]:
 
 
 def _normalize(s: str) -> str:
-    """Lowercase, collapse whitespace, strip punctuation for comparison."""
     s = s.lower()
     s = re.sub(r"[^a-z0-9 ]", " ", s)
     return re.sub(r"\s+", " ", s).strip()
 
 
 def _best_match(fragment: str, menu_names: list[str], cutoff: float = 0.55) -> tuple[Optional[str], float]:
-    """Fuzzy-match a raw fragment against menu item names using difflib."""
+    """Fuzzy-matches a raw item fragment against my menu. Returns (matched_name, confidence)."""
     if not menu_names:
         return None, 0.0
 
     norm_fragment = _normalize(fragment)
     norm_menu = [_normalize(n) for n in menu_names]
 
-    # Try exact substring first (highest confidence)
+    # exact substring → full confidence
     for i, nm in enumerate(norm_menu):
         if norm_fragment in nm or nm in norm_fragment:
             return menu_names[i], 1.0
 
-    # Fall back to sequence matcher
+    # fall back to difflib sequence matching
     matches = difflib.get_close_matches(norm_fragment, norm_menu, n=1, cutoff=cutoff)
     if matches:
         idx = norm_menu.index(matches[0])
@@ -132,15 +132,19 @@ def _best_match(fragment: str, menu_names: list[str], cutoff: float = 0.55) -> t
 # ---------------------------------------------------------------------------
 
 def parse_order_text(text: str, menu_names: Optional[list] = None) -> ParsedOrder:
-    """Parse a free-text order message into a structured ParsedOrder.
+    """Parses a free-text order message into a structured ParsedOrder.
+
+    I split on common delimiters first (comma, 'and', 'n', '+'), then strip
+    noise words from each chunk, then pull out the quantity and match the
+    remaining fragment against the menu using fuzzy matching.
 
     Args:
-        text: Raw message, e.g. "2 veg noodles n 1 egg fried rice for Rahul"
-        menu_names: Known menu item names for fuzzy matching.
-                    If None/empty, raw extracted fragments are used as item names.
+        text:       Raw message, e.g. "plz send 2 veg noddles n 1 chiken 65 for Rahul"
+        menu_names: My current menu item names for fuzzy matching.
+                    If None, I return the raw fragment as the item name.
 
     Returns:
-        ParsedOrder with customer, lines (OrderLine list), raw_text, unrecognized.
+        ParsedOrder with customer, lines, raw_text, and unrecognized fragments.
     """
     if not text or not text.strip():
         return ParsedOrder(customer=None, lines=[], raw_text=text or "", unrecognized=[])
@@ -151,7 +155,7 @@ def parse_order_text(text: str, menu_names: Optional[list] = None) -> ParsedOrde
     lines: list[OrderLine] = []
     unrecognized: list[str] = []
 
-    # Split on common delimiters BEFORE stripping noise so "and"/"n" act as separators.
+    # Split on delimiters BEFORE stripping noise so "and"/"n" work as separators
     chunks = re.split(r"[,;/\n]|\band\b|\bn\b|\+|&", working, flags=re.IGNORECASE)
 
     for chunk in chunks:
@@ -159,22 +163,17 @@ def parse_order_text(text: str, menu_names: Optional[list] = None) -> ParsedOrde
         if not chunk:
             continue
 
-        # Strip noise words from this chunk before parsing
+        # strip noise words from this chunk
         chunk = _NOISE.sub(" ", chunk)
         chunk = re.sub(r"\s+", " ", chunk).strip()
         if not chunk:
             continue
 
-        # Find quantity at the start of the chunk
         qty_match = _QTY_RE.match(chunk.strip())
         if qty_match:
-            if qty_match.group(1):  # digit
-                qty = int(qty_match.group(1))
-            else:                   # word number
-                qty = _WORD_TO_INT[qty_match.group(2).lower()]
+            qty = int(qty_match.group(1)) if qty_match.group(1) else _WORD_TO_INT[qty_match.group(2).lower()]
             item_fragment = chunk[qty_match.end():].strip()
         else:
-            # No leading quantity — default to 1, treat whole chunk as item
             qty = 1
             item_fragment = chunk
 
@@ -187,15 +186,9 @@ def parse_order_text(text: str, menu_names: Optional[list] = None) -> ParsedOrde
             if matched:
                 lines.append(OrderLine(item=matched, quantity=qty, confidence=confidence))
             else:
-                # Store with low confidence using the raw fragment
                 unrecognized.append(item_fragment)
         else:
-            # No menu provided — accept raw fragment as-is
-            lines.append(OrderLine(
-                item=item_fragment.title(),
-                quantity=qty,
-                confidence=0.5,
-            ))
+            lines.append(OrderLine(item=item_fragment.title(), quantity=qty, confidence=0.5))
 
     return ParsedOrder(
         customer=customer,

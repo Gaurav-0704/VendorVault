@@ -1,3 +1,5 @@
+# Gaurav Singh Thakur — MIT License
+
 from datetime import datetime
 from db.connection import _connect, _local_now
 from db.menu import get_menu_item
@@ -11,6 +13,9 @@ def _next_order_number():
 
 
 def create_order(source, customer_name, customer_phone, notes, items, order_date=None):
+    """Creates the order record and all its line items in one transaction.
+    I pull the price and cost from the menu at time of sale so they're locked in
+    even if I update the menu later."""
     with _connect() as conn:
         c = conn.cursor()
         order_num = _next_order_number()
@@ -35,6 +40,7 @@ def create_order(source, customer_name, customer_phone, notes, items, order_date
 
 
 def get_orders():
+    """Pulls all orders with their line items and computes subtotal, cost, and profit on the fly."""
     with _connect() as conn:
         c = conn.cursor()
         rows = c.execute(

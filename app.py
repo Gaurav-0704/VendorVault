@@ -1,7 +1,7 @@
-# VendorVault - Restaurant Management System
-# Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
+# Gaurav Singh Thakur — MIT License
 #
-# Flask server handling all API routes and page rendering.
+# Main entry point. I register all the blueprints here and handle a few
+# top-level routes that didn't fit cleanly into any one blueprint.
 # Run with: python app.py
 
 import os
@@ -34,7 +34,7 @@ app.register_blueprint(whatsapp_bp)
 
 @app.after_request
 def prevent_caching(response):
-    """Prevent browsers from caching API responses so data is always fresh."""
+    # I don't want the browser serving stale API data
     if request.path.startswith('/api/'):
         response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
         response.headers['Pragma'] = 'no-cache'
@@ -47,13 +47,11 @@ def prevent_caching(response):
 
 @app.route('/')
 def index():
-    """Render the main single-page application."""
     return render_template('index.html')
 
 
 @app.route('/manifest.json')
 def manifest():
-    """Progressive Web App manifest for mobile home screen install."""
     return jsonify({
         'name': 'VendorVault',
         'short_name': 'VendorVault',
@@ -68,7 +66,6 @@ def manifest():
 
 @app.route('/sw.js')
 def service_worker():
-    """Stub service worker for PWA compatibility."""
     return '// VendorVault service worker stub', 200, {
         'Content-Type': 'application/javascript'
     }
@@ -80,7 +77,6 @@ def service_worker():
 
 @app.route('/api/dashboard')
 def dashboard():
-    """Get today's stats, recent orders, hourly breakdown, and top items."""
     return jsonify(get_dashboard_stats())
 
 
@@ -90,19 +86,16 @@ def dashboard():
 
 @app.route('/api/orders', methods=['GET', 'POST'])
 def orders():
-    """List all orders (GET) or place a new order (POST)."""
     if request.method == 'POST':
         try:
             data = request.get_json()
-
-            # Accept both camelCase (frontend) and snake_case (API) field names
+            # I accept both camelCase (frontend) and snake_case (direct API calls)
             items = []
             for item in data.get('items', []):
                 items.append({
                     'menu_item_id': item.get('menu_item_id') or item.get('itemId'),
                     'quantity': item.get('quantity', 1),
                 })
-
             order_id = create_order(
                 source=data.get('source', 'dine-in'),
                 customer_name=data.get('customer_name') or data.get('customerName', ''),
@@ -115,7 +108,6 @@ def orders():
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
-    # GET: return all orders with camelCase keys for the frontend
     raw = get_orders()
     result = []
     for o in raw:
@@ -138,7 +130,6 @@ def orders():
 
 @app.route('/api/orders/<int:order_id>', methods=['DELETE'])
 def remove_order(order_id):
-    """Delete a single order and all its line items."""
     try:
         delete_order(order_id)
         return jsonify({'success': True})
@@ -152,13 +143,11 @@ def remove_order(order_id):
 
 @app.route('/api/menu')
 def menu():
-    """Get the full menu grouped by category."""
     return jsonify(get_menu_with_categories())
 
 
 @app.route('/api/menu/categories', methods=['POST'])
 def create_menu_cat():
-    """Add a new menu category (e.g. Noodles, Fried Rice)."""
     try:
         data = request.get_json()
         category_id = add_menu_category(data['name'])
@@ -169,7 +158,6 @@ def create_menu_cat():
 
 @app.route('/api/menu/categories/<int:category_id>', methods=['DELETE'])
 def remove_menu_cat(category_id):
-    """Delete a menu category and all items in it."""
     try:
         delete_menu_category(category_id)
         return jsonify({'success': True})
@@ -179,7 +167,6 @@ def remove_menu_cat(category_id):
 
 @app.route('/api/menu/items', methods=['POST'])
 def create_menu_item_route():
-    """Add a new menu item to a category."""
     try:
         data = request.get_json()
         item_id = add_menu_item(
@@ -195,22 +182,15 @@ def create_menu_item_route():
 
 @app.route('/api/menu/items/<int:item_id>', methods=['DELETE', 'PUT'])
 def manage_menu_item(item_id):
-    """Delete (DELETE) or update (PUT) a menu item's name, price, or cost."""
     if request.method == 'DELETE':
         try:
             delete_menu_item(item_id)
             return jsonify({'success': True})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
-
     try:
         data = request.get_json()
-        update_menu_item(
-            item_id,
-            name=data.get('name'),
-            price=data.get('price'),
-            cost=data.get('cost'),
-        )
+        update_menu_item(item_id, name=data.get('name'), price=data.get('price'), cost=data.get('cost'))
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -218,15 +198,12 @@ def manage_menu_item(item_id):
 
 @app.route('/api/menu/cost-breakdown')
 def cost_breakdown():
-    """Get profit margin breakdown for each menu item."""
     items = get_menu_items()
     breakdown = []
     for item in items:
         margin = 0
         if item['price'] and item['price'] > 0:
-            margin = round(
-                ((item['price'] - item['cost']) / item['price']) * 100, 1
-            )
+            margin = round(((item['price'] - item['cost']) / item['price']) * 100, 1)
         breakdown.append({
             'name': item['name'],
             'price': item['price'],
@@ -242,13 +219,11 @@ def cost_breakdown():
 
 @app.route('/api/purchases')
 def purchases():
-    """Get all purchase categories with their items."""
     return jsonify(get_purchases_with_categories())
 
 
 @app.route('/api/purchases/categories', methods=['POST'])
 def create_purchase_cat():
-    """Add a new purchase category (e.g. Chicken, Rice)."""
     try:
         data = request.get_json()
         category_id = add_purchase_category(data['name'], data.get('emoji'))
@@ -259,7 +234,6 @@ def create_purchase_cat():
 
 @app.route('/api/purchases/categories/<int:category_id>', methods=['DELETE'])
 def remove_purchase_cat(category_id):
-    """Delete a purchase category."""
     try:
         delete_purchase_category(category_id)
         return jsonify({'success': True})
@@ -269,7 +243,6 @@ def remove_purchase_cat(category_id):
 
 @app.route('/api/purchases/items', methods=['POST'])
 def create_purchase_item_route():
-    """Record a single purchase (also updates stock for that category)."""
     try:
         data = request.get_json()
         item_id = add_purchase_item(
@@ -288,15 +261,12 @@ def create_purchase_item_route():
 
 @app.route('/api/purchases/bulk', methods=['POST'])
 def create_purchase_bulk():
-    """Record multiple purchases at once (e.g. weekly grocery run)."""
     try:
         data = request.get_json()
         purchase_date = data.get('purchase_date') or data.get('purchaseDate')
         items = data.get('items', [])
-
         if not items:
             return jsonify({'error': 'No items provided'}), 400
-
         normalized = []
         for item in items:
             normalized.append({
@@ -307,7 +277,6 @@ def create_purchase_bulk():
                 'price': item['price'],
                 'notes': item.get('notes', ''),
             })
-
         ids = add_purchase_items_bulk(normalized, purchase_date=purchase_date)
         return jsonify({'ids': ids, 'count': len(ids)}), 201
     except Exception as e:
@@ -316,7 +285,6 @@ def create_purchase_bulk():
 
 @app.route('/api/purchases/items/<int:item_id>', methods=['DELETE'])
 def remove_purchase_item_route(item_id):
-    """Delete a purchase record."""
     try:
         delete_purchase_item(item_id)
         return jsonify({'success': True})
@@ -330,19 +298,13 @@ def remove_purchase_item_route(item_id):
 
 @app.route('/api/reports')
 def combined_reports():
-    """Combined daily + weekly + monthly report for the Reports tab."""
     daily_date = request.args.get('daily_date')
     weekly_start = request.args.get('weekly_start')
     weekly_end = request.args.get('weekly_end')
     month = request.args.get('month')
 
     daily = get_daily_report(daily_date)
-
-    if weekly_start and weekly_end:
-        weekly = get_weekly_report(weekly_start, weekly_end)
-    else:
-        weekly = get_weekly_report()
-
+    weekly = get_weekly_report(weekly_start, weekly_end) if weekly_start and weekly_end else get_weekly_report()
     monthly = get_monthly_report(month) if month else get_monthly_report()
 
     return jsonify({
@@ -372,14 +334,12 @@ def combined_reports():
 
 @app.route('/api/reports/daily')
 def daily_report():
-    """Daily report with revenue, cost, profit, and item breakdown."""
     date = request.args.get('date')
     return jsonify(get_daily_report(date))
 
 
 @app.route('/api/reports/weekly')
 def weekly_report():
-    """Weekly report with daily breakdown."""
     start = request.args.get('start')
     end = request.args.get('end')
     return jsonify(get_weekly_report(start, end))
@@ -387,7 +347,6 @@ def weekly_report():
 
 @app.route('/api/reports/monthly')
 def monthly_report():
-    """Monthly report with weekly breakdown."""
     month = request.args.get('month')
     return jsonify(get_monthly_report(month))
 
@@ -398,23 +357,20 @@ def monthly_report():
 
 @app.route('/api/profits')
 def profits():
-    """Profit breakdown by product with margins."""
     return jsonify(get_profits_data())
 
 
 @app.route('/api/cost-analysis')
 def cost_analysis():
-    """Purchase cost analysis grouped by category."""
     return jsonify(get_cost_analysis())
 
 
 # ============================================================================
-# Expenses (Payouts)
+# Expenses / Payouts
 # ============================================================================
 
 @app.route('/api/expenses', methods=['GET', 'POST'])
 def expenses():
-    """List all payouts (GET) or record a new one (POST)."""
     if request.method == 'POST':
         try:
             data = request.get_json()
@@ -426,13 +382,11 @@ def expenses():
             return jsonify({'id': expense_id}), 201
         except Exception as e:
             return jsonify({'error': str(e)}), 500
-
     return jsonify(get_expenses())
 
 
 @app.route('/api/expenses/<int:expense_id>', methods=['DELETE'])
 def remove_expense(expense_id):
-    """Delete a payout record."""
     try:
         delete_expense(expense_id)
         return jsonify({'success': True})
@@ -446,7 +400,6 @@ def remove_expense(expense_id):
 
 @app.route('/api/stock')
 def stock():
-    """Current inventory levels per purchase category."""
     return jsonify(get_stock_levels())
 
 
@@ -456,26 +409,22 @@ def stock():
 
 @app.route('/api/finance')
 def finance():
-    """Full financial summary: revenue, expenses, profit, cash position."""
     return jsonify(get_finance_summary())
 
 
 @app.route('/api/finance/weekly-cycle')
 def weekly_cycle():
-    """Weekly cash cycle data (Thu-Sun active, Mon collect excess)."""
     return jsonify(get_weekly_cycle_data())
 
 
 @app.route('/api/finance/end-of-day')
 def end_of_day():
-    """End-of-day report: orders, items sold, costs, profit for a given date."""
     date = request.args.get('date')
     return jsonify(get_end_of_day_report(date))
 
 
 @app.route('/api/finance/cash', methods=['PUT'])
 def update_cash():
-    """Manually update the cash-in-hand amount."""
     try:
         data = request.get_json()
         update_cash_in_hand(data['amount'])
@@ -490,12 +439,10 @@ def update_cash():
 
 @app.route('/api/settings', methods=['GET', 'PUT'])
 def settings():
-    """Read (GET) or update (PUT) app settings."""
     if request.method == 'GET':
         return jsonify(get_all_settings())
-
     allowed_keys = {'business_name', 'phone', 'email', 'address', 'currency',
-                     'cash_in_hand', 'weekly_start_amount'}
+                    'cash_in_hand', 'weekly_start_amount'}
     try:
         data = request.get_json()
         for key, value in data.items():
@@ -512,7 +459,7 @@ def settings():
 
 @app.route('/api/network-info')
 def network_info():
-    """Detect local and network URLs for mobile access."""
+    # I use this to get my local IP so I can open the app on my phone
     port = int(os.environ.get('PORT', 5000))
     try:
         hostname = socket.gethostname()
@@ -542,7 +489,7 @@ def server_error(error):
 
 
 # ============================================================================
-# Application Entry Point
+# Start
 # ============================================================================
 
 if __name__ == '__main__':
