@@ -1,0 +1,26 @@
+# Database
+vendorvault.db
+vendorvault.db-wal
+vendorvault.db-shm
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment
+.env
+venv/
+
+# OS
+.DS_Store
+*.swp
+*.swo
+*~
+Thumbs.db
+
+# Data directory (contains only the sqlite db)
+data/
+
+# Reference docs (not part of the app)
+VendorVault_Complete_Reference.md

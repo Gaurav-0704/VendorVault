@@ -1,0 +1,2643 @@
+{% raw %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <title>VendorVault</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --accent: #6366f1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+        }
+
+        html {
+            touch-action: manipulation;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        #root {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-container {
+            display: flex;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-secondary);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .menu-toggle {
+            width: 48px;
+            height: 48px;
+            min-height: 44px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.2s;
+        }
+
+        .menu-toggle:active {
+            background: #5558e3;
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+            display: none;
+        }
+
+        .sidebar-overlay.open {
+            display: block;
+        }
+
+        .sidebar-header {
+            padding: 20px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 8px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            text-align: left;
+            font-size: 16px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .nav-item:active {
+            background: var(--bg-tertiary);
+        }
+
+        .nav-item.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .main-content {
+            padding: 16px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .stat-card.success {
+            border-left-color: var(--success);
+        }
+
+        .stat-card.warning {
+            border-left-color: var(--warning);
+        }
+
+        .stat-card.danger {
+            border-left-color: var(--danger);
+        }
+
+        .stat-card.info {
+            border-left-color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-value.large {
+            font-size: 40px;
+        }
+
+        .stat-subtext {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .grid-1 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            min-height: 44px;
+            transition: background 0.2s;
+            font-size: 16px;
+        }
+
+        button:active {
+            background: #5558e3;
+        }
+
+        button.secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        button.secondary:active {
+            background: #475569;
+        }
+
+        button.danger {
+            background: var(--danger);
+        }
+
+        button.danger:active {
+            background: #dc2626;
+        }
+
+        button.success {
+            background: var(--success);
+        }
+
+        button.success:active {
+            background: #059669;
+        }
+
+        input, select, textarea {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            min-height: 44px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1001;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal-content {
+            width: 100%;
+            max-width: 600px;
+            background: var(--bg-secondary);
+            border-radius: 16px 16px 0 0;
+            padding: 24px 16px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        @media (min-width: 600px) {
+            .modal-overlay {
+                align-items: center;
+                justify-content: center;
+            }
+
+            .modal-content {
+                max-width: 500px;
+                width: auto;
+                border-radius: 12px;
+            }
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:active {
+            color: var(--text-primary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge.blue {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .badge.green {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .badge.emerald {
+            background: rgba(5, 150, 105, 0.2);
+            color: #059669;
+        }
+
+        .badge.yellow {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .badge.red {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .quantity-control button {
+            width: 36px;
+            height: 36px;
+            min-height: auto;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        .quantity-control input {
+            width: 60px;
+            text-align: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons button {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+
+        .tab-button {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            min-height: auto;
+        }
+
+        .tab-button.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 150px;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 8px 0;
+        }
+
+        .bar {
+            flex: 1;
+            background: var(--accent);
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .bar:hover {
+            background: #5558e3;
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 16px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            margin-top: 24px;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .category-header {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        .category-header:active {
+            background: #475569;
+        }
+
+        .category-items {
+            margin-left: 8px;
+            margin-bottom: 16px;
+        }
+
+        .category-item {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-item-info {
+            flex: 1;
+        }
+
+        .category-item-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .category-item-details {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .category-item-price {
+            font-weight: 700;
+            margin-right: 12px;
+        }
+
+        .emoji-picker {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .emoji-button {
+            aspect-ratio: 1;
+            font-size: 24px;
+            border: 2px solid var(--border);
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            min-height: auto;
+            padding: 0;
+        }
+
+        .emoji-button:active {
+            border-color: var(--accent);
+            background: var(--accent);
+        }
+
+        .emoji-button.selected {
+            border-color: var(--accent);
+            background: var(--accent);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .radio-button {
+            flex: 1;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.2s;
+            min-height: 44px;
+        }
+
+        .radio-button:active {
+            border-color: var(--accent);
+        }
+
+        .radio-button.selected {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .per-unit-price {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .margin-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .margin-good {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .margin-fair {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .margin-poor {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .wifi-panel {
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .wifi-url {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 16px 0;
+            word-break: break-all;
+            font-family: monospace;
+        }
+
+        .wifi-instructions {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 12px;
+        }
+
+        .accordion {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .accordion-header {
+            background: var(--bg-tertiary);
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            user-select: none;
+            border: none;
+            width: 100%;
+            color: var(--text-primary);
+            text-align: left;
+        }
+
+        .accordion-header:active {
+            background: #475569;
+        }
+
+        .accordion-body {
+            background: var(--bg-secondary);
+            padding: 0 16px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .accordion-body.open {
+            max-height: 2000px;
+            padding: 16px;
+        }
+
+        .add-button {
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 16px;
+            color: var(--text-secondary);
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            color: var(--danger);
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            color: var(--success);
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .menu-card {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            position: relative;
+            user-select: none;
+        }
+
+        .menu-card:active {
+            border-color: var(--accent);
+            background: var(--bg-secondary);
+        }
+
+        .menu-card.selected {
+            border-color: var(--success);
+            background: var(--bg-secondary);
+        }
+
+        .menu-card-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .menu-card-price {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .menu-card-qty {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--success);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .cart-summary {
+            position: sticky;
+            bottom: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .cart-total {
+            font-size: 20px;
+            font-weight: 700;
+            padding: 12px 0;
+            color: var(--success);
+        }
+
+        .inline-form-section {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            margin-left: 8px;
+        }
+
+        .inline-form-section .form-group {
+            margin-bottom: 8px;
+        }
+
+        .inline-form-section .form-group:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#94a3b8;font-family:sans-serif;font-size:18px">Loading VendorVault...</div></div>
+    <script>window.onerror=function(m,s,l,c,e){document.getElementById('root').innerHTML='<div style="padding:40px;color:#ef4444;font-family:monospace;font-size:14px;white-space:pre-wrap">Error: '+m+'\nLine: '+l+'\nCol: '+c+'</div>';}</script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
+
+        // Prevent gesture zoom
+        document.addEventListener('gesturestart', e => e.preventDefault());
+
+        function App() {
+            const [currentPage, setCurrentPage] = useState('dashboard');
+            const [sidebarOpen, setSidebarOpen] = useState(false);
+
+            const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+            const closeSidebar = () => setSidebarOpen(false);
+
+            const navItems = [
+                { id: 'dashboard', label: 'Dashboard', emoji: '📊' },
+                { id: 'orders', label: 'Orders', emoji: '📋' },
+                { id: 'purchases', label: 'Purchases', emoji: '🛒' },
+                { id: 'reports', label: 'Reports', emoji: '📈' },
+                { id: 'profits', label: 'Profits', emoji: '💵' },
+                { id: 'cost-analysis', label: 'Cost Analysis', emoji: '💰' },
+                { id: 'settings', label: 'Settings', emoji: '⚙️' }
+            ];
+
+            return (
+                <div className="app-container">
+                    <div className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`} onClick={closeSidebar}></div>
+                    <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+                        <div className="sidebar-header">VendorVault</div>
+                        <div className="sidebar-nav">
+                            {navItems.map(item => (
+                                <button
+                                    key={item.id}
+                                    className={`nav-item ${currentPage === item.id ? 'active' : ''}`}
+                                    onClick={() => {
+                                        setCurrentPage(item.id);
+                                        closeSidebar();
+                                    }}
+                                >
+                                    <span>{item.emoji}</span>
+                                    <span>{item.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="page-content">
+                        <div className="header">
+                            <button className="menu-toggle" onClick={toggleSidebar}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                    <line x1="4" y1="6" x2="20" y2="6"></line>
+                                    <line x1="4" y1="12" x2="20" y2="12"></line>
+                                    <line x1="4" y1="18" x2="20" y2="18"></line>
+                                </svg>
+                            </button>
+                            <div>
+                                <h1 className="page-title">
+                                    {navItems.find(i => i.id === currentPage)?.emoji} {navItems.find(i => i.id === currentPage)?.label}
+                                </h1>
+                                <div className="page-subtitle">
+                                    {currentPage === 'dashboard' && 'Your business at a glance'}
+                                    {currentPage === 'orders' && 'Manage customer orders'}
+                                    {currentPage === 'purchases' && 'Track inventory and costs'}
+                                    {currentPage === 'reports' && 'View detailed analytics'}
+                                    {currentPage === 'profits' && 'Track your earnings'}
+                                    {currentPage === 'cost-analysis' && 'Analyze profitability'}
+                                    {currentPage === 'settings' && 'Configure your business'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="main-content">
+                            {currentPage === 'dashboard' && <Dashboard />}
+                            {currentPage === 'orders' && <Orders />}
+                            {currentPage === 'purchases' && <Purchases />}
+                            {currentPage === 'reports' && <Reports />}
+                            {currentPage === 'profits' && <Profits />}
+                            {currentPage === 'cost-analysis' && <CostAnalysis />}
+                            {currentPage === 'settings' && <Settings />}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function Dashboard() {
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            useEffect(() => {
+                fetchDashboard();
+            }, []);
+
+            const fetchDashboard = async () => {
+                try {
+                    setLoading(true);
+                    const res = await fetch('/api/dashboard');
+                    if (!res.ok) throw new Error('Failed to load dashboard');
+                    const json = await res.json();
+                    setData(json);
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                    setData(null);
+                }
+                setLoading(false);
+            };
+
+            if (loading) return <div className="loading">Loading...</div>;
+            if (error) return <div className="error">Error: {error}</div>;
+            if (!data) return <div className="empty-state">No data available</div>;
+
+            return (
+                <>
+                    <div className="grid-1">
+                        <div className="stat-card success">
+                            <div className="stat-label">Today's Revenue</div>
+                            <div className="stat-value large">${(data.today.revenue || 0).toFixed(2)}</div>
+                            <div className="stat-subtext">{data.today.orders} orders</div>
+                        </div>
+                    </div>
+
+                    <div className="grid-1">
+                        <div className="stat-card info">
+                            <div className="stat-label">Today's Orders</div>
+                            <div className="stat-value large">{data.today.orders || 0}</div>
+                            <div className="stat-subtext">orders completed</div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="section-title">Hourly Sales</div>
+                        {data.hourly && data.hourly.length > 0 ? (
+                            <div className="bar-chart">
+                                {data.hourly.map((h, i) => {
+                                    const maxRevenue = Math.max(...data.hourly.map(x => x.revenue), 1);
+                                    const height = (h.revenue / maxRevenue) * 100;
+                                    return (
+                                        <div key={i} style={{ flex: 1, position: 'relative', height: '100%', display: 'flex', alignItems: 'flex-end' }}>
+                                            <div style={{
+                                                width: '100%',
+                                                height: height + '%',
+                                                background: 'var(--accent)',
+                                                borderRadius: '4px 4px 0 0',
+                                                minHeight: '4px',
+                                                transition: 'background 0.2s'
+                                            }}></div>
+                                            <div className="bar-label">{h.hour}h</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="empty-state">No hourly data</div>
+                        )}
+                    </div>
+
+                    <div className="card">
+                        <div className="section-title">Top Items Today</div>
+                        {data.top_items && data.top_items.length > 0 ? (
+                            <div className="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Item Name</th>
+                                            <th>Quantity</th>
+                                            <th>Revenue</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {data.top_items.map((item, i) => (
+                                            <tr key={i}>
+                                                <td>{item.name}</td>
+                                                <td>{item.qty}</td>
+                                                <td>${(item.revenue || 0).toFixed(2)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div className="empty-state">No items sold yet</div>
+                        )}
+                    </div>
+
+                    <div className="card">
+                        <div className="section-title">Recent Orders</div>
+                        {data.recent_orders && data.recent_orders.length > 0 ? (
+                            <div className="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Order #</th>
+                                            <th>Customer</th>
+                                            <th>Source</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                            <th>Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {data.recent_orders.map((order, i) => (
+                                            <tr key={i}>
+                                                <td>#{order.order_number}</td>
+                                                <td>{order.customer_name}</td>
+                                                <td><span className={`badge ${order.source === 'walk-in' ? 'blue' : order.source === 'call' ? 'green' : 'emerald'}`}>{order.source}</span></td>
+                                                <td>${(order.subtotal || 0).toFixed(2)}</td>
+                                                <td><span className={`badge ${order.status === 'completed' ? 'green' : order.status === 'pending' ? 'yellow' : 'red'}`}>{order.status}</span></td>
+                                                <td>{new Date(order.created_at).toLocaleTimeString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div className="empty-state">No orders yet</div>
+                        )}
+                    </div>
+                </>
+            );
+        }
+
+        function Orders() {
+            const [orders, setOrders] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [menu, setMenu] = useState([]);
+            const [showOrderHistory, setShowOrderHistory] = useState(false);
+            const [formData, setFormData] = useState({
+                source: 'walk-in',
+                customer_name: '',
+                customer_phone: '',
+                notes: '',
+                items: []
+            });
+            const [selectedItems, setSelectedItems] = useState({});
+
+            useEffect(() => {
+                fetchOrders();
+                fetchMenu();
+            }, []);
+
+            const fetchOrders = async () => {
+                try {
+                    setLoading(true);
+                    const res = await fetch('/api/orders');
+                    if (!res.ok) throw new Error('Failed to load orders');
+                    const json = await res.json();
+                    setOrders(json);
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                }
+                setLoading(false);
+            };
+
+            const fetchMenu = async () => {
+                try {
+                    const res = await fetch('/api/menu');
+                    if (!res.ok) throw new Error('Failed to load menu');
+                    const json = await res.json();
+                    setMenu(json);
+                } catch (err) {
+                    console.error('Menu load error:', err);
+                }
+            };
+
+            const resetForm = () => {
+                setFormData({
+                    source: 'walk-in',
+                    customer_name: '',
+                    customer_phone: '',
+                    notes: '',
+                    items: []
+                });
+                setSelectedItems({});
+            };
+
+            const updateItemQty = (itemId, qty) => {
+                const newSelected = { ...selectedItems };
+                if (qty > 0) {
+                    newSelected[itemId] = qty;
+                } else {
+                    delete newSelected[itemId];
+                }
+                setSelectedItems(newSelected);
+            };
+
+            const calculateTotal = () => {
+                let total = 0;
+                const allItems = menu.flatMap(c => c.items || []);
+                Object.entries(selectedItems).forEach(([itemId, qty]) => {
+                    const item = allItems.find(i => i.id == itemId);
+                    if (item) total += item.price * qty;
+                });
+                return total;
+            };
+
+            const submitOrder = async () => {
+                if (!formData.customer_name) {
+                    alert('Please enter customer name');
+                    return;
+                }
+                if (Object.keys(selectedItems).length === 0) {
+                    alert('Please select at least one item');
+                    return;
+                }
+
+                try {
+                    const items = Object.entries(selectedItems).map(([id, qty]) => ({
+                        menu_item_id: parseInt(id),
+                        quantity: qty
+                    }));
+
+                    const res = await fetch('/api/orders', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            source: formData.source,
+                            customer_name: formData.customer_name,
+                            customer_phone: formData.customer_phone,
+                            notes: formData.notes,
+                            items: items
+                        })
+                    });
+
+                    if (!res.ok) throw new Error('Failed to create order');
+                    resetForm();
+                    fetchOrders();
+                    alert('Order placed successfully!');
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            const deleteOrder = async (orderId) => {
+                if (!confirm('Delete this order?')) return;
+                try {
+                    const res = await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Failed to delete');
+                    fetchOrders();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            if (loading) return <div className="loading">Loading...</div>;
+            if (error) return <div className="error">Error: {error}</div>;
+
+            if (showOrderHistory) {
+                return (
+                    <>
+                        <button onClick={() => setShowOrderHistory(false)} style={{ width: '100%', marginBottom: '16px' }}>← Back to New Order</button>
+
+                        {orders.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-state-icon">📋</div>
+                                <p>No orders yet.</p>
+                            </div>
+                        ) : (
+                            orders.map(order => (
+                                <div key={order.id} className="card">
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '12px' }}>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '8px' }}>
+                                                Order #{order.order_number}
+                                            </div>
+                                            <div style={{ fontSize: '14px', marginBottom: '6px' }}>
+                                                <strong>Customer:</strong> {order.customer_name}
+                                            </div>
+                                            <div style={{ fontSize: '14px', marginBottom: '6px' }}>
+                                                <strong>Source:</strong> <span className={`badge ${order.source === 'walk-in' ? 'blue' : order.source === 'call' ? 'green' : 'emerald'}`}>{order.source}</span>
+                                            </div>
+                                            <div style={{ fontSize: '14px', marginBottom: '6px' }}>
+                                                <strong>Total:</strong> ${(order.subtotal || 0).toFixed(2)}
+                                            </div>
+                                            <div style={{ fontSize: '14px' }}>
+                                                <strong>Status:</strong> <span className={`badge ${order.status === 'completed' ? 'green' : order.status === 'pending' ? 'yellow' : 'red'}`}>{order.status}</span>
+                                            </div>
+                                            {order.created_at && (
+                                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                                                    {new Date(order.created_at).toLocaleString()}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <button className="danger" onClick={() => deleteOrder(order.id)} style={{ minHeight: 'auto', padding: '8px 12px', fontSize: '14px' }}>🗑️</button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </>
+                );
+            }
+
+            return (
+                <>
+                    <div className="tabs">
+                        <button className={`tab-button ${!showOrderHistory ? 'active' : ''}`} onClick={() => setShowOrderHistory(false)}>New Order</button>
+                        <button className={`tab-button ${showOrderHistory ? 'active' : ''}`} onClick={() => setShowOrderHistory(true)}>Order History</button>
+                    </div>
+
+                    <div className="card">
+                        <div className="section-title">Customer Info</div>
+                        <div className="form-group">
+                            <label>Source</label>
+                            <div className="radio-group">
+                                {['walk-in', 'call', 'whatsapp'].map(src => (
+                                    <button
+                                        key={src}
+                                        className={`radio-button ${formData.source === src ? 'selected' : ''}`}
+                                        onClick={() => setFormData({ ...formData, source: src })}
+                                    >
+                                        {src}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="form-group">
+                            <label>Customer Name</label>
+                            <input
+                                type="text"
+                                value={formData.customer_name}
+                                onChange={e => setFormData({ ...formData, customer_name: e.target.value })}
+                                placeholder="Customer name"
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>Customer Phone</label>
+                            <input
+                                type="tel"
+                                value={formData.customer_phone}
+                                onChange={e => setFormData({ ...formData, customer_phone: e.target.value })}
+                                placeholder="Phone number"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="section-title">Select Items</div>
+                        {menu.flatMap(c => c.items || []).length === 0 ? (
+                            <div className="empty-state" style={{ padding: '20px 0' }}>No menu items available</div>
+                        ) : (
+                            menu.map(category => (
+                                category.items && category.items.length > 0 && (
+                                    <div key={category.id} style={{ marginBottom: '24px' }}>
+                                        <div style={{ fontWeight: '600', fontSize: '16px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
+                                            {category.name}
+                                        </div>
+                                        <div className="menu-grid">
+                                            {category.items.map(item => (
+                                                <div
+                                                    key={item.id}
+                                                    className={`menu-card ${selectedItems[item.id] ? 'selected' : ''}`}
+                                                    onClick={() => updateItemQty(item.id, (selectedItems[item.id] || 0) + 1)}
+                                                >
+                                                    {selectedItems[item.id] > 0 && (
+                                                        <div className="menu-card-qty">{selectedItems[item.id]}</div>
+                                                    )}
+                                                    <div className="menu-card-name">{item.name}</div>
+                                                    <div className="menu-card-price">${(item.price || 0).toFixed(2)}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )
+                            ))
+                        )}
+                    </div>
+
+                    <div className="card">
+                        <div className="section-title">Notes</div>
+                        <div className="form-group">
+                            <textarea
+                                value={formData.notes}
+                                onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                                placeholder="Special instructions..."
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    <div className="cart-summary">
+                        {Object.keys(selectedItems).length > 0 && (
+                            <>
+                                {Object.entries(selectedItems).map(([itemId, qty]) => {
+                                    const allItems = menu.flatMap(c => c.items || []);
+                                    const item = allItems.find(i => i.id == itemId);
+                                    if (!item) return null;
+                                    return (
+                                        <div key={itemId} className="cart-item">
+                                            <span>{item.name} x{qty}</span>
+                                            <span>${((item.price || 0) * qty).toFixed(2)}</span>
+                                        </div>
+                                    );
+                                })}
+                                <div className="cart-total">
+                                    Total: ${(calculateTotal() || 0).toFixed(2)}
+                                </div>
+                            </>
+                        )}
+                        <div className="action-buttons">
+                            <button className="secondary" onClick={resetForm}>Clear</button>
+                            <button onClick={submitOrder}>Place Order</button>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        function Purchases() {
+            const [categories, setCategories] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [expandedCategories, setExpandedCategories] = useState({});
+            const [showCategoryModal, setShowCategoryModal] = useState(false);
+            const [expandedItemForms, setExpandedItemForms] = useState({});
+            const [newCategoryName, setNewCategoryName] = useState('');
+            const [selectedEmoji, setSelectedEmoji] = useState('📦');
+            const [itemForm, setItemForm] = useState({
+                name: '',
+                quantity: '',
+                unit: 'piece',
+                price: '',
+                notes: ''
+            });
+
+            const emojis = ['📦', '🥫', '🥘', '🍗', '🥬', '🧂', '🍯', '🧈', '🥛', '🧄', '🥕', '🍅'];
+
+            useEffect(() => {
+                fetchPurchases();
+            }, []);
+
+            const fetchPurchases = async () => {
+                try {
+                    setLoading(true);
+                    const res = await fetch('/api/purchases');
+                    if (!res.ok) throw new Error('Failed to load purchases');
+                    const json = await res.json();
+                    setCategories(json);
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                }
+                setLoading(false);
+            };
+
+            const toggleCategory = (catId) => {
+                setExpandedCategories({
+                    ...expandedCategories,
+                    [catId]: !expandedCategories[catId]
+                });
+            };
+
+            const toggleItemForm = (catId) => {
+                setExpandedItemForms({
+                    ...expandedItemForms,
+                    [catId]: !expandedItemForms[catId]
+                });
+                if (!expandedItemForms[catId]) {
+                    setItemForm({ name: '', quantity: '', unit: 'piece', price: '', notes: '' });
+                }
+            };
+
+            const submitItem = async (catId) => {
+                if (!itemForm.name || !itemForm.quantity || !itemForm.price) {
+                    alert('Please fill all required fields');
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/api/purchases/items', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            category_id: catId,
+                            name: itemForm.name,
+                            quantity: parseFloat(itemForm.quantity),
+                            unit: itemForm.unit,
+                            price: parseFloat(itemForm.price),
+                            notes: itemForm.notes
+                        })
+                    });
+
+                    if (!res.ok) throw new Error('Failed to add item');
+                    setExpandedItemForms({ ...expandedItemForms, [catId]: false });
+                    setItemForm({ name: '', quantity: '', unit: 'piece', price: '', notes: '' });
+                    fetchPurchases();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            const deleteItem = async (itemId) => {
+                if (!confirm('Delete this item?')) return;
+                try {
+                    const res = await fetch(`/api/purchases/items/${itemId}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Failed to delete');
+                    fetchPurchases();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            const submitCategory = async () => {
+                if (!newCategoryName.trim()) {
+                    alert('Please enter category name');
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/api/purchases/categories', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: newCategoryName,
+                            emoji: selectedEmoji
+                        })
+                    });
+
+                    if (!res.ok) throw new Error('Failed to add category');
+                    setShowCategoryModal(false);
+                    setNewCategoryName('');
+                    setSelectedEmoji('📦');
+                    fetchPurchases();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            const deleteCategory = async (catId) => {
+                if (!confirm('Delete this category and all its items?')) return;
+                try {
+                    const res = await fetch(`/api/purchases/categories/${catId}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Failed to delete');
+                    fetchPurchases();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            if (loading) return <div className="loading">Loading...</div>;
+            if (error) return <div className="error">Error: {error}</div>;
+
+            return (
+                <>
+                    <button onClick={() => setShowCategoryModal(true)} style={{ width: '100%', marginBottom: '16px' }}>+ Add Category</button>
+
+                    {categories.length === 0 ? (
+                        <div className="empty-state">
+                            <div className="empty-state-icon">🛒</div>
+                            <p>No categories yet. Create your first one!</p>
+                        </div>
+                    ) : (
+                        categories.map(category => (
+                            <div key={category.id}>
+                                <button
+                                    className="category-header"
+                                    onClick={() => toggleCategory(category.id)}
+                                >
+                                    <span>{category.emoji} {category.name} ({category.items?.length || 0} items)</span>
+                                    <span>{expandedCategories[category.id] ? '▼' : '▶'}</span>
+                                </button>
+
+                                {expandedCategories[category.id] && (
+                                    <div className="category-items">
+                                        {category.items && category.items.length > 0 ? (
+                                            category.items.map(item => {
+                                                const perUnit = ((item.price || 0) / (item.quantity || 1)).toFixed(2);
+                                                return (
+                                                    <div key={item.id} className="category-item">
+                                                        <div className="category-item-info">
+                                                            <div className="category-item-name">{item.name}</div>
+                                                            <div className="category-item-details">
+                                                                {item.quantity} {item.unit} • ${perUnit} per {item.unit}
+                                                            </div>
+                                                        </div>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <div className="category-item-price">${(item.price || 0).toFixed(2)}</div>
+                                                            <button className="danger" onClick={() => deleteItem(item.id)} style={{ minHeight: 'auto', padding: '8px 12px', fontSize: '14px' }}>🗑️</button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="empty-state" style={{ padding: '20px' }}>No items in this category</div>
+                                        )}
+
+                                        {expandedItemForms[category.id] && (
+                                            <div className="inline-form-section">
+                                                <div className="form-group">
+                                                    <label>Item Name</label>
+                                                    <input
+                                                        type="text"
+                                                        value={itemForm.name}
+                                                        onChange={e => setItemForm({ ...itemForm, name: e.target.value })}
+                                                        placeholder="e.g., Tomatoes"
+                                                    />
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label>Quantity</label>
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={itemForm.quantity}
+                                                        onChange={e => setItemForm({ ...itemForm, quantity: e.target.value })}
+                                                        placeholder="e.g., 10"
+                                                    />
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label>Unit</label>
+                                                    <select
+                                                        value={itemForm.unit}
+                                                        onChange={e => setItemForm({ ...itemForm, unit: e.target.value })}
+                                                    >
+                                                        <option value="dozen">Dozen</option>
+                                                        <option value="lb">Pound (lb)</option>
+                                                        <option value="pack">Pack</option>
+                                                        <option value="batch">Batch</option>
+                                                        <option value="piece">Piece</option>
+                                                        <option value="cup">Cup</option>
+                                                        <option value="unit">Unit</option>
+                                                    </select>
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label>Total Price</label>
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={itemForm.price}
+                                                        onChange={e => setItemForm({ ...itemForm, price: e.target.value })}
+                                                        placeholder="e.g., 25.00"
+                                                    />
+                                                </div>
+
+                                                {itemForm.quantity && itemForm.price && (
+                                                    <div className="per-unit-price">
+                                                        Per unit: ${((itemForm.price || 0) / (itemForm.quantity || 1)).toFixed(2)}
+                                                    </div>
+                                                )}
+
+                                                <div className="form-group">
+                                                    <label>Notes</label>
+                                                    <textarea
+                                                        value={itemForm.notes}
+                                                        onChange={e => setItemForm({ ...itemForm, notes: e.target.value })}
+                                                        placeholder="Optional notes..."
+                                                    ></textarea>
+                                                </div>
+
+                                                <div className="action-buttons">
+                                                    <button className="secondary" onClick={() => toggleItemForm(category.id)}>Cancel</button>
+                                                    <button onClick={() => submitItem(category.id)}>Add Item</button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {!expandedItemForms[category.id] && (
+                                            <>
+                                                <button className="secondary add-button" onClick={() => toggleItemForm(category.id)}>+ Add Item</button>
+                                                <button className="danger add-button" onClick={() => deleteCategory(category.id)}>Delete Category</button>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
+
+                    {showCategoryModal && (
+                        <div className="modal-overlay" onClick={() => setShowCategoryModal(false)}>
+                            <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <span>Add Category</span>
+                                    <button className="modal-close" onClick={() => setShowCategoryModal(false)}>×</button>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Category Name</label>
+                                    <input
+                                        type="text"
+                                        value={newCategoryName}
+                                        onChange={e => setNewCategoryName(e.target.value)}
+                                        placeholder="e.g., Vegetables"
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Emoji</label>
+                                    <div className="emoji-picker">
+                                        {emojis.map(emoji => (
+                                            <button
+                                                key={emoji}
+                                                className={`emoji-button ${selectedEmoji === emoji ? 'selected' : ''}`}
+                                                onClick={() => setSelectedEmoji(emoji)}
+                                            >
+                                                {emoji}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="action-buttons">
+                                    <button className="secondary" onClick={() => setShowCategoryModal(false)}>Cancel</button>
+                                    <button onClick={submitCategory}>Add Category</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </>
+            );
+        }
+
+        function Reports() {
+            const [activeTab, setActiveTab] = useState('daily');
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+            const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().split('T')[0].substring(0, 7));
+
+            useEffect(() => {
+                fetchReportData();
+            }, [activeTab, selectedDate, selectedMonth]);
+
+            const fetchReportData = async () => {
+                try {
+                    setLoading(true);
+                    let url = '';
+                    if (activeTab === 'daily') {
+                        url = `/api/reports/daily?date=${selectedDate}`;
+                    } else if (activeTab === 'weekly') {
+                        const today = new Date();
+                        const dayOfWeek = today.getDay();
+                        const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                        const weekStart = new Date(today.setDate(diff));
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekEnd.getDate() + 6);
+                        const start = weekStart.toISOString().split('T')[0];
+                        const end = weekEnd.toISOString().split('T')[0];
+                        url = `/api/reports/weekly?start=${start}&end=${end}`;
+                    } else {
+                        url = `/api/reports/monthly?month=${selectedMonth}`;
+                    }
+
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error('Failed to load report');
+                    const json = await res.json();
+                    setData(json);
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                    setData(null);
+                }
+                setLoading(false);
+            };
+
+            if (loading) return <div className="loading">Loading...</div>;
+            if (error) return <div className="error">Error: {error}</div>;
+            if (!data) return <div className="empty-state">No data available</div>;
+
+            return (
+                <>
+                    <div className="tabs">
+                        <button className={`tab-button ${activeTab === 'daily' ? 'active' : ''}`} onClick={() => setActiveTab('daily')}>Daily</button>
+                        <button className={`tab-button ${activeTab === 'weekly' ? 'active' : ''}`} onClick={() => setActiveTab('weekly')}>Weekly</button>
+                        <button className={`tab-button ${activeTab === 'monthly' ? 'active' : ''}`} onClick={() => setActiveTab('monthly')}>Monthly</button>
+                    </div>
+
+                    {activeTab === 'daily' && (
+                        <>
+                            <div className="form-group" style={{ marginBottom: '16px' }}>
+                                <label>Select Date</label>
+                                <input
+                                    type="date"
+                                    value={selectedDate}
+                                    onChange={e => setSelectedDate(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="grid-2">
+                                <div className="stat-card success">
+                                    <div className="stat-label">Revenue</div>
+                                    <div className="stat-value">${(data.revenue || 0).toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card danger">
+                                    <div className="stat-label">Expenses</div>
+                                    <div className="stat-value">${(data.expenses || 0).toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card info">
+                                    <div className="stat-label">Orders</div>
+                                    <div className="stat-value">{data.orders || 0}</div>
+                                </div>
+                                <div className="stat-card warning">
+                                    <div className="stat-label">Net</div>
+                                    <div className="stat-value">${((data.revenue || 0) - (data.expenses || 0)).toFixed(2)}</div>
+                                </div>
+                            </div>
+
+                            {data.sources && Object.keys(data.sources).length > 0 && (
+                                <div className="card">
+                                    <div className="section-title">Orders by Source</div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Source</th>
+                                                <th>Count</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {Object.entries(data.sources).map(([src, count]) => (
+                                                <tr key={src}>
+                                                    <td><span className={`badge ${src === 'walk-in' ? 'blue' : src === 'call' ? 'green' : 'emerald'}`}>{src}</span></td>
+                                                    <td>{count}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+                            {data.items && data.items.length > 0 && (
+                                <div className="card">
+                                    <div className="section-title">Items Sold</div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Item Name</th>
+                                                <th>Qty</th>
+                                                <th>Revenue</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {data.items.map((item, i) => (
+                                                <tr key={i}>
+                                                    <td>{item.name}</td>
+                                                    <td>{item.qty}</td>
+                                                    <td>${(item.revenue || 0).toFixed(2)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {activeTab === 'weekly' && (
+                        <>
+                            <div className="grid-2">
+                                <div className="stat-card success">
+                                    <div className="stat-label">Revenue</div>
+                                    <div className="stat-value">${(data.revenue || 0).toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card danger">
+                                    <div className="stat-label">Expenses</div>
+                                    <div className="stat-value">${(data.expenses || 0).toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card info">
+                                    <div className="stat-label">Orders</div>
+                                    <div className="stat-value">{data.orders || 0}</div>
+                                </div>
+                                <div className="stat-card warning">
+                                    <div className="stat-label">Net</div>
+                                    <div className="stat-value">${((data.revenue || 0) - (data.expenses || 0)).toFixed(2)}</div>
+                                </div>
+                            </div>
+
+                            {data.daily && data.daily.length > 0 && (
+                                <div className="card">
+                                    <div className="section-title">Day-by-Day</div>
+                                    <div className="table-wrapper">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Orders</th>
+                                                    <th>Revenue</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {data.daily.map((day, i) => (
+                                                    <tr key={i}>
+                                                        <td>{day.date}</td>
+                                                        <td>{day.orders}</td>
+                                                        <td>${(day.revenue || 0).toFixed(2)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {activeTab === 'monthly' && (
+                        <>
+                            <div className="form-group" style={{ marginBottom: '16px' }}>
+                                <label>Select Month</label>
+                                <input
+                                    type="month"
+                                    value={selectedMonth}
+                                    onChange={e => setSelectedMonth(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="grid-2">
+                                <div className="stat-card success">
+                                    <div className="stat-label">Revenue</div>
+                                    <div className="stat-value">${(data.revenue || 0).toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card danger">
+                                    <div className="stat-label">Expenses</div>
+                                    <div className="stat-value">${(data.expenses || 0).toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card info">
+                                    <div className="stat-label">Orders</div>
+                                    <div className="stat-value">{data.orders || 0}</div>
+                                </div>
+                                <div className="stat-card warning">
+                                    <div className="stat-label">Net</div>
+                                    <div className="stat-value">${((data.revenue || 0) - (data.expenses || 0)).toFixed(2)}</div>
+                                </div>
+                            </div>
+
+                            {data.weekly && data.weekly.length > 0 && (
+                                <div className="card">
+                                    <div className="section-title">Week-by-Week</div>
+                                    <div className="table-wrapper">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Week</th>
+                                                    <th>Orders</th>
+                                                    <th>Revenue</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {data.weekly.map((week, i) => (
+                                                    <tr key={i}>
+                                                        <td>{week.week}</td>
+                                                        <td>{week.orders}</td>
+                                                        <td>${(week.revenue || 0).toFixed(2)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {data.expense_categories && data.expense_categories.length > 0 && (
+                                <div className="card">
+                                    <div className="section-title">Expense Categories</div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Category</th>
+                                                <th>Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {data.expense_categories.map((cat, i) => (
+                                                <tr key={i}>
+                                                    <td>{cat.name}</td>
+                                                    <td>${(cat.total || 0).toFixed(2)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </>
+            );
+        }
+
+        function Profits() {
+            const [data, setData] = useState(null);
+            const [orders, setOrders] = useState([]);
+            const [weeklyData, setWeeklyData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            useEffect(() => {
+                fetchProfitsData();
+            }, []);
+
+            const fetchProfitsData = async () => {
+                try {
+                    setLoading(true);
+                    const dashRes = await fetch('/api/dashboard');
+                    if (!dashRes.ok) throw new Error('Failed to load dashboard');
+                    const dashJson = await dashRes.json();
+                    setData(dashJson);
+
+                    const ordersRes = await fetch('/api/orders');
+                    if (!ordersRes.ok) throw new Error('Failed to load orders');
+                    const ordersJson = await ordersRes.json();
+                    setOrders(ordersJson);
+
+                    const weekRes = await fetch('/api/reports/weekly');
+                    if (!weekRes.ok) throw new Error('Failed to load weekly data');
+                    const weekJson = await weekRes.json();
+                    setWeeklyData(weekJson);
+
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                }
+                setLoading(false);
+            };
+
+            if (loading) return <div className="loading">Loading...</div>;
+            if (error) return <div className="error">Error: {error}</div>;
+            if (!data) return <div className="empty-state">No data available</div>;
+
+            const todayMargin = data.today.revenue > 0 ? ((data.today.profit / data.today.revenue) * 100).toFixed(1) : 0;
+
+            return (
+                <>
+                    <div className="grid-1">
+                        <div className="stat-card success">
+                            <div className="stat-label">Today's Profit</div>
+                            <div className="stat-value large">${(data.today.profit || 0).toFixed(2)}</div>
+                            <div className="stat-subtext">{todayMargin}% margin</div>
+                        </div>
+                    </div>
+
+                    <div className="grid-2">
+                        <div className="stat-card warning">
+                            <div className="stat-label">Today's Margin</div>
+                            <div className="stat-value">{todayMargin}%</div>
+                            <div className="stat-subtext">profit percentage</div>
+                        </div>
+                        <div className="stat-card info">
+                            <div className="stat-label">This Week</div>
+                            <div className="stat-value">${(data.week.profit || 0).toFixed(2)}</div>
+                            <div className="stat-subtext">{data.week.orders} orders</div>
+                        </div>
+                    </div>
+
+                    <div className="grid-2">
+                        <div className="stat-card info">
+                            <div className="stat-label">This Month</div>
+                            <div className="stat-value">${(data.month.profit || 0).toFixed(2)}</div>
+                            <div className="stat-subtext">{data.month.orders} orders</div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="section-title">Profit by Order</div>
+                        {orders && orders.length > 0 ? (
+                            <div className="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Order #</th>
+                                            <th>Customer</th>
+                                            <th>Revenue</th>
+                                            <th>Cost</th>
+                                            <th>Profit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {orders.slice(0, 20).map((order, i) => (
+                                            <tr key={i}>
+                                                <td>#{order.order_number}</td>
+                                                <td>{order.customer_name}</td>
+                                                <td>${(order.subtotal || 0).toFixed(2)}</td>
+                                                <td>${((order.total_cost) || 0).toFixed(2)}</td>
+                                                <td>${((order.profit) || 0).toFixed(2)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div className="empty-state">No orders yet</div>
+                        )}
+                    </div>
+
+                    {weeklyData && weeklyData.daily && weeklyData.daily.length > 0 && (
+                        <div className="card">
+                            <div className="section-title">Daily Profit Trend (Last 7 Days)</div>
+                            <div className="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Revenue</th>
+                                            <th>Profit</th>
+                                            <th>Margin</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {weeklyData.daily.map((day, i) => {
+                                            const margin = day.revenue > 0 ? ((day.profit / day.revenue) * 100).toFixed(1) : 0;
+                                            return (
+                                                <tr key={i}>
+                                                    <td>{day.date}</td>
+                                                    <td>${(day.revenue || 0).toFixed(2)}</td>
+                                                    <td>${(day.profit || 0).toFixed(2)}</td>
+                                                    <td>{margin}%</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                </>
+            );
+        }
+
+        function CostAnalysis() {
+            const [data, setData] = useState(null);
+            const [purchases, setPurchases] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            useEffect(() => {
+                fetchCostData();
+                fetchPurchases();
+            }, []);
+
+            const fetchCostData = async () => {
+                try {
+                    setLoading(true);
+                    const res = await fetch('/api/menu/cost-breakdown');
+                    if (!res.ok) throw new Error('Failed to load cost data');
+                    const json = await res.json();
+                    setData(json);
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                }
+                setLoading(false);
+            };
+
+            const fetchPurchases = async () => {
+                try {
+                    const res = await fetch('/api/purchases');
+                    if (!res.ok) throw new Error('Failed to load purchases');
+                    const json = await res.json();
+                    setPurchases(json);
+                } catch (err) {
+                    console.error('Purchases load error:', err);
+                }
+            };
+
+            if (loading) return <div className="loading">Loading...</div>;
+            if (error) return <div className="error">Error: {error}</div>;
+            if (!data) return <div className="empty-state">No data available</div>;
+
+            const menuItems = data.menu_items || [];
+            const avgMargin = menuItems.length > 0 ? (menuItems.reduce((s, i) => s + (i.margin || 0), 0) / menuItems.length).toFixed(1) : 0;
+            const bestItem = menuItems.length > 0 ? menuItems.reduce((prev, curr) => ((curr.margin || 0) > (prev.margin || 0) ? curr : prev), menuItems[0]) : null;
+            const worstItem = menuItems.length > 0 ? menuItems.reduce((prev, curr) => ((curr.margin || 0) < (prev.margin || 0) ? curr : prev), menuItems[0]) : null;
+
+            return (
+                <>
+                    <div className="grid-3">
+                        <div className="stat-card warning">
+                            <div className="stat-label">Average Margin</div>
+                            <div className="stat-value">{avgMargin}%</div>
+                        </div>
+                        <div className="stat-card success">
+                            <div className="stat-label">Best Item</div>
+                            <div className="stat-value" style={{ fontSize: '18px' }}>{bestItem ? bestItem.name : 'N/A'}</div>
+                            <div className="stat-subtext">{bestItem ? (bestItem.margin || 0).toFixed(1) + '% margin' : '-'}</div>
+                        </div>
+                        <div className="stat-card danger">
+                            <div className="stat-label">Worst Item</div>
+                            <div className="stat-value" style={{ fontSize: '18px' }}>{worstItem ? worstItem.name : 'N/A'}</div>
+                            <div className="stat-subtext">{worstItem ? (worstItem.margin || 0).toFixed(1) + '% margin' : '-'}</div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="section-title">Menu Profitability</div>
+                        {menuItems.length > 0 ? (
+                            <div className="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Sell Price</th>
+                                            <th>Cost</th>
+                                            <th>Profit</th>
+                                            <th>Margin</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {menuItems.slice().sort((a, b) => (b.margin || 0) - (a.margin || 0)).map((item, i) => {
+                                            let marginClass = 'margin-poor';
+                                            if ((item.margin || 0) > 60) marginClass = 'margin-good';
+                                            else if ((item.margin || 0) >= 40) marginClass = 'margin-fair';
+
+                                            return (
+                                                <tr key={i}>
+                                                    <td>{item.name}</td>
+                                                    <td>${(item.price || 0).toFixed(2)}</td>
+                                                    <td>${(item.cost || 0).toFixed(2)}</td>
+                                                    <td>${(item.profit || 0).toFixed(2)}</td>
+                                                    <td><span className={marginClass}>{(item.margin || 0).toFixed(1)}%</span></td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div className="empty-state">No menu items</div>
+                        )}
+                    </div>
+
+                    {data.ingredients && Object.keys(data.ingredients).length > 0 && (
+                        <div className="card">
+                            <div className="section-title">Ingredient Prices</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Ingredient</th>
+                                        <th>Per-Unit Cost</th>
+                                        <th>Unit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Object.entries(data.ingredients).map(([name, info]) => (
+                                        <tr key={name}>
+                                            <td>{name}</td>
+                                            <td>${(info.cost || 0).toFixed(2)}</td>
+                                            <td>{info.unit}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+
+                    <div className="card">
+                        <div className="section-title">Purchase Summary</div>
+                        {purchases.length > 0 ? (
+                            purchases.map(category => (
+                                category.items && category.items.length > 0 && (
+                                    <div key={category.id}>
+                                        <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '8px', color: 'var(--text-secondary)' }}>
+                                            {category.emoji} {category.name}
+                                        </div>
+                                        {category.items.map(item => {
+                                            const perUnit = ((item.price || 0) / (item.quantity || 1)).toFixed(2);
+                                            return (
+                                                <div key={item.id} style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: '8px', marginBottom: '8px' }}>
+                                                    <div style={{ fontWeight: '600', marginBottom: '4px' }}>{item.name}</div>
+                                                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                                                        {item.quantity} {item.unit} @ ${perUnit}/{item.unit} = ${(item.price || 0).toFixed(2)}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )
+                            ))
+                        ) : (
+                            <div className="empty-state">No purchases recorded</div>
+                        )}
+                    </div>
+                </>
+            );
+        }
+
+        function Settings() {
+            const [settings, setSettings] = useState({
+                business_name: '',
+                phone: '',
+                address: '',
+                currency: '$'
+            });
+            const [networkInfo, setNetworkInfo] = useState(null);
+            const [menu, setMenu] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [expandedCategories, setExpandedCategories] = useState({});
+            const [showCategoryModal, setShowCategoryModal] = useState(false);
+            const [showItemModal, setShowItemModal] = useState(false);
+            const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+            const [newCategoryName, setNewCategoryName] = useState('');
+            const [itemForm, setItemForm] = useState({
+                name: '',
+                price: '',
+                cost: ''
+            });
+
+            useEffect(() => {
+                fetchSettings();
+                fetchNetwork();
+                fetchMenu();
+            }, []);
+
+            const fetchSettings = async () => {
+                try {
+                    setLoading(true);
+                    const res = await fetch('/api/settings');
+                    if (!res.ok) throw new Error('Failed to load settings');
+                    const json = await res.json();
+                    setSettings(json);
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                }
+                setLoading(false);
+            };
+
+            const fetchNetwork = async () => {
+                try {
+                    const res = await fetch('/api/network-info');
+                    if (!res.ok) throw new Error('Failed to load network info');
+                    const json = await res.json();
+                    setNetworkInfo(json);
+                } catch (err) {
+                    console.error('Network info error:', err);
+                }
+            };
+
+            const fetchMenu = async () => {
+                try {
+                    const res = await fetch('/api/menu');
+                    if (!res.ok) throw new Error('Failed to load menu');
+                    const json = await res.json();
+                    setMenu(json);
+                } catch (err) {
+                    console.error('Menu load error:', err);
+                }
+            };
+
+            const saveSettings = async () => {
+                try {
+                    const res = await fetch('/api/settings', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(settings)
+                    });
+                    if (!res.ok) throw new Error('Failed to save settings');
+                    alert('Settings saved!');
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            const toggleCategory = (catId) => {
+                setExpandedCategories({
+                    ...expandedCategories,
+                    [catId]: !expandedCategories[catId]
+                });
+            };
+
+            const openItemModal = (catId) => {
+                setSelectedCategoryId(catId);
+                setItemForm({ name: '', price: '', cost: '' });
+                setShowItemModal(true);
+            };
+
+            const submitItem = async () => {
+                if (!itemForm.name || !itemForm.price) {
+                    alert('Please fill all required fields');
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/api/menu/items', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            category_id: selectedCategoryId,
+                            name: itemForm.name,
+                            price: parseFloat(itemForm.price),
+                            cost: parseFloat(itemForm.cost || 0)
+                        })
+                    });
+
+                    if (!res.ok) throw new Error('Failed to add item');
+                    setShowItemModal(false);
+                    fetchMenu();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            const deleteItem = async (itemId) => {
+                if (!confirm('Delete this item?')) return;
+                try {
+                    const res = await fetch(`/api/menu/items/${itemId}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Failed to delete');
+                    fetchMenu();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            const submitCategory = async () => {
+                if (!newCategoryName.trim()) {
+                    alert('Please enter category name');
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/api/menu/categories', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: newCategoryName })
+                    });
+
+                    if (!res.ok) throw new Error('Failed to add category');
+                    setShowCategoryModal(false);
+                    setNewCategoryName('');
+                    fetchMenu();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            const deleteCategory = async (catId) => {
+                if (!confirm('Delete this category and all its items?')) return;
+                try {
+                    const res = await fetch(`/api/menu/categories/${catId}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Failed to delete');
+                    fetchMenu();
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+
+            if (loading) return <div className="loading">Loading...</div>;
+
+            return (
+                <>
+                    <div className="card">
+                        <div className="section-title">Business Information</div>
+                        <div className="form-group">
+                            <label>Business Name</label>
+                            <input
+                                type="text"
+                                value={settings.business_name}
+                                onChange={e => setSettings({ ...settings, business_name: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Phone</label>
+                            <input
+                                type="tel"
+                                value={settings.phone}
+                                onChange={e => setSettings({ ...settings, phone: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Address</label>
+                            <input
+                                type="text"
+                                value={settings.address}
+                                onChange={e => setSettings({ ...settings, address: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Currency Symbol</label>
+                            <input
+                                type="text"
+                                value={settings.currency}
+                                onChange={e => setSettings({ ...settings, currency: e.target.value })}
+                                maxLength="3"
+                            />
+                        </div>
+                        <button onClick={saveSettings} style={{ width: '100%' }}>Save Settings</button>
+                    </div>
+
+                    {networkInfo && (
+                        <div className="wifi-panel">
+                            <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>📱 Connect Your Phone</div>
+                            <div className="wifi-url">
+                                {networkInfo.url}
+                            </div>
+                            <div className="wifi-instructions">
+                                Open this URL on your phone (same WiFi) and tap "Add to Home Screen" for quick access.
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="card">
+                        <div className="section-title">Menu Management</div>
+                        <button onClick={() => setShowCategoryModal(true)} style={{ width: '100%', marginBottom: '16px' }}>+ Add Category</button>
+
+                        {menu.length === 0 ? (
+                            <div className="empty-state">No categories yet</div>
+                        ) : (
+                            menu.map(category => (
+                                <div key={category.id}>
+                                    <button
+                                        className="category-header"
+                                        onClick={() => toggleCategory(category.id)}
+                                    >
+                                        <span>{category.name} ({category.items?.length || 0} items)</span>
+                                        <span>{expandedCategories[category.id] ? '▼' : '▶'}</span>
+                                    </button>
+
+                                    {expandedCategories[category.id] && (
+                                        <div className="category-items">
+                                            {category.items && category.items.length > 0 ? (
+                                                category.items.map(item => (
+                                                    <div key={item.id} className="category-item">
+                                                        <div className="category-item-info">
+                                                            <div className="category-item-name">{item.name}</div>
+                                                            <div className="category-item-details">
+                                                                ${(item.price || 0).toFixed(2)} (cost: ${(item.cost || 0).toFixed(2)})
+                                                            </div>
+                                                        </div>
+                                                        <button className="danger" onClick={() => deleteItem(item.id)} style={{ minHeight: 'auto', padding: '8px 12px', fontSize: '14px' }}>🗑️</button>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="empty-state" style={{ padding: '20px' }}>No items</div>
+                                            )}
+
+                                            <button className="secondary add-button" onClick={() => openItemModal(category.id)}>+ Add Item</button>
+                                            <button className="danger add-button" onClick={() => deleteCategory(category.id)}>Delete Category</button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {showCategoryModal && (
+                        <div className="modal-overlay" onClick={() => setShowCategoryModal(false)}>
+                            <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <span>Add Category</span>
+                                    <button className="modal-close" onClick={() => setShowCategoryModal(false)}>×</button>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Category Name</label>
+                                    <input
+                                        type="text"
+                                        value={newCategoryName}
+                                        onChange={e => setNewCategoryName(e.target.value)}
+                                        placeholder="e.g., Main Dishes"
+                                    />
+                                </div>
+
+                                <div className="action-buttons">
+                                    <button className="secondary" onClick={() => setShowCategoryModal(false)}>Cancel</button>
+                                    <button onClick={submitCategory}>Add Category</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showItemModal && (
+                        <div className="modal-overlay" onClick={() => setShowItemModal(false)}>
+                            <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <span>Add Menu Item</span>
+                                    <button className="modal-close" onClick={() => setShowItemModal(false)}>×</button>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Item Name</label>
+                                    <input
+                                        type="text"
+                                        value={itemForm.name}
+                                        onChange={e => setItemForm({ ...itemForm, name: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Selling Price</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={itemForm.price}
+                                        onChange={e => setItemForm({ ...itemForm, price: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Cost Price</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={itemForm.cost}
+                                        onChange={e => setItemForm({ ...itemForm, cost: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="action-buttons">
+                                    <button className="secondary" onClick={() => setShowItemModal(false)}>Cancel</button>
+                                    <button onClick={submitItem}>Add Item</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
+{% endraw %}
