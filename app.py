@@ -8,6 +8,7 @@ import os
 import socket
 from flask import Flask, render_template, request, jsonify
 
+from routes.whatsapp import whatsapp_bp
 from database import (
     init_db,
     get_dashboard_stats,
@@ -28,6 +29,7 @@ from database import (
 
 
 app = Flask(__name__, template_folder='.', static_folder='.')
+app.register_blueprint(whatsapp_bp)
 
 
 @app.after_request

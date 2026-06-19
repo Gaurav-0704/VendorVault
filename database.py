@@ -18,6 +18,17 @@ DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'vendorvault.
 # Database Connection and Context Management
 # ============================================================================
 
+def get_db():
+    """Return a bare sqlite3 connection (caller must commit/close).
+    Prefer the _connect() context manager for new code; this exists for
+    routes that need to hold a connection open across multiple statements."""
+    conn = sqlite3.connect(DB_PATH, timeout=10)
+    conn.row_factory = sqlite3.Row
+    conn.execute('PRAGMA journal_mode=WAL')
+    conn.execute('PRAGMA foreign_keys = ON')
+    return conn
+
+
 @contextmanager
 def _connect():
     """Establish a database connection with WAL mode and foreign keys enabled."""
@@ -164,6 +175,30 @@ def init_db():
                 week_end      TEXT NOT NULL,
                 starting_cash REAL NOT NULL DEFAULT 400,
                 created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # WhatsApp integration config
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS whatsapp_config (
+                id                  INTEGER PRIMARY KEY,
+                phone_number_id     TEXT,
+                business_account_id TEXT,
+                access_token        TEXT,
+                verify_token        TEXT,
+                enabled             INTEGER DEFAULT 0
+            )
+        ''')
+
+        # Incoming WhatsApp messages with parsed order JSON
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS whatsapp_messages (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                sender       TEXT,
+                message      TEXT,
+                parsed_order TEXT,
+                status       TEXT DEFAULT 'received',
+                created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
 
