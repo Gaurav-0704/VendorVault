@@ -7,7 +7,12 @@
       "Bash(python -m pytest tests/test_order_parser.py -v)",
       "Bash(cd /d D:\\\\Projects\\\\VendorVault)",
       "Bash(Get-ChildItem -Force -Recurse -ErrorAction SilentlyContinue)",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(gh api *)",
+      "PowerShell(gh api repos/Gaurav-0704/VendorVault/commits?per_page=10 --jq '.[].sha + \" \" + .[].commit.message' 2>&1)",
+      "PowerShell($resp = Invoke-RestMethod -Uri \"https://api.github.com/repos/Gaurav-0704/VendorVault/commits?per_page=10\"; $resp | ForEach-Object { $_.sha.Substring\\(0,10\\) + \" \" + $_.commit.message.Split\\(\"`n\"\\)[0] })",
+      "PowerShell($resp = Invoke-RestMethod -Uri \"https://api.github.com/repos/Gaurav-0704/VendorVault/contents/routes/whatsapp.py\"; [System.Text.Encoding]::UTF8.GetString\\([System.Convert]::FromBase64String\\($resp.content\\)\\))",
+      "PowerShell($resp = Invoke-RestMethod -Uri \"https://api.github.com/repos/Gaurav-0704/VendorVault/contents/services/order_parser.py\"; $content = [System.Text.Encoding]::UTF8.GetString\\([System.Convert]::FromBase64String\\($resp.content\\)\\); Write-Host \"Lines:\" \\($content -split \"`n\"\\).Count; $content.Substring\\(0,300\\))"
     ]
   }
 }
