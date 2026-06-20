@@ -4,7 +4,10 @@
       "Bash(git init *)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(python -m pytest tests/test_order_parser.py -v)"
+      "Bash(python -m pytest tests/test_order_parser.py -v)",
+      "Bash(cd /d D:\\\\Projects\\\\VendorVault)",
+      "Bash(Get-ChildItem -Force -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -ExpandProperty FullName)"
     ]
   }
 }
