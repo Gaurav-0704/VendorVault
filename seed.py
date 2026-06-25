@@ -1,5 +1,4 @@
-# VendorVault - Restaurant Management System
-# Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
+# Gaurav Singh Thakur — MIT License
 #
 # Run this once to load menu items and purchase categories.
 # Usage: python seed.py

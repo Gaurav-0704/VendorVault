@@ -11,6 +11,11 @@ __pycache__/
 # Environment
 .env
 venv/
+.venv/
+
+# Video files (large, not part of the app)
+vedio clip/
+*.mp4
 
 # OS
 .DS_Store

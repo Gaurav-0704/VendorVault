@@ -1,0 +1,21 @@
+# Gaurav Singh Thakur — MIT License
+#
+# Run the full app locally with: docker compose up
+# Data is stored in a named volume so it survives container restarts.
+
+services:
+  web:
+    build: .
+    ports:
+      - "${PORT:-5000}:${PORT:-5000}"
+    environment:
+      - PORT=${PORT:-5000}
+      - DEBUG=${DEBUG:-false}
+      - WHATSAPP_VERIFY_TOKEN=${WHATSAPP_VERIFY_TOKEN:-}
+      - WHATSAPP_ACCESS_TOKEN=${WHATSAPP_ACCESS_TOKEN:-}
+    volumes:
+      - vendorvault_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  vendorvault_data:

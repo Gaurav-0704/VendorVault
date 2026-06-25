@@ -1,7 +1,6 @@
-# VendorVault - Restaurant Management System
-# Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
+# Gaurav Singh Thakur — MIT License
 #
-# One-time script to pre-load initial purchase data.
+# One-time script to pre-load initial purchase data for testing.
 # Usage: python seed_purchases.py
 
 from database import (
