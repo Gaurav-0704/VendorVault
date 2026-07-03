@@ -73,14 +73,14 @@ Database     SQLite with WAL mode and foreign keys
 Auth         Signed-session owner login (werkzeug), env-based credentials
 AI           Anthropic SDK — Haiku for real-time, Sonnet for analysis (optional)
 Parser       Pure stdlib (re + difflib), no external NLP service
-Deploy       Docker + gunicorn, Railway-ready, persistent volume for the DB
+Deploy       Docker, Railway-ready, persistent volume for the DB
 Tests        pytest (parser) + scripted API/auth/AI smoke tests
 ```
 
 **Project layout:**
 ```
 app.py                  Entry point — routes, auth guard, blueprint registration
-start.py                Production start script (seed then gunicorn)
+start.py                Production start script (seed then run the server)
 database.py             Compatibility shim — re-exports from db/
 db/                     Database logic split by concern
 routes/
@@ -193,7 +193,7 @@ A fresh, empty database directory serves all 15 GET endpoints plus the parser wi
 
 ## Deployment
 
-VendorVault ships with a `Dockerfile` and `railway.toml`. The container seeds the database, then runs gunicorn. Point `DB_DIR` at a mounted volume so data survives redeploys, set `APP_PASSWORD` / `APP_SECRET_KEY`, and the health check at `/health` confirms the app is live.
+VendorVault ships with a `Dockerfile` and `railway.toml`. On a fresh Railway project, connect the GitHub repo — Railway detects the Dockerfile and runs `python start.py`, which seeds the database and starts the server. Point `DB_DIR` at a mounted volume so data survives redeploys, set `APP_PASSWORD` / `APP_SECRET_KEY`, and the health check at `/health` confirms the app is live. **Don't set a custom start command in Railway** — let it use the Dockerfile's `CMD`.
 
 ---
 

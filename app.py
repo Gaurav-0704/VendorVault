@@ -35,9 +35,9 @@ app.register_blueprint(whatsapp_bp)
 app.register_blueprint(ai_bp)
 
 # Safety net: make sure the tables exist as soon as the app is imported.
-# Under gunicorn the __main__ block below never runs, so without this a fresh
-# container could 500 on the health check before anything gets a chance to seed.
-# init_db() is idempotent (CREATE TABLE IF NOT EXISTS), so calling it here is cheap.
+# In a fresh deploy the container might import the app before seeding runs, so
+# without this the first request could 500. init_db() is idempotent
+# (CREATE TABLE IF NOT EXISTS), so calling it here is cheap and safe.
 try:
     init_db()
 except Exception as _e:

@@ -2,10 +2,9 @@
 #
 # Production/deploy entry point for Railway and Docker.
 #
-# I run Flask's own server here on purpose. gunicorn is UNIX-only, which means
-# I can't reproduce its behaviour on my Windows machine — and every failed
-# Railway deploy was on that one untested path. Flask's server I can test end
-# to end locally, so this is the reliable choice for a single-kitchen prototype.
+# I run Flask's own threaded server here. It's simple, it reads PORT directly,
+# and it's the same code path I test locally — which is exactly what I want for
+# a single-kitchen prototype.
 #
 # The one rule: never exit before the server is listening. A seeding hiccup
 # must not take the whole app down (the app also creates its schema at import).
