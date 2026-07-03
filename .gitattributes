@@ -1,0 +1,5 @@
+# Force LF line endings for files that run on Linux
+*.sh text eol=lf
+Makefile text eol=lf
+Procfile text eol=lf
+startup.sh text eol=lf

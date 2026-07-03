@@ -2,10 +2,7 @@
 builder = "dockerfile"
 
 [deploy]
+startCommand = "DB_DIR=/app/data python seed.py && gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 --access-logfile - --error-logfile - app:app"
 healthcheckPath = "/api/dashboard"
 healthcheckTimeout = 60
 restartPolicyType = "on_failure"
-
-[[deploy.envVars]]
-name = "DB_DIR"
-value = "/app/data"
