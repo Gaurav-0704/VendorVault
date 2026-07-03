@@ -11,6 +11,11 @@ __pycache__/
 # Environment
 .env
 venv/
+.venv/
+
+# Video files (large, not part of the app)
+vedio clip/
+*.mp4
 
 # OS
 .DS_Store
@@ -19,8 +24,11 @@ venv/
 *~
 Thumbs.db
 
-# Data directory (contains only the sqlite db)
-data/
+# Data directory — used by Docker/Railway for persistent SQLite storage
+# The db file inside is gitignored; the directory itself is tracked so Docker can mount it
+data/*.db
+data/*.db-wal
+data/*.db-shm
 
 # Reference docs (not part of the app)
 VendorVault_Complete_Reference.md

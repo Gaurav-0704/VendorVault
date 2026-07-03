@@ -7,7 +7,10 @@ import os
 from contextlib import contextmanager
 from datetime import datetime
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'vendorvault.db')
+# In Railway/Docker I store the db in /app/data so a mounted volume persists it.
+# Locally it sits next to app.py as before.
+_DATA_DIR = os.environ.get('DB_DIR', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DB_PATH = os.path.join(_DATA_DIR, 'vendorvault.db')
 
 
 def _local_now():

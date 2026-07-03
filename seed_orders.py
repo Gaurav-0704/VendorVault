@@ -1,7 +1,6 @@
-# VendorVault - Restaurant Management System
-# Copyright (c) 2026 Gaurav Singh Thakur. All rights reserved.
+# Gaurav Singh Thakur — MIT License
 #
-# One-time script to add historical orders.
+# One-time script to add historical orders for testing.
 # Usage: python seed_orders.py
 
 from database import (

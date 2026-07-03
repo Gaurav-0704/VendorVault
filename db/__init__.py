@@ -1,3 +1,4 @@
+# Gaurav Singh Thakur — MIT License
 from db.connection import get_db, DB_PATH
 from db.schema import init_db
 from db.settings import get_all_settings, set_setting

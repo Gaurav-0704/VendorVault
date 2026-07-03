@@ -1,0 +1,11 @@
+[build]
+builder = "dockerfile"
+
+[deploy]
+healthcheckPath = "/api/dashboard"
+healthcheckTimeout = 60
+restartPolicyType = "on_failure"
+
+[[deploy.envVars]]
+name = "DB_DIR"
+value = "/app/data"
