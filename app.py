@@ -31,6 +31,15 @@ from database import (
 app = Flask(__name__, template_folder='.', static_folder='.')
 app.register_blueprint(whatsapp_bp)
 
+# Safety net: make sure the tables exist as soon as the app is imported.
+# Under gunicorn the __main__ block below never runs, so without this a fresh
+# container could 500 on the health check before anything gets a chance to seed.
+# init_db() is idempotent (CREATE TABLE IF NOT EXISTS), so calling it here is cheap.
+try:
+    init_db()
+except Exception as _e:
+    print(f'init_db() at import failed (will retry on first request): {_e}')
+
 
 @app.after_request
 def prevent_caching(response):
