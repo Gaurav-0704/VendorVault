@@ -1,66 +1,66 @@
 # VendorVault
 
-I built VendorVault for the way a real cloud kitchen actually runs: orders coming in over WhatsApp, cash moving in and out through the day, and a constant question at the back of my mind — *am I actually making money on this?*
+I built VendorVault for the way a real cloud kitchen actually runs: orders coming in over WhatsApp, cash moving in and out through the day, and one question always at the back of my mind — *am I actually making money on this?*
 
-Most restaurant software answers "how much did I sell?". VendorVault answers "how much did I sell, what did it cost me, and how much cash should be in the drawer right now?" It's designed around real-time cloud kitchen operations — WhatsApp-first ordering, purchase-driven costing, and a weekly cash cycle.
-
-It runs on a laptop, opens on a phone over WiFi during service, and now deploys to the cloud with owner login and optional AI insights.
+Most restaurant software tells you how much you sold. VendorVault tells you how much you sold, what it cost, and how much cash should be in the drawer right now. It runs on a laptop, opens on a phone over WiFi during service, and deploys to the cloud with a private owner login.
 
 ---
 
-## What Makes VendorVault Different
+## What Makes It Different
 
-This is the part that matters. On the surface it looks like any other restaurant dashboard. It isn't.
-
-### 1. WhatsApp-Native Order Processing
-Every other system expects orders through a POS terminal or a dedicated app. My customers text me on WhatsApp in mixed language with typos — *"bhai 2 veg noddles n 1 chiken 65 for Rahul"*. VendorVault reads that message and turns it into a structured order: customer name, items, quantities — automatically.
+### WhatsApp-Native Orders
+Customers text their orders in plain language, typos and all — *"bhai 2 veg noddles n 1 chiken 65 for Rahul"*. VendorVault reads the message and turns it into a clean order with the customer, items, and quantities.
 
 ```
 Input:  "plz send 3 chiken 65 n 2 veg noddles from Rahul"
 Output: customer = Rahul, items = [Chicken 65 ×3, Veg Noodles ×2]
 ```
 
-It handles typos, informal separators ("n", "and", "+"), word quantities ("two", "three"), and greeting noise ("hi", "please", "bhai") — all with Python's standard library, no external ML service.
+It handles typos, informal separators ("n", "and", "+"), word quantities ("two", "three"), and greeting noise ("hi", "please", "bhai").
 
-### 2. Purchase-First Costing
-Most systems track sales and guess at cost. VendorVault tracks every vendor purchase — chicken, eggs, oil, packaging — with real quantities and prices. So when it shows a menu item's profit, that number is grounded in what I actually paid, not an estimate.
+### Purchase-First Costing
+Every vendor purchase — chicken, eggs, oil, packaging — is logged with real quantities and prices. So a menu item's profit is based on what you actually paid, not an estimate.
 
-### 3. Live Cash-in-Hand
-One number tells me exactly how much cash should be in the drawer at any moment:
+### Live Cash-in-Hand
+One number shows exactly how much cash should be in the drawer at any moment:
 
 ```
 Cash = Starting Balance + Order Revenue − Purchases − Payouts
 ```
 
-Every order adds to it, every purchase and payout subtracts. If the physical count drifts, I correct it in one tap and the system rebalances.
+Orders add to it, purchases and payouts subtract. If the physical count drifts, you correct it in one tap and the system rebalances.
 
-### 4. Weekly Cash Cycle
-A cloud kitchen's week isn't Monday–Sunday. Mine runs Thursday to Sunday. On Monday I count the drawer, pull the excess over my float, and bank it. VendorVault models this cycle day by day — running total, expected pullout, next week's starting float.
+### Weekly Cash Cycle
+A cloud kitchen's week isn't Monday–Sunday. Mine runs Thursday to Sunday. On Monday you count the drawer, pull the excess over your float, and bank it. VendorVault tracks the cycle day by day — running total, expected pullout, next week's starting float.
 
-### 5. Inventory That Updates Itself
-Stock goes up when I log a purchase, down when an order is placed. No separate inventory screen to maintain — it falls out of what I've bought and sold.
+### Inventory That Updates Itself
+Stock rises when you log a purchase and falls when an order is placed. There's no separate inventory screen to maintain — it follows from what you've bought and sold.
 
-### 6. Optional AI, On Your Own Key
-Add your own Anthropic API key and VendorVault turns on a weekly business digest, smart reorder alerts, and auto-written WhatsApp order confirmations. No key? Everything else works exactly the same. You're never paying for AI you didn't ask for.
+### Optional AI Insights
+Add your own Anthropic API key to turn on a weekly business digest, smart reorder alerts, and auto-written WhatsApp order confirmations. Without a key, everything else works exactly the same.
 
 ---
 
-## Features
+## The Interface
 
-| Module | What it does |
-|--------|--------------|
-| **Dashboard** | Today / week / month revenue, profit margin, recent orders |
-| **Orders** | Tap-to-order menu grid, mobile-friendly, supports backdating |
-| **WhatsApp** | Parses free-text messages into structured orders |
-| **Purchases** | Log vendor purchases by category, with a bulk-entry mode |
-| **Finance** | Live cash-in-hand, weekly cycle, end-of-day report |
-| **Stock** | Auto-updated inventory levels per category |
+VendorVault is a single, fast dashboard — dark theme, sidebar navigation on desktop, a tap-friendly layout on mobile. Each section is one focused screen.
+
+| Screen | What you do there |
+|--------|-------------------|
+| **Dashboard** | See today / week / month revenue, profit margin, and recent orders at a glance |
+| **Orders** | Tap items off the menu grid to place an order; supports backdating |
+| **WhatsApp** | Free-text messages parsed into structured orders |
+| **Purchases** | Log vendor purchases by category, with a bulk-entry mode for restock days |
+| **Finance** | Live cash-in-hand, the weekly cycle, and an end-of-day report |
+| **Stock** | Current inventory levels per category, updated automatically |
 | **Payouts** | Staff wages and expenses, deducted from cash |
-| **Reports** | Daily / weekly / monthly revenue, cost, profit |
-| **Profits** | Margin per menu item, revenue vs cost |
+| **Reports** | Daily, weekly, and monthly revenue, cost, and profit |
+| **Profits** | Margin per menu item and revenue against cost |
 | **Cost Analysis** | Spend grouped by purchase category |
-| **AI Insights** | Weekly digest, reorder alerts (needs your API key) |
-| **Settings** | Business info, currency, API key, account |
+| **AI Insights** | Weekly digest and reorder suggestions |
+| **Settings** | Business details, currency, API key, and account |
+
+Every screen works the same on a phone — the sidebar collapses to a menu, cards stack into a single column, and buttons stay large enough to tap during service.
 
 ---
 
@@ -70,37 +70,31 @@ Add your own Anthropic API key and VendorVault turns on a weekly business digest
 Frontend     Single-page React (index.html) — no build step, no node_modules
 Backend      Flask, Python 3.9+, one blueprint per feature
 Database     SQLite with WAL mode and foreign keys
-Auth         Signed-session owner login (werkzeug), env-based credentials
+Auth         Signed-session owner login, credentials from env
+Parser       Python standard library (re + difflib)
 AI           Anthropic SDK — Haiku for real-time, Sonnet for analysis (optional)
-Parser       Pure stdlib (re + difflib), no external NLP service
-Deploy       Docker, Railway-ready, persistent volume for the DB
-Tests        pytest (parser) + scripted API/auth/AI smoke tests
+Deploy       Docker, Railway-ready
 ```
 
-**Project layout:**
 ```
-app.py                  Entry point — routes, auth guard, blueprint registration
-start.py                Production start script (seed then run the server)
-database.py             Compatibility shim — re-exports from db/
-db/                     Database logic split by concern
-routes/
-  whatsapp.py             WhatsApp webhook + parse endpoints
-  ai.py                   AI feature endpoints (gated on API key)
+app.py                  Entry point — routes, auth, blueprint registration
+start.py                Seeds the database, then starts the server
+db/                     Database logic, split by concern
+routes/                 One blueprint per feature (whatsapp, ai, …)
 services/
-  order_parser.py         Free-text → ParsedOrder dataclass
-  ai.py                   Claude-powered digest / reorder / confirmation
-tests/
-  test_order_parser.py    21 parser tests
-index.html              Full React frontend
-Dockerfile              Container build for Railway / Docker
-railway.toml            Railway deploy config (health check, restart policy)
+  order_parser.py         Free-text → structured order
+  ai.py                   Digest, reorder, and confirmation helpers
+tests/                  Parser test suite
+index.html              The full frontend
+Dockerfile              Container build
+railway.toml            Railway deploy config
 ```
 
 ---
 
 ## Installation
 
-**Requirements:** Python 3.9+ and pip. Nothing else for local use.
+**Requirements:** Python 3.9+ and pip.
 
 ```bash
 git clone https://github.com/Gaurav-0704/VendorVault.git
@@ -108,12 +102,10 @@ cd VendorVault
 
 pip install -r requirements.txt
 python seed.py        # run once — creates and seeds the database
-python app.py         # starts the server on http://localhost:5000
+python app.py         # http://localhost:5000
 ```
 
-Default login is `owner` / `vendorvault` — change it with env vars before deploying anywhere public.
-
-To reach it from your phone on the same WiFi, open **Settings → Network Access** in the app for the exact URL.
+Default login is `owner` / `vendorvault`. Change it with env vars before deploying anywhere public. To open it on your phone over the same WiFi, use **Settings → Network Access** for the exact URL.
 
 ### Environment Variables
 
@@ -122,78 +114,33 @@ Copy `.env.example` to `.env`. Everything has a sensible default for local use.
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `PORT` | `5000` | Server port |
-| `DEBUG` | `false` | Dev mode (auto-reload, detailed errors) |
-| `DB_DIR` | project root | Where the SQLite file lives — point at a mounted volume in the cloud |
-| `APP_USERNAME` | `owner` | Owner login username |
-| `APP_PASSWORD` | `vendorvault` | Owner login password — **change this** |
-| `APP_SECRET_KEY` | dev default | Signs the session cookie — set a long random string in production |
+| `DEBUG` | `false` | Dev mode |
+| `DB_DIR` | project root | Where the database file lives — point at a mounted volume in the cloud |
+| `APP_USERNAME` | `owner` | Login username |
+| `APP_PASSWORD` | `vendorvault` | Login password — change this |
+| `APP_SECRET_KEY` | dev default | Signs the session cookie — set a random string in production |
 | `WHATSAPP_VERIFY_TOKEN` | — | Meta webhook verification |
 | `WHATSAPP_ACCESS_TOKEN` | — | Meta API access |
-| `AI_MODEL_FAST` | `claude-haiku-4-5-20251001` | Model for real-time AI (reorder, confirmations) |
-| `AI_MODEL_SMART` | `claude-sonnet-5` | Model for analysis (weekly digest) |
+| `AI_MODEL_FAST` | `claude-haiku-4-5-20251001` | Model for real-time AI |
+| `AI_MODEL_SMART` | `claude-sonnet-5` | Model for analysis |
 
-The Anthropic API key isn't an env var — the owner adds it in **Settings → AI API Key**, so it's stored per-install and never committed.
+The Anthropic API key isn't an env var — you add it in **Settings → AI API Key**, so it stays per-install and is never committed.
 
 ---
 
-## Running Tests
+## Tests
 
 ```bash
-python -m pytest tests/ -v
+python -m pytest tests/
 ```
 
-```
-21 passed
-```
-
-The parser suite covers clean input, typos (`noddles`→Noodles, `chiken`→Chicken), mixed separators, word quantities, customer-name extraction, greeting noise, and edge cases like empty strings.
-
----
-
-## Evaluation
-
-Verified behavior, not just claims. Each area below was smoke-tested against a running server.
-
-### Core app — all endpoints healthy
-A fresh, empty database directory serves all 15 GET endpoints plus the parser with HTTP 200 — the app self-heals its schema on startup, so a clean cloud container never fails its health check.
-
-### Parser accuracy
-| Input | Result |
-|-------|--------|
-| `2 veg noddles` | Veg Noodles ×2 ✓ |
-| `3 chiken 65` | Chicken 65 ×3 ✓ |
-| `two egg fried rice` | Egg Fried Rice ×2 ✓ |
-| `2 veg noodles n 1 egg rice` | 2 items ✓ |
-| `plz send 3 chiken 65 n 2 veg noddles from Rahul` | customer = Rahul, 2 items ✓ |
-| `2 unicorn soup` | unrecognized (not a false match) ✓ |
-
-### Authentication
-| Check | Result |
-|-------|--------|
-| `/health` reachable when logged out | 200 ✓ |
-| `/api/*` blocked when logged out | 401 ✓ |
-| Wrong password rejected | 401 ✓ |
-| Login → access → logout → blocked again | ✓ |
-
-### AI layer (optional)
-| Check | Result |
-|-------|--------|
-| Status reports disabled with no key | ✓ |
-| Feature endpoints return a clean "add your key" response, no crash | ✓ |
-| Key set → status flips to enabled | ✓ |
-| API key never exposed in `/api/settings` (masked) | ✓ |
-| Key delete → AI switches off, rest of app unaffected | ✓ |
-
-### Known limitations
-- **SQLite** is single-writer — perfect for one kitchen on one instance. A multi-location or multi-staff rollout would move to PostgreSQL; the data layer is isolated in `db/` for exactly that migration.
-- **WhatsApp webhook** needs a public URL (a cloud deploy, or ngrok for local testing).
-- **Auth** is a single owner account by design — not multi-user RBAC.
+The parser suite covers clean input, typos (`noddles`→Noodles, `chiken`→Chicken), mixed separators, word quantities, customer-name extraction, greeting noise, and edge cases. A full end-to-end check lives in `scripts/smoke_test.py`.
 
 ---
 
 ## Deployment
 
-VendorVault ships with a `Dockerfile` and `railway.toml`. On a fresh Railway project, connect the GitHub repo — Railway detects the Dockerfile and runs `python start.py`, which seeds the database and starts the server. Point `DB_DIR` at a mounted volume so data survives redeploys, set `APP_PASSWORD` / `APP_SECRET_KEY`, and the health check at `/health` confirms the app is live. **Don't set a custom start command in Railway** — let it use the Dockerfile's `CMD`.
+VendorVault ships with a `Dockerfile` and `railway.toml`. On Railway, connect the GitHub repo and it builds and runs on its own. Set `APP_PASSWORD` and `APP_SECRET_KEY`, and mount a volume at `/app/data` with `DB_DIR=/app/data` so data survives redeploys. The health check at `/health` confirms the app is live.
 
 ---
 
