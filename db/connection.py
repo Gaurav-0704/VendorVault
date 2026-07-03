@@ -7,9 +7,10 @@ import os
 from contextlib import contextmanager
 from datetime import datetime
 
-# In Railway/Docker I store the db in /app/data so a mounted volume persists it.
-# Locally it sits next to app.py as before.
+# In Railway/Docker the DB lives in /app/data (set via ENV DB_DIR in Dockerfile).
+# Locally it sits next to app.py. Either way, we make sure the directory exists first.
 _DATA_DIR = os.environ.get('DB_DIR', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.makedirs(_DATA_DIR, exist_ok=True)
 DB_PATH = os.path.join(_DATA_DIR, 'vendorvault.db')
 
 
