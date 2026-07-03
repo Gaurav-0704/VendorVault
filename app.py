@@ -6,7 +6,8 @@
 
 import os
 import socket
-from flask import Flask, render_template, request, jsonify
+import hmac
+from flask import Flask, render_template, request, jsonify, session, redirect, Response
 
 from routes.whatsapp import whatsapp_bp
 from database import (
@@ -39,6 +40,112 @@ try:
     init_db()
 except Exception as _e:
     print(f'init_db() at import failed (will retry on first request): {_e}')
+
+
+# ============================================================================
+# Authentication
+# ============================================================================
+# Single owner login. I keep it deliberately simple — one account, a signed
+# session cookie, no database user table. Credentials come from env vars so
+# nothing sensitive lives in the repo.
+
+app.secret_key = os.environ.get('APP_SECRET_KEY', 'dev-secret-change-me-in-production')
+OWNER_USERNAME = os.environ.get('APP_USERNAME', 'owner')
+OWNER_PASSWORD = os.environ.get('APP_PASSWORD', 'vendorvault')
+
+# Paths that don't need a login: the health check (Railway pings this),
+# the login/logout routes themselves, the PWA manifest, and static assets.
+_PUBLIC_EXACT = {'/health', '/login', '/logout', '/manifest.json', '/sw.js', '/favicon.ico'}
+_PUBLIC_PREFIX = ('/static/',)
+
+
+def _is_public(path):
+    return path in _PUBLIC_EXACT or path.startswith(_PUBLIC_PREFIX)
+
+
+@app.before_request
+def require_login():
+    if _is_public(request.path):
+        return
+    if session.get('auth'):
+        return
+    # Not logged in — API calls get a clean 401, page loads bounce to /login
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'authentication required'}), 401
+    return redirect('/login')
+
+
+_LOGIN_PAGE = """<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VendorVault — Sign in</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:#0a0e1a; color:#f1f5f9; }
+  .box { width:100%; max-width:360px; padding:32px 28px; background:#131a2e;
+    border:1px solid rgba(148,163,184,0.1); border-radius:16px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+  .brand { font-size:26px; font-weight:800; letter-spacing:-0.5px; color:#818cf8; margin-bottom:4px; }
+  .sub { color:#94a3b8; font-size:14px; margin-bottom:24px; }
+  label { display:block; font-size:13px; color:#94a3b8; margin-bottom:6px; margin-top:16px; }
+  input { width:100%; padding:12px 14px; background:#0a0e1a; border:1px solid rgba(148,163,184,0.15);
+    border-radius:10px; color:#f1f5f9; font-size:15px; }
+  input:focus { outline:none; border-color:#818cf8; }
+  button { width:100%; margin-top:24px; padding:13px; background:#6366f1; color:#fff; border:none;
+    border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; }
+  button:hover { background:#5558e3; }
+  .err { margin-top:16px; padding:10px 12px; background:rgba(248,113,113,0.12);
+    border:1px solid rgba(248,113,113,0.3); border-radius:8px; color:#f87171; font-size:13px; }
+</style></head>
+<body><form class="box" method="post" action="/login">
+  <div class="brand">VendorVault</div>
+  <div class="sub">Sign in to your kitchen dashboard</div>
+  {error}
+  <label>Username</label>
+  <input name="username" autocomplete="username" autofocus>
+  <label>Password</label>
+  <input name="password" type="password" autocomplete="current-password">
+  <button type="submit">Sign in</button>
+</form></body></html>"""
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if session.get('auth'):
+        return redirect('/')
+    if request.method == 'POST':
+        user = request.form.get('username', '')
+        pw = request.form.get('password', '')
+        # constant-time compare so login timing can't leak the credentials
+        ok = hmac.compare_digest(user, OWNER_USERNAME) and hmac.compare_digest(pw, OWNER_PASSWORD)
+        if ok:
+            session['auth'] = True
+            session.permanent = True
+            return redirect('/')
+        err = '<div class="err">Wrong username or password.</div>'
+        # Use replace, not str.format — the page's CSS is full of literal { } braces
+        return Response(_LOGIN_PAGE.replace('{error}', err), mimetype='text/html'), 401
+    return Response(_LOGIN_PAGE.replace('{error}', ''), mimetype='text/html')
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/login')
+
+
+@app.route('/api/logout', methods=['POST'])
+def api_logout():
+    session.clear()
+    return jsonify({'success': True})
+
+
+@app.route('/health')
+def health():
+    # Public, unauthenticated — this is what Railway's health check hits.
+    return jsonify({'status': 'ok'})
 
 
 @app.after_request

@@ -3172,11 +3172,19 @@
             });
             const [loading, setLoading] = useState(true);
             const [saved, setSaved] = useState(false);
+            const [aiKeySet, setAiKeySet] = useState(false);
+            const [aiKeyPreview, setAiKeyPreview] = useState('');
+            const [aiKeyInput, setAiKeyInput] = useState('');
+            const [aiKeyEditing, setAiKeyEditing] = useState(false);
+            const [aiKeyLoading, setAiKeyLoading] = useState(false);
+            const [showAiKey, setShowAiKey] = useState(false);
 
             const loadSettings = () => fetch('/api/settings')
                 .then(r => r.json())
                 .then(data => {
                     setForm(prev => ({ ...prev, ...data }));
+                    setAiKeySet(data.ai_key_set || false);
+                    setAiKeyPreview(data.ai_key_preview || '');
                     setLoading(false);
                 })
                 .catch(() => setLoading(false));
@@ -3197,6 +3205,52 @@
                     }
                 } catch (e) {
                     toast('Failed to save settings', 'error');
+                }
+            };
+
+            const saveAiKey = async () => {
+                if (!aiKeyInput.trim()) return;
+                setAiKeyLoading(true);
+                try {
+                    const res = await fetch('/api/settings/ai-key', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key: aiKeyInput.trim() }),
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        setAiKeySet(true);
+                        setAiKeyPreview(data.preview);
+                        setAiKeyInput('');
+                        setAiKeyEditing(false);
+                        setShowAiKey(false);
+                        toast('AI API key saved!');
+                    } else {
+                        toast(data.error || 'Failed to save key', 'error');
+                    }
+                } catch (e) {
+                    toast('Failed to save key', 'error');
+                } finally {
+                    setAiKeyLoading(false);
+                }
+            };
+
+            const deleteAiKey = async () => {
+                if (!confirm('Remove the AI API key? AI features will be disabled until you add a new one.')) return;
+                setAiKeyLoading(true);
+                try {
+                    const res = await fetch('/api/settings/ai-key', { method: 'DELETE' });
+                    if (res.ok) {
+                        setAiKeySet(false);
+                        setAiKeyPreview('');
+                        setAiKeyInput('');
+                        setAiKeyEditing(false);
+                        toast('AI API key removed.');
+                    }
+                } catch (e) {
+                    toast('Failed to remove key', 'error');
+                } finally {
+                    setAiKeyLoading(false);
                 }
             };
 
@@ -3253,14 +3307,96 @@
                     </div>
 
                     <div className="card">
+                        <h3 className="section-title">AI API Key</h3>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '16px', fontSize: '14px' }}>
+                            Add your own API key to enable AI-powered features — menu recommendations, cost insights, reorder suggestions.
+                            Everything else works without it.
+                        </p>
+
+                        {aiKeySet && !aiKeyEditing ? (
+                            <div>
+                                <div className="form-group">
+                                    <label>Current Key</label>
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        <input
+                                            type={showAiKey ? 'text' : 'password'}
+                                            value={aiKeyPreview}
+                                            readOnly
+                                            style={{ flex: 1, background: 'var(--bg-tertiary)', cursor: 'default' }}
+                                        />
+                                        <button
+                                            style={{ padding: '10px 14px', background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                            onClick={() => setShowAiKey(v => !v)}
+                                        >
+                                            {showAiKey ? 'Hide' : 'Show'}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="action-buttons">
+                                    <button onClick={() => { setAiKeyEditing(true); setAiKeyInput(''); }}
+                                        style={{ background: 'var(--accent)' }}>
+                                        Edit Key
+                                    </button>
+                                    <button className="danger" onClick={deleteAiKey} disabled={aiKeyLoading}>
+                                        {aiKeyLoading ? 'Removing...' : 'Remove Key'}
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div>
+                                <div className="form-group">
+                                    <label>{aiKeySet ? 'New API Key' : 'API Key'}</label>
+                                    <input
+                                        type="password"
+                                        placeholder="sk-..."
+                                        value={aiKeyInput}
+                                        onChange={e => setAiKeyInput(e.target.value)}
+                                        onKeyDown={e => e.key === 'Enter' && saveAiKey()}
+                                        autoComplete="off"
+                                    />
+                                    <small style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '6px', display: 'block' }}>
+                                        Your key is stored locally and never sent anywhere except the AI provider.
+                                    </small>
+                                </div>
+                                <div className="action-buttons">
+                                    <button className="success" onClick={saveAiKey} disabled={aiKeyLoading || !aiKeyInput.trim()}>
+                                        {aiKeyLoading ? 'Saving...' : 'Save Key'}
+                                    </button>
+                                    {aiKeyEditing && (
+                                        <button onClick={() => { setAiKeyEditing(false); setAiKeyInput(''); }}
+                                            style={{ background: 'var(--bg-tertiary)' }}>
+                                            Cancel
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="card">
                         <h3 className="section-title">Network Access</h3>
                         <NetworkInfo />
                     </div>
 
                     <div className="card">
+                        <h3 className="section-title">Account</h3>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '16px', fontSize: '14px' }}>
+                            You're signed in as the kitchen owner.
+                        </p>
+                        <div className="action-buttons">
+                            <button className="danger" onClick={async () => {
+                                await fetch('/api/logout', { method: 'POST' });
+                                window.location.href = '/login';
+                            }}>
+                                Log Out
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="card">
                         <h3 className="section-title">About</h3>
                         <p style={{ color: 'var(--text-secondary)' }}>
-                            VendorVault v1.0
+                            VendorVault v1.0 — © 2026 Gaurav Singh Thakur. MIT License.
                         </p>
                     </div>
                 </div>
