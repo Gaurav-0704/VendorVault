@@ -1,24 +1,24 @@
 # Gaurav Singh Thakur — MIT License
 #
-# Production entry point for Railway/Docker.
-# I use a Python script instead of a shell command so there are no
-# variable-expansion surprises across container runtimes.
+# Production/deploy entry point for Railway and Docker.
 #
-# Design goal: NEVER exit before the web server is listening. The health check
-# only needs the process up on the right port, so seeding problems or a missing
-# gunicorn must not take the whole app down — they just get logged.
+# I run Flask's own server here on purpose. gunicorn is UNIX-only, which means
+# I can't reproduce its behaviour on my Windows machine — and every failed
+# Railway deploy was on that one untested path. Flask's server I can test end
+# to end locally, so this is the reliable choice for a single-kitchen prototype.
+#
+# The one rule: never exit before the server is listening. A seeding hiccup
+# must not take the whole app down (the app also creates its schema at import).
 
 import os
 import sys
-import shutil
 import subprocess
 
-port = os.environ.get("PORT", "5000")
+port = int(os.environ.get("PORT", "5000"))
 print(f"[start] python={sys.version.split()[0]} PORT={port} "
       f"DB_DIR={os.environ.get('DB_DIR', '(default)')}", flush=True)
 
-# Try to seed, but keep going even if it fails. The app also runs init_db() at
-# import, so the schema still gets created; worst case we start with no sample data.
+# Seed sample data, but keep going even if it fails.
 try:
     print("[start] seeding database...", flush=True)
     r = subprocess.run([sys.executable, "seed.py"])
@@ -26,23 +26,6 @@ try:
 except Exception as e:
     print(f"[start] seed raised {e!r} — continuing anyway", flush=True)
 
-gunicorn_path = shutil.which("gunicorn")
-
-if gunicorn_path:
-    print(f"[start] launching gunicorn ({gunicorn_path}) on 0.0.0.0:{port}", flush=True)
-    # os.execv with the resolved absolute path — no PATH-lookup surprises
-    os.execv(gunicorn_path, [
-        gunicorn_path,
-        "--bind", f"0.0.0.0:{port}",
-        "--workers", "1",
-        "--timeout", "120",
-        "--access-logfile", "-",
-        "--error-logfile", "-",
-        "app:app",
-    ])
-else:
-    # Gunicorn isn't available — fall back to Flask's server so the app still
-    # comes up. Fine for a single-kitchen prototype; the health check will pass.
-    print("[start] gunicorn not found — falling back to Flask's built-in server", flush=True)
-    from app import app
-    app.run(host="0.0.0.0", port=int(port))
+print(f"[start] starting Flask server on 0.0.0.0:{port}", flush=True)
+from app import app
+app.run(host="0.0.0.0", port=port, threaded=True)
