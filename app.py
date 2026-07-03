@@ -10,6 +10,7 @@ import hmac
 from flask import Flask, render_template, request, jsonify, session, redirect, Response
 
 from routes.whatsapp import whatsapp_bp
+from routes.ai import ai_bp
 from database import (
     init_db,
     get_dashboard_stats,
@@ -31,6 +32,7 @@ from database import (
 
 app = Flask(__name__, template_folder='.', static_folder='.')
 app.register_blueprint(whatsapp_bp)
+app.register_blueprint(ai_bp)
 
 # Safety net: make sure the tables exist as soon as the app is imported.
 # Under gunicorn the __main__ block below never runs, so without this a fresh
@@ -556,7 +558,16 @@ def update_cash():
 @app.route('/api/settings', methods=['GET', 'PUT'])
 def settings():
     if request.method == 'GET':
-        return jsonify(get_all_settings())
+        data = get_all_settings()
+        # Never expose the raw AI key — only whether one is set, plus a masked hint
+        raw_key = data.pop('ai_api_key', '')
+        if raw_key:
+            data['ai_key_set'] = True
+            data['ai_key_preview'] = '••••••••' + raw_key[-4:]
+        else:
+            data['ai_key_set'] = False
+            data['ai_key_preview'] = ''
+        return jsonify(data)
     allowed_keys = {'business_name', 'phone', 'email', 'address', 'currency',
                     'cash_in_hand', 'weekly_start_amount'}
     try:
@@ -567,6 +578,24 @@ def settings():
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/settings/ai-key', methods=['PUT'])
+def set_ai_key():
+    """Save the owner's Anthropic API key. Stored in settings like everything else."""
+    data = request.get_json() or {}
+    key = (data.get('key') or '').strip()
+    if not key:
+        return jsonify({'error': 'API key cannot be empty'}), 400
+    set_setting('ai_api_key', key)
+    return jsonify({'success': True, 'preview': '••••••••' + key[-4:]})
+
+
+@app.route('/api/settings/ai-key', methods=['DELETE'])
+def delete_ai_key():
+    """Remove the AI key. AI features switch off; everything else keeps working."""
+    set_setting('ai_api_key', '')
+    return jsonify({'success': True})
 
 
 # ============================================================================

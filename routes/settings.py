@@ -1,4 +1,7 @@
 # Gaurav Singh Thakur — MIT License
+#
+# Note: the running app (app.py) handles /api/settings inline. This blueprint
+# is kept for the modular layout but isn't the active settings handler.
 
 from flask import Blueprint, request, jsonify
 from database import get_db

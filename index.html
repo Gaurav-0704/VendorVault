@@ -1363,6 +1363,7 @@
                 { id: 'reports', label: 'Reports', icon: '📈' },
                 { id: 'profits', label: 'Profits', icon: '💰' },
                 { id: 'cost-analysis', label: 'Cost Analysis', icon: '💹' },
+                { id: 'ai-insights', label: 'AI Insights', icon: '✨' },
                 { id: 'settings', label: 'Settings', icon: '⚙️' }
             ];
 
@@ -1386,6 +1387,8 @@
                         return <Profits />;
                     case 'cost-analysis':
                         return <CostAnalysis />;
+                    case 'ai-insights':
+                        return <AIInsights onNavigate={setCurrentPage} />;
                     case 'settings':
                         return <Settings />;
                     default:
@@ -3158,6 +3161,100 @@
                             ))}
                         </div>
                     )}
+                </div>
+            );
+        }
+
+        function AIInsights({ onNavigate }) {
+            const [enabled, setEnabled] = useState(null);   // null = still checking
+            const [digest, setDigest] = useState('');
+            const [reorder, setReorder] = useState('');
+            const [loadingDigest, setLoadingDigest] = useState(false);
+            const [loadingReorder, setLoadingReorder] = useState(false);
+
+            useEffect(() => {
+                fetch('/api/ai/status')
+                    .then(r => r.json())
+                    .then(d => setEnabled(d.enabled))
+                    .catch(() => setEnabled(false));
+            }, []);
+
+            const runDigest = async () => {
+                setLoadingDigest(true); setDigest('');
+                try {
+                    const r = await fetch('/api/ai/digest');
+                    const d = await r.json();
+                    setDigest(d.digest || d.message || 'Could not generate a digest.');
+                } catch (e) {
+                    setDigest('Something went wrong reaching the AI service.');
+                } finally { setLoadingDigest(false); }
+            };
+
+            const runReorder = async () => {
+                setLoadingReorder(true); setReorder('');
+                try {
+                    const r = await fetch('/api/ai/reorder');
+                    const d = await r.json();
+                    setReorder(d.suggestions || d.message || 'Could not generate suggestions.');
+                } catch (e) {
+                    setReorder('Something went wrong reaching the AI service.');
+                } finally { setLoadingReorder(false); }
+            };
+
+            if (enabled === null) {
+                return <div className="loading"><div className="loading-spinner"></div><div>Checking AI status...</div></div>;
+            }
+
+            if (!enabled) {
+                return (
+                    <div className="card" style={{ textAlign: 'center', padding: '40px 24px' }}>
+                        <div style={{ fontSize: '48px', marginBottom: '12px' }}>✨</div>
+                        <h3 className="section-title" style={{ justifyContent: 'center' }}>AI features are off</h3>
+                        <p style={{ color: 'var(--text-secondary)', maxWidth: '420px', margin: '0 auto 20px' }}>
+                            Add your own Anthropic API key to unlock a weekly business digest,
+                            smart reorder alerts, and auto-written WhatsApp confirmations.
+                            Everything else in VendorVault works without it.
+                        </p>
+                        <button className="success" onClick={() => onNavigate && onNavigate('settings')}>
+                            Add API Key in Settings
+                        </button>
+                    </div>
+                );
+            }
+
+            return (
+                <div>
+                    <div className="card">
+                        <h3 className="section-title">📊 Weekly Business Digest</h3>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '16px' }}>
+                            A plain-English summary of this week's numbers with one thing to watch.
+                        </p>
+                        {digest && (
+                            <div style={{ whiteSpace: 'pre-wrap', background: 'var(--bg-tertiary)',
+                                padding: '16px', borderRadius: '10px', marginBottom: '16px', lineHeight: '1.6' }}>
+                                {digest}
+                            </div>
+                        )}
+                        <button className="success" onClick={runDigest} disabled={loadingDigest}>
+                            {loadingDigest ? 'Thinking...' : (digest ? 'Regenerate' : 'Generate Digest')}
+                        </button>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="section-title">📦 Smart Reorder Alerts</h3>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '16px' }}>
+                            Looks at your current stock and flags what's running low.
+                        </p>
+                        {reorder && (
+                            <div style={{ whiteSpace: 'pre-wrap', background: 'var(--bg-tertiary)',
+                                padding: '16px', borderRadius: '10px', marginBottom: '16px', lineHeight: '1.6' }}>
+                                {reorder}
+                            </div>
+                        )}
+                        <button className="success" onClick={runReorder} disabled={loadingReorder}>
+                            {loadingReorder ? 'Checking...' : (reorder ? 'Refresh' : 'Check Stock')}
+                        </button>
+                    </div>
                 </div>
             );
         }
