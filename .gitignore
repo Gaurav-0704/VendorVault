@@ -13,10 +13,6 @@ __pycache__/
 venv/
 .venv/
 
-# Video files (large, not part of the app)
-vedio clip/
-*.mp4
-
 # OS
 .DS_Store
 *.swp
@@ -32,3 +28,7 @@ data/*.db-shm
 
 # Reference docs (not part of the app)
 VendorVault_Complete_Reference.md
+
+# Video files (large, not part of the app)
+vedio clip/
+*.mp4
