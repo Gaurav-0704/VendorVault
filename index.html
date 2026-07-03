@@ -1487,7 +1487,8 @@
                         <RefreshButton onRefresh={fetchDashboard} />
                     </div>
 
-                    <div className="grid-3">
+                    {/* One evenly-balanced grid so the cards never sit ragged, whatever the width */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginBottom: '16px' }}>
                         <div className="stat-card success">
                             <div className="stat-label">Today's Revenue</div>
                             <div className="stat-value">${data.today.revenue.toFixed(2)}</div>
@@ -1503,9 +1504,6 @@
                             <div className="stat-value">{todayMargin}%</div>
                             <div className="stat-subtext">Profit: ${data.today.profit.toFixed(2)}</div>
                         </div>
-                    </div>
-
-                    <div className="grid-2">
                         <div className="stat-card success">
                             <div className="stat-label">This Week</div>
                             <div className="stat-value">${data.week.revenue.toFixed(2)}</div>
@@ -3209,7 +3207,7 @@
                 return (
                     <div className="card" style={{ textAlign: 'center', padding: '40px 24px' }}>
                         <div style={{ fontSize: '48px', marginBottom: '12px' }}>✨</div>
-                        <h3 className="section-title" style={{ justifyContent: 'center' }}>AI features are off</h3>
+                        <h3 style={{ fontSize: '20px', fontWeight: 700, margin: '0 0 12px' }}>AI features are off</h3>
                         <p style={{ color: 'var(--text-secondary)', maxWidth: '420px', margin: '0 auto 20px' }}>
                             Add your own Anthropic API key to unlock a weekly business digest,
                             smart reorder alerts, and auto-written WhatsApp confirmations.
