@@ -4,6 +4,12 @@ I built VendorVault for the way a real cloud kitchen actually runs: orders comin
 
 Most restaurant software tells you how much you sold. VendorVault tells you how much you sold, what it cost, and how much cash should be in the drawer right now. It runs on a laptop, opens on a phone over WiFi during service, and deploys to the cloud with a private owner login.
 
+## Try It
+
+Live demo: **[vendorvault.up.railway.app](https://vendorvault.up.railway.app)**
+
+Sign in with `owner` / `vendorvault` to look around.
+
 ---
 
 ## What Makes It Different
