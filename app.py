@@ -100,17 +100,37 @@ _LOGIN_PAGE = """<!DOCTYPE html>
   button:hover { background:#5558e3; }
   .err { margin-top:16px; padding:10px 12px; background:rgba(248,113,113,0.12);
     border:1px solid rgba(248,113,113,0.3); border-radius:8px; color:#f87171; font-size:13px; }
+  .demo { margin-bottom:20px; padding:12px 14px; background:rgba(129,140,248,0.1);
+    border:1px solid rgba(129,140,248,0.3); border-radius:10px; font-size:13px; color:#c7d2fe; }
+  .demo b { color:#f1f5f9; }
+  .demo-title { display:block; font-weight:700; color:#818cf8; margin-bottom:4px; }
 </style></head>
 <body><form class="box" method="post" action="/login">
   <div class="brand">VendorVault</div>
   <div class="sub">Sign in to your kitchen dashboard</div>
+  {demo}
   {error}
   <label>Username</label>
-  <input name="username" autocomplete="username" autofocus>
+  <input name="username" autocomplete="username" value="{user_val}" autofocus>
   <label>Password</label>
-  <input name="password" type="password" autocomplete="current-password">
+  <input name="password" type="password" autocomplete="current-password" value="{pw_val}">
   <button type="submit">Sign in</button>
 </form></body></html>"""
+
+
+def _render_login(error=''):
+    """Builds the login page with a demo-credentials box and the fields pre-filled,
+    so anyone opening the live link can just click Sign in."""
+    demo = (
+        '<div class="demo"><span class="demo-title">Demo login</span>'
+        f'Username <b>{OWNER_USERNAME}</b> &nbsp;·&nbsp; Password <b>{OWNER_PASSWORD}</b><br>'
+        'Already filled in — just hit Sign in.</div>'
+    )
+    return (_LOGIN_PAGE
+            .replace('{demo}', demo)
+            .replace('{error}', error)
+            .replace('{user_val}', OWNER_USERNAME)
+            .replace('{pw_val}', OWNER_PASSWORD))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -127,9 +147,8 @@ def login():
             session.permanent = True
             return redirect('/')
         err = '<div class="err">Wrong username or password.</div>'
-        # Use replace, not str.format — the page's CSS is full of literal { } braces
-        return Response(_LOGIN_PAGE.replace('{error}', err), mimetype='text/html'), 401
-    return Response(_LOGIN_PAGE.replace('{error}', ''), mimetype='text/html')
+        return Response(_render_login(err), mimetype='text/html'), 401
+    return Response(_render_login(), mimetype='text/html')
 
 
 @app.route('/logout')
