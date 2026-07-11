@@ -83,46 +83,119 @@ _LOGIN_PAGE = """<!DOCTYPE html>
 <title>VendorVault — Sign in</title>
 <style>
   * { box-sizing: border-box; }
-  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+  html, body { height:100%; }
+  body {
+    margin:0; min-height:100vh; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-    background:#0a0e1a; color:#f1f5f9; }
-  .box { width:100%; max-width:360px; padding:32px 28px; background:#131a2e;
-    border:1px solid rgba(148,163,184,0.1); border-radius:16px;
-    box-shadow:0 20px 60px rgba(0,0,0,0.5); }
-  .brand { font-size:26px; font-weight:800; letter-spacing:-0.5px; color:#818cf8; margin-bottom:4px; }
-  .sub { color:#94a3b8; font-size:14px; margin-bottom:24px; }
-  label { display:block; font-size:13px; color:#94a3b8; margin-bottom:6px; margin-top:16px; }
-  input { width:100%; padding:12px 14px; background:#0a0e1a; border:1px solid rgba(148,163,184,0.15);
-    border-radius:10px; color:#f1f5f9; font-size:15px; }
-  input:focus { outline:none; border-color:#818cf8; }
-  button { width:100%; margin-top:24px; padding:13px; background:#6366f1; color:#fff; border:none;
-    border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; }
-  button:hover { background:#5558e3; }
+    color:#f1f5f9; background:#05070f;
+    perspective:1400px;
+  }
+
+  /* Animated aurora background */
+  .bg { position:fixed; inset:0; overflow:hidden; z-index:0; }
+  .blob { position:absolute; border-radius:50%; filter:blur(70px); opacity:0.55;
+    mix-blend-mode:screen; will-change:transform; }
+  .blob.a { width:520px; height:520px; top:-140px; left:-120px;
+    background:radial-gradient(circle at 30% 30%, #6366f1, transparent 70%);
+    animation:drift1 18s ease-in-out infinite; }
+  .blob.b { width:460px; height:460px; bottom:-160px; right:-100px;
+    background:radial-gradient(circle at 30% 30%, #22d3ee, transparent 70%);
+    animation:drift2 22s ease-in-out infinite; }
+  .blob.c { width:400px; height:400px; top:40%; left:55%;
+    background:radial-gradient(circle at 30% 30%, #a855f7, transparent 70%);
+    animation:drift3 26s ease-in-out infinite; }
+  /* faint moving grid for depth */
+  .grid { position:fixed; inset:0; z-index:0; opacity:0.06;
+    background-image:linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg,#fff 1px, transparent 1px);
+    background-size:44px 44px; mask-image:radial-gradient(circle at 50% 40%, #000 0%, transparent 75%);
+    -webkit-mask-image:radial-gradient(circle at 50% 40%, #000 0%, transparent 75%);
+    animation:gridpan 40s linear infinite; }
+
+  @keyframes drift1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(80px,60px) scale(1.15)} }
+  @keyframes drift2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-70px,-50px) scale(1.1)} }
+  @keyframes drift3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-60px,70px) scale(1.2)} }
+  @keyframes gridpan { from{background-position:0 0,0 0} to{background-position:44px 44px,44px 44px} }
+  @keyframes rise { from{opacity:0; transform:rotateX(10deg) translateY(24px)} to{opacity:1; transform:rotateX(0) translateY(0)} }
+  @keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+  /* 3D glass card */
+  .box {
+    position:relative; z-index:2; width:100%; max-width:380px; padding:34px 30px;
+    background:linear-gradient(160deg, rgba(23,30,52,0.72), rgba(12,16,30,0.72));
+    border:1px solid rgba(148,163,184,0.18); border-radius:22px;
+    backdrop-filter:blur(22px) saturate(140%); -webkit-backdrop-filter:blur(22px) saturate(140%);
+    box-shadow:0 30px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08);
+    transform-style:preserve-3d;
+    animation:rise 0.7s cubic-bezier(0.2,0.8,0.2,1) both, floaty 7s ease-in-out 0.7s infinite;
+  }
+  .box::before { content:""; position:absolute; inset:0; border-radius:22px; padding:1px;
+    background:linear-gradient(140deg, rgba(129,140,248,0.6), transparent 40%, rgba(34,211,238,0.4));
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; }
+
+  .logo { width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;
+    font-size:24px; margin-bottom:14px;
+    background:linear-gradient(135deg,#6366f1,#22d3ee); box-shadow:0 8px 24px rgba(99,102,241,0.45);
+    transform:translateZ(40px); }
+  .brand { font-size:29px; font-weight:800; letter-spacing:-0.6px; margin-bottom:4px;
+    background:linear-gradient(120deg,#c7d2fe,#818cf8 40%,#67e8f9); -webkit-background-clip:text;
+    background-clip:text; color:transparent; transform:translateZ(30px); }
+  .sub { color:#94a3b8; font-size:14px; margin-bottom:22px; transform:translateZ(20px); }
+
+  label { display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;
+    color:#8b98b0; margin-bottom:7px; margin-top:16px; }
+  input { width:100%; padding:13px 15px; background:rgba(5,7,15,0.6);
+    border:1px solid rgba(148,163,184,0.18); border-radius:12px; color:#f1f5f9; font-size:15px;
+    transition:border-color .2s, box-shadow .2s, background .2s; }
+  input:focus { outline:none; border-color:#818cf8; background:rgba(5,7,15,0.85);
+    box-shadow:0 0 0 4px rgba(129,140,248,0.18); }
+
+  button { width:100%; margin-top:26px; padding:14px; color:#fff; border:none; border-radius:12px;
+    font-size:15px; font-weight:700; cursor:pointer; letter-spacing:0.2px;
+    background:linear-gradient(135deg,#6366f1,#4f46e5); box-shadow:0 10px 26px rgba(79,70,229,0.5);
+    transition:transform .15s ease, box-shadow .15s ease, filter .15s ease; transform:translateZ(20px); }
+  button:hover { transform:translateZ(20px) translateY(-2px); box-shadow:0 16px 34px rgba(79,70,229,0.6); filter:brightness(1.07); }
+  button:active { transform:translateZ(20px) translateY(0); }
+
   .err { margin-top:16px; padding:10px 12px; background:rgba(248,113,113,0.12);
-    border:1px solid rgba(248,113,113,0.3); border-radius:8px; color:#f87171; font-size:13px; }
-  .demo { margin-bottom:20px; padding:12px 14px; background:rgba(129,140,248,0.1);
-    border:1px solid rgba(129,140,248,0.3); border-radius:10px; font-size:13px; color:#c7d2fe; }
-  .demo b { color:#f1f5f9; }
-  .demo-title { display:block; font-weight:700; color:#818cf8; margin-bottom:4px; }
+    border:1px solid rgba(248,113,113,0.35); border-radius:10px; color:#fca5a5; font-size:13px; }
+  .demo { margin-bottom:20px; padding:13px 15px; border-radius:13px; font-size:13px; color:#c7d2fe;
+    background:linear-gradient(135deg, rgba(129,140,248,0.16), rgba(34,211,238,0.08));
+    border:1px solid rgba(129,140,248,0.32); }
+  .demo b { color:#fff; }
+  .demo-title { display:flex; align-items:center; gap:6px; font-weight:700; color:#a5b4fc; margin-bottom:5px; }
+  .foot { margin-top:20px; text-align:center; font-size:12px; color:#64748b; transform:translateZ(10px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blob, .grid, .box { animation:none !important; }
+  }
+  @media (max-width:440px) { .box { max-width:92vw; padding:28px 22px; } }
 </style></head>
-<body><form class="box" method="post" action="/login">
-  <div class="brand">VendorVault</div>
-  <div class="sub">Sign in to your kitchen dashboard</div>
-  {demo}
-  {error}
-  <label>Username</label>
-  <input name="username" autocomplete="username" value="{user_val}" autofocus>
-  <label>Password</label>
-  <input name="password" type="password" autocomplete="current-password" value="{pw_val}">
-  <button type="submit">Sign in</button>
-</form></body></html>"""
+<body>
+  <div class="bg"><div class="blob a"></div><div class="blob b"></div><div class="blob c"></div></div>
+  <div class="grid"></div>
+  <form class="box" method="post" action="/login">
+    <div class="logo">🍳</div>
+    <div class="brand">VendorVault</div>
+    <div class="sub">Sign in to your kitchen dashboard</div>
+    {demo}
+    {error}
+    <label>Username</label>
+    <input name="username" autocomplete="username" value="{user_val}" autofocus>
+    <label>Password</label>
+    <input name="password" type="password" autocomplete="current-password" value="{pw_val}">
+    <button type="submit">Sign in →</button>
+    <div class="foot">Restaurant management, WhatsApp-first.</div>
+  </form>
+</body></html>"""
 
 
 def _render_login(error=''):
     """Builds the login page with a demo-credentials box and the fields pre-filled,
     so anyone opening the live link can just click Sign in."""
     demo = (
-        '<div class="demo"><span class="demo-title">Demo login</span>'
+        '<div class="demo"><span class="demo-title">✦ Demo login</span>'
         f'Username <b>{OWNER_USERNAME}</b> &nbsp;·&nbsp; Password <b>{OWNER_PASSWORD}</b><br>'
         'Already filled in — just hit Sign in.</div>'
     )
