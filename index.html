@@ -1560,6 +1560,33 @@
                             </table>
                         </div>
                     </div>
+
+                    <ResetDemo />
+                </div>
+            );
+        }
+
+        function ResetDemo() {
+            const [busy, setBusy] = useState(false);
+            const resetData = async () => {
+                if (!confirm('This clears ALL data (orders, purchases, finances) and restores the starter menu. Continue?')) return;
+                setBusy(true);
+                try {
+                    const r = await fetch('/api/demo/reset', { method: 'POST' });
+                    if (r.ok) { toast('Demo data cleared — starting fresh.'); setTimeout(() => window.location.reload(), 600); }
+                    else { toast('Reset failed', 'error'); setBusy(false); }
+                } catch (e) { toast('Reset failed', 'error'); setBusy(false); }
+            };
+            return (
+                <div className="card" style={{ borderColor: 'rgba(248,113,113,0.25)' }}>
+                    <h3 className="section-title">Start Fresh</h3>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '14px' }}>
+                        Trying the demo? Clear all data and reset to the starter menu whenever you like.
+                        {' '}<b>Prototype only</b> — a real deployment would never expose a one-click wipe like this.
+                    </p>
+                    <button className="danger" onClick={resetData} disabled={busy}>
+                        {busy ? 'Clearing…' : 'Clear Demo Data'}
+                    </button>
                 </div>
             );
         }

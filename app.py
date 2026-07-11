@@ -236,6 +236,35 @@ def api_logout():
     return jsonify({'success': True})
 
 
+@app.route('/api/demo/reset', methods=['POST'])
+def demo_reset():
+    """Wipes all data and reseeds the starter menu — lets anyone trying the live
+    demo start clean. This is a prototype convenience only; a real deployment
+    would never expose a one-click 'delete everything' button."""
+    import sys
+    import subprocess
+    from db.connection import get_db
+
+    db = get_db()
+    try:
+        db.execute('PRAGMA foreign_keys = OFF')
+        for table in ('order_items', 'orders', 'purchase_items', 'stock_levels',
+                      'purchase_categories', 'menu_items', 'menu_categories',
+                      'expenses', 'weekly_cycles', 'whatsapp_messages',
+                      'whatsapp_config', 'settings'):
+            try:
+                db.execute(f'DELETE FROM {table}')
+            except Exception:
+                pass
+        db.commit()
+    finally:
+        db.close()
+
+    # seed.py recreates the schema, default settings, and the starter menu
+    subprocess.run([sys.executable, 'seed.py'])
+    return jsonify({'success': True})
+
+
 @app.route('/health')
 def health():
     # Public, unauthenticated — this is what Railway's health check hits.

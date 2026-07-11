@@ -10,6 +10,8 @@ Live demo: **[vendorvault.up.railway.app](https://vendorvault.up.railway.app)**
 
 Sign in with `owner` / `vendorvault` to look around.
 
+The demo is a shared sandbox — everyone signs into the same account, so anything you add is visible to the next visitor. There's a **Clear Demo Data** button on the dashboard that wipes everything and restores the starter menu, so you can start fresh anytime. That reset button exists only because this is a public prototype; a real deployment would never expose a one-click wipe.
+
 ---
 
 ## What Makes It Different
