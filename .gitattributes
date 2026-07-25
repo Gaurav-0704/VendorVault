@@ -3,3 +3,10 @@
 Makefile text eol=lf
 Procfile text eol=lf
 startup.sh text eol=lf
+
+# Language stats: the single-file React frontend is huge and would otherwise
+# make GitHub classify the repo as HTML. Mark frontend/static assets as vendored
+# so Python (the actual codebase) is reported as the primary language.
+index.html linguist-vendored
+templates/** linguist-vendored
+static/** linguist-vendored
